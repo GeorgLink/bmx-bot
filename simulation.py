@@ -6,7 +6,7 @@ from subprocess import call, check_output
 import json
 
 # base line: python executes
-print "Hello World"
+# print "Hello World"
 
 # access the bugmark exchange
 #call(["ls", "-l"])
@@ -20,4 +20,3 @@ print issue_list
 # raw_input("ENTER")
 #json_il = json.loads(issue_list)
 #json.dumps(json_il, separators=(',',':'))
-
