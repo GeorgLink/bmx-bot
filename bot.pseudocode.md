@@ -92,9 +92,12 @@ _NOTE:_ Restrict to central bank user only.
 
 Proposed Syntax:
 
-    bmx offer buy --side=<FIXED/UNFIXED> --price=<P> --issue=<ISSUE_UUID> --maturation=<TIMESTAMP> --allornothing=<BOOLEAN> --expiration=<TIMESTAMP>
+    bmx offer buy --side=<FIXED/UNFIXED> --volume=<INTEGER> --price=<P> --issue=<ISSUE_UUID> --maturation=<TIMESTAMP> --allornothing=<BOOLEAN> --expiration=<TIMESTAMP>
+
+**Parameters:**
 
 - side : whether the offer for FIXED or UNFIXED side
+- volume : number of contracts willing to buy
 - price : value between 0 and 1 (don't know how many decimal places we should allow); upper bound, will accept cheaper prices
 - issue : ID of issue
 - maturation : TIMESTAMP  when the contract should be maturing
@@ -103,12 +106,12 @@ Proposed Syntax:
 
 **Expected JSON return:**
 
-- OFFER_UUID
+- offer : OFFER_UUID
 
 ### Create Sell Offer
 
 Proposed Syntax:
-    bmx offer sell --position=<POSITION_UUID> --volume=<INTEGER> --price=<P> --expiration=<TIMESTAMP>
+    bmx offer sell --position=<POSITION_UUID> --volume=<INTEGER> --price=<P> --allornothing=<BOOLEAN> --expiration=<TIMESTAMP>
 
 **Parameter explanation:**
 
@@ -119,7 +122,7 @@ Proposed Syntax:
 
 **Expected JSON return:**
 
-- OFFER_UUID
+- offer : OFFER_UUID
 
 ### Cancel Offer
 
@@ -129,7 +132,7 @@ Proposed Syntax:
 
 **Expected JSON return:**
 
-- OFFER_UUID
+- offer : OFFER_UUID
 
 ### Show details of offer
 
@@ -139,13 +142,14 @@ Current Syntax:
 
 **Expected JSON return:**
 
-- offer: OFFER_UUID
-- user: USER_UUID
+- offer : OFFER_UUID
+- user : USER_UUID
 - type : buy/sell
 - side : FIXED/UNFIXED
 - maturation : timestamp
 - expiration : timestamp
 - issue : ISSUE_UID
+- repo : REPO_UUID
 - price
 
 ### List Active Offers
@@ -163,6 +167,7 @@ list of (same as 'bmx offer show')
 - maturation : timestamp
 - expiration : timestamp
 - issue : ISSUE_UID
+- repo: REPO_UUID
 - price
 
 ### Clone Offer
@@ -180,7 +185,7 @@ Current Syntax:
 **Expected JSON return:**
 
 - issue: ISSUE_UUID
-- repository: REPOSITORY_UUID
+- repo: REPO_UUID
 - url : URL to issue-tracker issue
 - oracle : what oracle evaluates this issue? - Is that the same as _type_ in the current implementation?
 - created : timestamp when issue was created
@@ -220,7 +225,7 @@ Current Syntax:
 list of (same as 'bmx issue show')
 - issue : ISSUE_UUID
 - title : Title of issue
-- repository: REPOSITORY_UUID
+- repo: REPO_UUID
 - url : URL to issue-tracker issue
 - oracle : what oracle evaluates this issue? - Is that the same as _type_ in the current implementation?
 - created : timestamp when issue was created
@@ -231,15 +236,61 @@ I removed the statistics metrics here, see above.
 
 Proposed syntax:
 
-    bmx issue search --repository=<REPOSITORY_UUID> --created_before=<TIMESTAMP> --created_after=<TIMESTAMP> --oracle=<ORACLE> --title=<STR>
+    bmx issue search --repo=<REPO_UUID> --created_before=<TIMESTAMP> --created_after=<TIMESTAMP> --oracle=<ORACLE> --title=<STR>
 
 
 **Expected JSON return:**
 list of (same as 'bmx issue show')
-- issue: ISSUE_UUID
-- repository: REPOSITORY_UUID
+- issue : ISSUE_UUID
+- repo : REPO_UUID
 - url : URL to issue-tracker issue
 - oracle : what oracle evaluates this issue? - Is that the same as _type_ in the current implementation?
 - created : timestamp when issue was created
 
 I removed the statistics metrics here, see above.
+
+## Repository
+
+### Show Repository
+
+Current syntax:
+    bmx repo show <REPO_UUID>
+
+**Expected JSON return:**
+- repo : REPO_UUID
+- url :
+- oracle :
+-
+### List Repositories
+
+Current syntax:
+    bmx repo list
+
+**Expected JSON return:**
+same as show repo
+
+### List issues of Repository
+
+Proposed syntax:
+    bmx repo issues <REPO_UUID>
+
+**Expected JSON return:**
+same as 'bmx issue list' but filtered for this repo
+
+## Position
+
+### Show Position
+
+Current syntax:
+    bmx position show <POSITION_UUID>
+
+**Expected JSON return:**
+- position : POSITION_UUID
+- contract : CONTRACT_UUID
+- issue : ISSUE_ID (for convenience)
+- repo : REPO_ID (for convenience)
+- side : fixed/unfixed
+- volume : number of positions
+- price : price paid to acquire position
+- user : USER_UUID who owns the position
+- maturation : TIMESTAMP
