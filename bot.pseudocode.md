@@ -258,9 +258,9 @@ Current syntax:
 
 **Expected JSON return:**
 - repo : REPO_UUID
-- url :
-- oracle :
--
+- url : link to repository
+- oracle : (currently called _type_)
+- name : name of repository
 ### List Repositories
 
 Current syntax:
