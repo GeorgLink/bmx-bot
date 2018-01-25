@@ -58,10 +58,13 @@ class IssueTracker:
 
 
 class Issue:
-    status = 'open'
 
-    def __init__(self, id=0):
+    def __init__(self, id=0, difficulty=1):
         # creates a new open issue
+        self.status = 'open'
+        self.flag = 'fixed'  # enable closed and unfixed
+        self.complete = 0.00
+        self.difficulty = difficulty
         self.id = id
 
     def get_status(self):
@@ -72,6 +75,10 @@ class Issue:
         # get id of issue
         return self.id
 
+    def get_level_complete(self):
+        # get percentage this is complete
+        return self.complete
+
     def close(self):
         # close issue
         self.status = 'closed'
@@ -80,3 +87,9 @@ class Issue:
     def reopen(self):
         # reopen issue
         self.status = 'open'
+
+    def get_worked_on(self, work):
+        # add work done to this issue
+        # some issues may need more work than others
+        self.complete += work / self.difficulty
+        return self
