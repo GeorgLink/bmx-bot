@@ -1,16 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
 # imports
-from subprocess import call, check_output
+from subprocess import check_output
 import json
 
-# base line: python executes
-# print "Hello World"
-
 # access the bugmark exchange and get list of issues
-issue_list = check_output(["bmx","issue","list"])
+issue_list = check_output(["bmx", "issue", "list"])
 # print the list of issues
-json_il = json.loads(issue_list)
+json_il = json.loads(issue_list.decode("utf-8"))
 for p in json_il:
-    print p['uuid']
+    print(p['uuid'])
