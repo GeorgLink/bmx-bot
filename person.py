@@ -13,7 +13,7 @@
 # Simulates behavior of different types of people in an open source project
 # Agent in this Agent-Based-Modeling simulation
 #####
-
+#####
 
 class Person:
     # The most generic person, defining the interface
