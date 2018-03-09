@@ -18,6 +18,7 @@ class contract:
     def __int__(self, issue, maturation_date):
         self.issue = issue  # issue this contract is on
         self.maturation_date = maturation_date  # end of contract
+        self.escrow = 0  # money paid into contract
 
 
 class position:
