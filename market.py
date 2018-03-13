@@ -30,6 +30,8 @@ class Contract():
     def add_position(self, position):
         self.positions.append(position)
 
+    def add_escrow(self, add_escrow):
+        self.escrow += add_escrow
 
 class Position():
 
@@ -123,11 +125,12 @@ class Market():
                     new_position1 = Position(self.open_offers[i].user,
                      self.open_offers[i].contract, self.open_offers[i].units,
                       self.open_offers[i].unit_price, self.open_offers[i].un_fixed)
+
                     new_position2 = Position(self.open_offers[j].user,
                      self.open_offers[j].contract, self.open_offers[j].units,
                       self.open_offers[j].unit_price, self.open_offers[j].un_fixed)
 
-                      #add the positions in lists
+                     #add the positions in lists
                     self.positions.append(new_position1)
 
                     self.positions.append(new_position2)
@@ -136,9 +139,18 @@ class Market():
 
                     self.active_positions.append(new_position2)
 
+                    minus_money_user1 = self.open_offers[i].units * self.open_offers[i].unit_price
+                    minus_money_user2 = self.open_offers[j].units * self.open_offers[j].unit_price
+
+
+                    self.open_offers[i].user.minus_money(minus_money_user1)
+                    self.open_offers[j].user.minus_money(minus_money_user2)
+
+                    self.open_offers[i].contract.add_escrow(self.open_offers[i].units)
+
                     self.contracts.append(self.open_offers[i].contract)
 
-                    self.active_contracts.append(self.open_offers[i-1].contract)
+                    self.active_contracts.append(self.open_offers[i].contract)
                     break
 
         # TODO: matching and crossing algorithm

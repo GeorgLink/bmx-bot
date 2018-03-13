@@ -17,6 +17,7 @@ import market
 import person
 import sys
 
+
 print("start simulation")
 
 # Step 1: define the simulation parameters

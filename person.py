@@ -15,6 +15,7 @@
 #####
 
 
+
 class Person():
     # The most generic person, defining the interface
     # person characteristics:
@@ -45,6 +46,9 @@ class Person():
     def set_money(self, money):
         self.money = money
         return self.money
+
+    def minus_money(self, minus_money):
+        self.money -= minus_money
 
 
 class PTrivialCase1Worker(Person):
