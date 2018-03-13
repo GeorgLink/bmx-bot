@@ -76,8 +76,11 @@ class PTrivialCase1Worker(Person):
         # if issue.complete >= 1.00 then issue.close()
         return None
 
-    def trade_bugmark(self, issue, maturation, volume="20", price="1.00",
+    def trade_bugmark(self, issue, maturation, volume=20, price=0.00,
                       side="fixed"):
+        self.bmx.make_fixed_offer(issue, maturation, volume, price, self,
+                    maturation)
+
         # Trivial Case 1: find an open UNFIXED offer and buy it
         # offer_obj = json.loads(check_output(["bmx", "offer", "list",
         #                                      "--with-type=Offer::Buy::Unfixed",
