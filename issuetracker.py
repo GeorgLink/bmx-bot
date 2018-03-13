@@ -13,7 +13,7 @@
 #####
 
 
-class IssueTracker:
+class IssueTracker():
 
     # max_issue_id = 0
     issues = []
@@ -57,7 +57,7 @@ class IssueTracker:
         return 0
 
 
-class Issue:
+class Issue():
 
     def __init__(self, id=0, difficulty=1):
         # creates a new open issue
