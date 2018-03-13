@@ -12,6 +12,8 @@
 # Contract class for simulating Bugmark Contract.
 #####
 
+# NOTE: I moved this into market.py
+
 
 class contract:
 

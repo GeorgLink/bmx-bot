@@ -12,6 +12,8 @@
 # Offer classes for simulating Bugmark offers.
 #####
 
+# NOTE: I moved this into market.py
+
 
 class offer:
 
