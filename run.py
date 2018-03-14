@@ -17,6 +17,7 @@ import market
 import person
 import sys
 
+
 print("start simulation")
 
 # Step 1: define the simulation parameters
@@ -24,7 +25,7 @@ print("environment settings", end="")
 sys.stdout.flush()
 number_of_workers = 10  # how many people we start with
 number_of_issues = 10  # how many issues we create every day
-funder_starting_funds = 100000000  # how much money the funder starts with
+funder_starting_funds = 1000000  # how much money the funder starts with
 worker_starting_funds = 0  # how much money a worker starts with
 simulation_time = 3  # how many days to simulate
 print(" [DONE]")

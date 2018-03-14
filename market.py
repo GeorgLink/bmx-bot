@@ -14,6 +14,7 @@
 
 
 class Contract():
+    positions = []
 
     def __init__(self, issue, maturation_date):
         self.issue = issue  # issue this contract is on
@@ -26,6 +27,11 @@ class Contract():
     def set_maturation_date(self, maturation_date):
         self.maturation_date = maturation_date
 
+    def add_position(self, position):
+        self.positions.append(position)
+
+    def add_escrow(self, add_escrow):
+        self.escrow += add_escrow
 
 class Position():
 
@@ -35,12 +41,13 @@ class Position():
         self.units = units  # number of units this position has
         self.unit_price = unit_price  # price paid per unit
         self.un_fixed = un_fixed  # type of position: fixed or unfixed
-
+        self.contract.add_position(self)
 
 class Offer():
 
-    def __init__(self, contract, units, unit_price, expiration_date,
+    def __init__(self, user, contract, units, unit_price, expiration_date,
                  un_fixed, buy_sell, position=None):
+        self.user = user #user who made this offer
         self.contract = contract  # contract this offer is for
         self.units = units  # number of units to by of a contract
         self.unit_price = unit_price  # unit price
@@ -64,12 +71,13 @@ class Market():
         # user can offer to buy an unfixed position in a contract
 
         # check that user has enough money
-        if user.get_money() < units * unit_price:
+        if user.get_money() < (units * unit_price):
             return {0, "insufficient funds"}
         # TODO:
-        new_contract = Contract(issue, maturation_date)
+
+        contract = self.find_or_create_Contract(issue, maturation_date)
         # create a new offer
-        new_offer = Offer(new_contract, units, unit_price, expiration_date,
+        new_offer = Offer(user, contract, units, unit_price, expiration_date,
                           "unfixed", "buy")
         # attatch new offer to offers list
         self.offers.append(new_offer)
@@ -80,12 +88,19 @@ class Market():
 
     def make_fixed_offer(self, issue, maturation_date, units, unit_price, user,
                          expiration_date):
+        if user.get_money() < units * unit_price:
+            return {0, "insufficient funds"}
         # user can offer to buy a fixed position in a contract
 
         # TODO:
+        contract = self.find_or_create_Contract(issue, maturation_date)
         # create a new offer
+        new_offer = Offer(user, contract, units, unit_price, expiration_date,
+                          "fixed", "buy")
         # attatch new offer to offers list
+        self.offers.append(new_offer)
         # attatch new offer to open offers list
+        self.open_offers.append(new_offer)
         self.cross_offers()
         return None
 
@@ -100,10 +115,57 @@ class Market():
         return None
 
     def cross_offers(self):
-        # find matching offers and create positions
+        # find matching offers
+
+        for i in range(len(self.open_offers)):
+            for j in range(i):
+                if self.open_offers[i].un_fixed != self.open_offers[j].un_fixed:
+
+                    # create positions
+                    new_position1 = Position(self.open_offers[i].user,
+                     self.open_offers[i].contract, self.open_offers[i].units,
+                      self.open_offers[i].unit_price, self.open_offers[i].un_fixed)
+
+                    new_position2 = Position(self.open_offers[j].user,
+                     self.open_offers[j].contract, self.open_offers[j].units,
+                      self.open_offers[j].unit_price, self.open_offers[j].un_fixed)
+
+                     #add the positions in lists
+                    self.positions.append(new_position1)
+
+                    self.positions.append(new_position2)
+
+                    self.active_positions.append(new_position1)
+
+                    self.active_positions.append(new_position2)
+
+                    minus_money_user1 = self.open_offers[i].units * self.open_offers[i].unit_price
+                    minus_money_user2 = self.open_offers[j].units * self.open_offers[j].unit_price
+
+
+                    self.open_offers[i].user.minus_money(minus_money_user1)
+                    self.open_offers[j].user.minus_money(minus_money_user2)
+
+                    self.open_offers[i].contract.add_escrow(self.open_offers[i].units)
+
+                    self.contracts.append(self.open_offers[i].contract)
+
+                    self.active_contracts.append(self.open_offers[i].contract)
+                    break
 
         # TODO: matching and crossing algorithm
         return None
+
+    def find_or_create_Contract(self, issue, maturation_date):
+        #find existing contract in contracts[]
+        for i in range(len(self.contracts)):
+            if ((self.contracts[i].issue == issue) and
+            (self.contracts[i].maturation_date == maturation_date)):
+                return self.contracts[i]
+        #or create new contract
+        contract = Contract(issue, maturation_date)
+        self.contracts.append(contract)
+        return contract
 
     def payout_contracts(self):
         # pay users for contracts that matured
