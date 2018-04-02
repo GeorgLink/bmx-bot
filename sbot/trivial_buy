@@ -1,0 +1,77 @@
+#!/usr/bin/env ruby
+
+PROCNAME = "fast_bot_buy"
+Process.setproctitle(PROCNAME)
+
+# for C-c
+trap "SIGINT" do
+  puts "\nExiting"
+  exit 130
+end
+
+# for "pkill -f fast_bot_buy"
+trap "SIGTERM" do
+  puts "TERMINATED #{Time.now}"
+  STDOUT.flush
+  exit 130
+end
+
+# SIMULATION PARAMETERS
+NUMBER_OF_WORKERS = 10
+NUMBER_OF_ISSUES = 10
+FUNDER_STARTING_BALANCE = 100000000
+WORKER_STARTING_BALANCE = 0
+SIMULATION_DAYS = 5
+
+# run in turbo mode
+BMX_SAVE_EVENTS  = "FALSE"
+BMX_SAVE_METRICS = "FALSE"
+
+puts "----- BUGMARK OFFER BOT -------------------------------------------"
+puts "START #{Time.now} | C-c to exit"
+puts "Process Name: #{PROCNAME}"
+puts "Loading Environment..."
+STDOUT.flush
+
+require File.expand_path("~/src/bugmark/config/environment")
+
+# delete all host data and create admin user
+BugmHost.reset
+BugmTime.set_day_offset(-1 * SIMULATION_DAYS)
+
+# create repository
+repo = FB.create(:repo).repo
+
+# create a funder and workers
+funder  = FB.create(:user, email: "funder@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
+workers = (1..NUMBER_OF_WORKERS).to_a.map do |worker_id|
+  FB.create(:user, email: "worker#{worker_id}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
+end
+
+# loop for each day
+(1..SIMULATION_DAYS).to_a.each do |day|
+  print "#{day}: "
+  workers.each do |worker|
+    print "."
+    issue = FB.create(:issue, stm_repo_uuid: repo.uuid, stm_status: "open").issue
+    args  = {
+      user_uuid: funder.uuid, 
+      price: 1, 
+      volume: 100, 
+      stm_issue_uuid: issue.uuid, 
+      maturation: BugmTime.end_of_day
+    }
+    offer = FB.create(:offer_bu, args).offer
+    counter = OfferCmd::CreateCounter.new(offer, {user_uuid: worker.uuid}).project.offer
+    ContractCmd::Cross.new(offer, :expand).project
+    IssueCmd::Sync.new({exid: issue.exid, stm_status: "closed"}).project
+  end
+  BugmTime.go_past_end_of_day
+  Contract.open.each do |contract|
+    ContractCmd::Resolve.new(contract).project
+  end
+  puts " |" ; STDOUT.flush
+end
+
+
+# FINI
