@@ -103,7 +103,7 @@ puts ""
     worker.do_work
   end
   # go to next day
-  print " next day"
+  puts " next day"
   BugmTime.go_past_end_of_day
   # resolve contracts
   counter = 0
