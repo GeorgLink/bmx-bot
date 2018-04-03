@@ -26,7 +26,7 @@ NUMBER_OF_WORKERS = 48
 NUMBER_OF_FUNDERS = 4
 NUMBER_OF_ISSUES = 10
 FUNDER_STARTING_BALANCE = 100000000
-WORKER_STARTING_BALANCE = 0
+WORKER_STARTING_BALANCE = 100
 SIMULATION_DAYS = 5
 
 # run in turbo mode
@@ -71,43 +71,42 @@ workers = []
 end
 (1..NUMBER_OF_FUNDERS).each do |funder_id|
   funder = FB.create(:user, email: "funder#{funder_id}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
+  skill = (1..3).sample
   case funder_id
   when 1
-    funders.push(Bmxsim_Funder_InversePay.new(funder,repo))
+    funders.push(Bmxsim_Funder_InversePay.new(funder, repo, skill))
   when 2
-    funders.push(Bmxsim_Funder_CorrelatedPay.new(funder,repo))
+    funders.push(Bmxsim_Funder_CorrelatedPay.new(funder, repo, skill))
   when 3
-    funders.push(Bmxsim_Funder_FixedPay.new(funder,repo))
+    funders.push(Bmxsim_Funder_FixedPay.new(funder, repo, skill))
   else
-    funders.push(Bmxsim_Funder_RandomPay.new(funder,repo))
+    funders.push(Bmxsim_Funder_RandomPay.new(funder, repo, skill))
   end
 end
 
 # loop for each day
-(1..SIMULATION_DAYS).each do |day|
-  print "#{day}: "
+(1..SIMULATION_DAYS).each do |$day|
+  print "#{$day}: "
+  # call funders in a random order
+  funders.shuffle.each do |funder|
+    print "f"
+    funder.do_work
+  end
   # call workers in a random order
   workers.shuffle.each do |worker|
-    print "."
-    issue = repo.open_issue
-    args  = {
-      user_uuid: funders[0].uuid,
-      price: 1,
-      volume: 100,
-      stm_issue_uuid: issue.uuid,
-      maturation: BugmTime.end_of_day
-    }
-    offer = FB.create(:offer_bu, args).offer
-    counter = OfferCmd::CreateCounter.new(offer, {user_uuid: worker.uuid}).project.offer
-    ContractCmd::Cross.new(offer, :expand).project
-    ContractCmd::Cross.new(counter, :expand).project
-    # IssueCmd::Sync.new({exid: issue.exid, stm_status: "closed"}).project
-    issue.close
+    print "w"
+    worker.do_work
   end
+  # go to next day
   BugmTime.go_past_end_of_day
+  # resolve contracts
+  counter = 0
   Contract.open.each do |contract|
+    counter += 1
+    STDOUT.write "\r#{counter}"
     ContractCmd::Resolve.new(contract).project
   end
+  #signal end of day
   puts " |" ; STDOUT.flush
 end
 

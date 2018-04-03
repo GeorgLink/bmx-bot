@@ -17,6 +17,7 @@ class Bmxsim_Issue
     @bmx_issue = FB.create(:issue, stm_repo_uuid: repo_uuid, exid: id, stm_status: "open").issue
     @uuid = @bmx_issue.uuid
     # puts "New issue (#{@id}) with uuid: #{@uuid}"
+    @open_offer_bu = []
   end
   def uuid
     @uuid
@@ -39,7 +40,20 @@ class Bmxsim_Issue
     @difficulty
   end
   def work(effort)
+    # figure out how much work is left to do
     @progress = [(effort/@difficulty*100).ceil,1].min
+    # close issue, if work is complete
+    close unless @progress < 1
+  end
+  def add_offer_bu(offer)
+    @open_offer_bu.push(offer)
+  end
+  def get_highest_paying_offer
+    offer = nil
+    @open_offer_bu.each do |off|
+      offer = off if offer == nil
+      offer = off if offer[:price]<off[:price]
+    end
   end
 end
 
@@ -53,8 +67,11 @@ class Bmxsim_IssueTracker
   def uuid
     @uuid
   end
-  def open_issue(project=1, difficulty=1)
+  def open_issue(project=1, difficulty=0)
     # puts "new issue #{(@issues.count+1)}"
+    if difficulty == 0 then
+      difficulty = (1..3).sample
+    end
     iss = Bmxsim_Issue.new((@issues.count+1), @uuid, project, difficulty)
     @issues.push(iss)
     return @issues.last
