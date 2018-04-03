@@ -46,6 +46,7 @@ class Bmxsim_Issue
     close unless @progress < 1
   end
   def add_offer_bu(offer)
+    offer[:issue_id] = @id
     @open_offer_bu.push(offer)
   end
   def get_highest_paying_offer
@@ -55,6 +56,9 @@ class Bmxsim_Issue
       offer = off if offer[:price]<off[:price]
     end
     return offer
+  end
+  def remove_offer(offer)
+    @open_offer_bu.delete(offer)
   end
 end
 
@@ -108,5 +112,8 @@ class Bmxsim_IssueTracker
       end
     end
     return offer
+  end
+  def remove_offer(offer)
+    get_issue(offer[:issue_id]).remove_offer(offer)
   end
 end

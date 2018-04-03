@@ -156,6 +156,7 @@ class Bmxsim_Worker_Treatment_NoMetrics
         counter = projection.offer
         binding.pry
         ContractCmd::Cross.new(counter, :expand).project
+        @tracker.remove_offer(offer)
       end
     end
 
