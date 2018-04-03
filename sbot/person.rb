@@ -55,6 +55,7 @@ class Bmxsim_Funder_InversePay
       ContractCmd::Cross.new(offer, :expand).project
       args[:offer] = offer
       issue.add_offer_bu(args)
+      bindings.pry
     end
   end
   def do_trade
