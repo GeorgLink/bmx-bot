@@ -46,7 +46,7 @@ class Bmxsim_Funder_InversePay
       # args is a hash
       args  = {
         user_uuid: @uuid,
-        price: (1/(issue.get_difficulty+1).round(2)),
+        price: (1.0/(issue.get_difficulty+1)).round(2),
         volume: 100,
         stm_issue_uuid: issue.uuid,
         maturation: BugmTime.next_week_ends[2]
