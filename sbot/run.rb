@@ -51,18 +51,18 @@ require_relative 'person'
 
 # create repository
 bmx_repo = FB.create(:repo).repo
-repo = IssueTracker.new(bmx_repo)
+repo = Bmxsim_IssueTracker.new(bmx_repo)
 
 # create funders and workers
 funders = []
 workers = []
 (1..NUMBER_OF_WORKERS).each do |worker_id|
   worker = FB.create(:user, email: "worker#{worker_id}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
-  workers.push(Person.new(worker,repo))
+  workers.push(Bmxsim_Person.new(worker,repo))
 end
 (1..NUMBER_OF_FUNDERS).each do |funder_id|
   funder = FB.create(:user, email: "funder#{funder_id}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
-  funders.push(Person.new(funder,repo))
+  funders.push(Bmxsim_Person.new(funder,repo))
 end
 
 # loop for each day

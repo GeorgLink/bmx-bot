@@ -1,6 +1,6 @@
 require File.expand_path("~/src/bugmark/config/environment")
 
-class Issue
+class Bmxsim_Issue
   def initialize(id, repo_uuid, difficulty=1)
     @status = 'open'  # closed or open
     @complete = 0  # percentage of completion
@@ -29,7 +29,7 @@ class Issue
   end
 end
 
-class IssueTracker
+class Bmxsim_IssueTracker
   def initialize(bmx_repo)
     @issues = []
     @bmx_repo = bmx_repo
@@ -41,7 +41,7 @@ class IssueTracker
   end
   def open_issue
     puts "new issue, #{(@issues.count+1)}, #{@uuid}"
-    iss = Issue.new((@issues.count+1), @uuid)
+    iss = Bmxsim_Issue.new((@issues.count+1), @uuid)
     @issues.push(iss)
     return @issues.last
   end

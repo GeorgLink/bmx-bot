@@ -1,4 +1,4 @@
-class Person
+class Bmxsim_Person
   def initialize(bmx_user, issue_tracker, skill=nil)
     @bmx_user = bmx_user
     @uuid = bmx_user.uuid
