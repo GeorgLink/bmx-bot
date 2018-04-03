@@ -22,7 +22,7 @@ trap "SIGTERM" do
 end
 
 # SIMULATION PARAMETERS
-NUMBER_OF_WORKERS = 48
+NUMBER_OF_WORKERS = 4
 NUMBER_OF_FUNDERS = 4
 NUMBER_OF_ISSUES = 10
 FUNDER_STARTING_BALANCE = 100000000
@@ -75,12 +75,13 @@ workers = []
   STDOUT.write "\rcreate workers: #{worker_id} / #{NUMBER_OF_WORKERS}"
   worker = FB.create(:user, email: "worker#{worker_id}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
   skill = (1..3).to_a.sample
+  group_size = NUMBER_OF_WORKERS/4
   case worker_id
-  when (1..12)
+  when (1..groupsize)
     workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker, repo, skill))
-  when (13..24)
+  when ((group_size+1)..(2*group_size))
     workers.push(Bmxsim_Worker_Treatment_HealthMetrics.new(worker, repo, skill))
-  when (25..36)
+  when ((2*group_size+1)..(3*group_size))
     workers.push(Bmxsim_Worker_Treatment_MarketMetrics.new(worker, repo, skill))
   else
     workers.push(Bmxsim_Worker_Treatment_BothMetrics.new(worker, repo, skill))
