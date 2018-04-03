@@ -57,6 +57,7 @@ repo = Bmxsim_IssueTracker.new(bmx_repo)
 puts "create funders"
 funders = []
 (1..NUMBER_OF_FUNDERS).to_a.each do |funder_id|
+  STDOUT.write "\r#{funder_id}"
   funder = FB.create(:user, email: "funder#{funder_id}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
   case funder_id
   when 1
