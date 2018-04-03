@@ -18,7 +18,6 @@ class Bmxsim_Person
   end
   def do_work
     # decide what issue to work on
-    end
   end
   def do_trade
     # decide what to trade on bugmark
@@ -145,8 +144,6 @@ class Bmxsim_Worker_Treatment_NoMetrics
       @issue_workingon.work(@skill)
       # get ready for new issue, if current issue was closed
       @issue_workingon = nil if @issue_workingon.get_status == 'closed'
-    end
-
     end
   end
   def do_trade
