@@ -70,7 +70,7 @@ class Bmxsim_IssueTracker
   def open_issue(project=1, difficulty=0)
     # puts "new issue #{(@issues.count+1)}"
     if difficulty == 0 then
-      difficulty = (1..3).sample
+      difficulty = (1..3).to_a.sample
     end
     iss = Bmxsim_Issue.new((@issues.count+1), @uuid, project, difficulty)
     @issues.push(iss)

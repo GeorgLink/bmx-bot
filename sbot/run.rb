@@ -71,7 +71,7 @@ workers = []
 end
 (1..NUMBER_OF_FUNDERS).each do |funder_id|
   funder = FB.create(:user, email: "funder#{funder_id}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
-  skill = (1..3).sample
+  skill = (1..3).to_a.sample
   case funder_id
   when 1
     funders.push(Bmxsim_Funder_InversePay.new(funder, repo, skill))
