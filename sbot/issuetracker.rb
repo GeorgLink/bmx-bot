@@ -41,7 +41,7 @@ class Bmxsim_Issue
   end
   def work(effort)
     # figure out how much work is left to do
-    @progress = [(effort/@difficulty*100).ceil,1].min
+    @progress = [(1.0*effort/@difficulty*100).ceil,1].min
     # close issue, if work is complete
     close unless @progress < 1
   end
