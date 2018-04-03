@@ -155,6 +155,7 @@ class Bmxsim_Worker_Treatment_NoMetrics
       unless projection.nil?
         counter = projection.offer
         puts counter
+        binding.pry
         ContractCmd::Cross.new(counter, :expand).project
       end
     end
