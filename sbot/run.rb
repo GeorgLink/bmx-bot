@@ -23,7 +23,7 @@ end
 
 # SIMULATION PARAMETERS
 NUMBER_OF_WORKERS = 48
-NUMBER_OF_FUNDERS = 1
+NUMBER_OF_FUNDERS = 4
 NUMBER_OF_ISSUES = 10
 FUNDER_STARTING_BALANCE = 100000000
 WORKER_STARTING_BALANCE = 0
@@ -71,7 +71,16 @@ workers = []
 end
 (1..NUMBER_OF_FUNDERS).each do |funder_id|
   funder = FB.create(:user, email: "funder#{funder_id}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
-  funders.push(Bmxsim_Person.new(funder,repo))
+  case funder_id
+  when 1
+    funders.push(Bmxsim_Funder_InversePay.new(funder,repo))
+  when 2
+    funders.push(Bmxsim_Funder_CorrelatedPay.new(funder,repo))
+  when 3
+    funders.push(Bmxsim_Funder_FixedPay.new(funder,repo))
+  else
+    funders.push(Bmxsim_Funder_RandomPay.new(funder,repo))
+  end
 end
 
 # loop for each day

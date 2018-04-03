@@ -8,14 +8,15 @@
 require File.expand_path("~/src/bugmark/config/environment")
 
 class Bmxsim_Issue
-  def initialize(id, repo_uuid, difficulty=1)
+  def initialize(id, repo_uuid, project=1, difficulty=1)
     @status = 'open'  # closed or open
-    @complete = 0  # percentage of completion
+    @progress = 0  # percentage of completion
+    @project = project  # in the simulation we have different projects
     @difficulty = difficulty  # difficulty level of issue
     @id = id  # id of this issue
     @bmx_issue = FB.create(:issue, stm_repo_uuid: repo_uuid, exid: id, stm_status: "open").issue
     @uuid = @bmx_issue.uuid
-    puts "New issue (#{@id}) with uuid: #{@uuid}"
+    # puts "New issue (#{@id}) with uuid: #{@uuid}"
   end
   def uuid
     @uuid
@@ -34,6 +35,12 @@ class Bmxsim_Issue
   def get_id
     @id
   end
+  def get_difficulty
+    @difficulty
+  end
+  def work(effort)
+    @progress = [(effort/@difficulty*100).ceil,1].min
+  end
 end
 
 class Bmxsim_IssueTracker
@@ -41,14 +48,14 @@ class Bmxsim_IssueTracker
     @issues = []
     @bmx_repo = bmx_repo
     @uuid = @bmx_repo.uuid
-    puts "New Issue tracker, with uuid: #{@uuid}"
+    # puts "New Issue tracker, with uuid: #{@uuid}"
   end
   def uuid
     @uuid
   end
-  def open_issue
-    puts "new issue, #{(@issues.count+1)}, #{@uuid}"
-    iss = Bmxsim_Issue.new((@issues.count+1), @uuid)
+  def open_issue(project=1, difficulty=1)
+    # puts "new issue #{(@issues.count+1)}"
+    iss = Bmxsim_Issue.new((@issues.count+1), @uuid, project, difficulty)
     @issues.push(iss)
     return @issues.last
   end
