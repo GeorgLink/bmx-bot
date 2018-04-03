@@ -22,7 +22,7 @@ trap "SIGTERM" do
 end
 
 # SIMULATION PARAMETERS
-NUMBER_OF_WORKERS = 10
+NUMBER_OF_WORKERS = 48
 NUMBER_OF_FUNDERS = 1
 NUMBER_OF_ISSUES = 10
 FUNDER_STARTING_BALANCE = 100000000
@@ -58,7 +58,16 @@ funders = []
 workers = []
 (1..NUMBER_OF_WORKERS).each do |worker_id|
   worker = FB.create(:user, email: "worker#{worker_id}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
-  workers.push(Bmxsim_Person.new(worker,repo))
+  case worker_id
+  when (1..12)
+    workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker,repo))
+  when (13..24)
+    workers.push(Bmxsim_Worker_Treatment_HealthMetrics.new(worker,repo))
+  when (25..36)
+    workers.push(Bmxsim_Worker_Treatment_MarketMetrics.new(worker,repo))
+  else
+    workers.push(Bmxsim_Worker_Treatment_BothMetrics.new(worker,repo))
+  end
 end
 (1..NUMBER_OF_FUNDERS).each do |funder_id|
   funder = FB.create(:user, email: "funder#{funder_id}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
@@ -68,7 +77,8 @@ end
 # loop for each day
 (1..SIMULATION_DAYS).each do |day|
   print "#{day}: "
-  workers.each do |worker|
+  # call workers in a random order
+  workers.shuffle.each do |worker|
     print "."
     issue = repo.open_issue
     args  = {

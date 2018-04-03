@@ -1,3 +1,10 @@
+#!/usr/bin/env ruby
+
+# (c) Copyright 2018
+# Georg Link <linkgeorg@gmail.com>
+#
+# SPDX-License-Identifier: MPL-2.0
+
 require File.expand_path("~/src/bugmark/config/environment")
 
 class Bmxsim_Issue
