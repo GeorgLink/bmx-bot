@@ -154,7 +154,7 @@ class Bmxsim_Worker_Treatment_NoMetrics
       projection = OfferCmd::CreateCounter.new(offer[:offer], {user_uuid: @uuid}).project
       unless projection.nil?
         counter = projection.offer
-        binding.pry
+        # binding.pry
         ContractCmd::Cross.new(counter, :expand).project
         @tracker.remove_offer(offer)
         @issue_workingon = @tracker.get_issue(offer[:issue_id])
