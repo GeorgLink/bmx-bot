@@ -54,10 +54,9 @@ bmx_repo = FB.create(:repo).repo
 repo = Bmxsim_IssueTracker.new(bmx_repo)
 
 # create funders and workers
-puts "create funders"
 funders = []
 (1..NUMBER_OF_FUNDERS).to_a.each do |funder_id|
-  STDOUT.write "\r#{funder_id} / #{NUMBER_OF_FUNDERS}"
+  STDOUT.write "\rcreate funders: #{funder_id} / #{NUMBER_OF_FUNDERS}"
   funder = FB.create(:user, email: "funder#{funder_id}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
   case funder_id
   when 1
@@ -71,10 +70,9 @@ funders = []
   end
 end
 puts ""
-puts "create workers"
 workers = []
 (1..NUMBER_OF_WORKERS).to_a.each do |worker_id|
-  STDOUT.write "\r#{worker_id} / #{NUMBER_OF_WORKERS}"
+  STDOUT.write "\rcreate workers: #{worker_id} / #{NUMBER_OF_WORKERS}"
   worker = FB.create(:user, email: "worker#{worker_id}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
   skill = (1..3).to_a.sample
   case worker_id
@@ -104,18 +102,18 @@ puts ""
     worker.do_work
   end
   # go to next day
+  print " next day"
   BugmTime.go_past_end_of_day
   # resolve contracts
-  puts "resolve contracts"
   counter = 0
   max_counter = Contract.open.count
   Contract.open.each do |contract|
     counter += 1
-    STDOUT.write "\r#{counter} / #{max_counter}"
+    STDOUT.write "\rresolve contracts: #{counter} / #{max_counter}"
     ContractCmd::Resolve.new(contract).project
   end
   #signal end of day
-  puts " |" ; STDOUT.flush
+  puts " DAY COMPLETE" ; STDOUT.flush
 end
 
 
