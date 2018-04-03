@@ -77,7 +77,7 @@ workers = []
   skill = (1..3).to_a.sample
   group_size = NUMBER_OF_WORKERS/4
   case worker_id
-  when (1..groupsize)
+  when (1..group_size)
     workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker, repo, skill))
   when ((group_size+1)..(2*group_size))
     workers.push(Bmxsim_Worker_Treatment_HealthMetrics.new(worker, repo, skill))
