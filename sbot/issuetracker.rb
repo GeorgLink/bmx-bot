@@ -8,6 +8,7 @@ class Issue
     @id = id  # id of this issue
     @bmx_issue = FB.create(:issue, stm_repo_uuid: repo_uuid, exid: id, stm_status: "open").issue
     @uuid = @bmx_issue.uuid
+    puts "New issue (#{@id}) with uuid: #{@uuid}"
   end
   def uuid
     @uuid
@@ -33,6 +34,7 @@ class IssueTracker
     @issues = []
     @bmx_repo = bmx_repo
     @uuid = @bmx_repo.uuid
+    puts "New Issue tracker, with uuid: #{@uuid}"
   end
   def uuid
     @uuid
