@@ -102,8 +102,10 @@ class Bmxsim_IssueTracker
     offer = nil
     @issues.each do |iss|
       iss_off = iss.get_highest_paying_offer
-      offer = iss_off if offer == nil
-      offer = iss_off if offer[:price] < iss_off[:price]
+      unless iss_off == nil
+        offer = iss_off if offer == nil
+        offer = iss_off if offer[:price] < iss_off[:price]
+      end
     end
     return offer
   end
