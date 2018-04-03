@@ -85,8 +85,8 @@ end
 end
 
 # loop for each day
-(1..SIMULATION_DAYS).each do |$day|
-  print "#{$day}: "
+(1..SIMULATION_DAYS).each do |day|
+  print "#{day}: "
   # call funders in a random order
   funders.shuffle.each do |funder|
     print "f"
