@@ -40,7 +40,9 @@ class IssueTracker
     @uuid
   end
   def open_issue
-    @issues.push(Issue.new(@issues.count+1, @uuid))
+    puts "new issue"
+    iss = Issue.new(@issues.count+1, @uuid)
+    @issues.push(iss)
     return @issues.last
   end
   def get_issue(id)
