@@ -58,31 +58,31 @@ puts "create workers"
 workers = []
 (1..NUMBER_OF_WORKERS).to_a.each do |worker_id|
   worker = FB.create(:user, email: "worker#{worker_id}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
+  skill = (1..3).to_a.sample
   case worker_id
   when (1..12)
-    workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker,repo))
+    workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker, repo, skill))
   when (13..24)
-    workers.push(Bmxsim_Worker_Treatment_HealthMetrics.new(worker,repo))
+    workers.push(Bmxsim_Worker_Treatment_HealthMetrics.new(worker, repo, skill))
   when (25..36)
-    workers.push(Bmxsim_Worker_Treatment_MarketMetrics.new(worker,repo))
+    workers.push(Bmxsim_Worker_Treatment_MarketMetrics.new(worker, repo, skill))
   else
-    workers.push(Bmxsim_Worker_Treatment_BothMetrics.new(worker,repo))
+    workers.push(Bmxsim_Worker_Treatment_BothMetrics.new(worker, repo, skill))
   end
 end
 puts "create funders"
 funders = []
 (1..NUMBER_OF_FUNDERS).to_a.each do |funder_id|
   funder = FB.create(:user, email: "funder#{funder_id}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
-  skill = (1..3).to_a.sample
   case funder_id
   when 1
-    funders.push(Bmxsim_Funder_InversePay.new(funder, repo, skill))
+    funders.push(Bmxsim_Funder_InversePay.new(funder, repo))
   when 2
-    funders.push(Bmxsim_Funder_CorrelatedPay.new(funder, repo, skill))
+    funders.push(Bmxsim_Funder_CorrelatedPay.new(funder, repo))
   when 3
-    funders.push(Bmxsim_Funder_FixedPay.new(funder, repo, skill))
+    funders.push(Bmxsim_Funder_FixedPay.new(funder, repo))
   else
-    funders.push(Bmxsim_Funder_RandomPay.new(funder, repo, skill))
+    funders.push(Bmxsim_Funder_RandomPay.new(funder, repo))
   end
 end
 
