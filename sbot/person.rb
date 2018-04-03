@@ -138,8 +138,8 @@ class Bmxsim_Worker_Treatment_NoMetrics
     # decide what issue to work on
 
     # make sure to have an issue to work on
-    do_trade if @issue_workingon == nil
-    unless @issue_workingon == nil
+    do_trade if @issue_workingon.nil?
+    unless @issue_workingon.nil?
       # do the work
       @issue_workingon.work(@skill)
       # get ready for new issue, if current issue was closed
@@ -149,7 +149,7 @@ class Bmxsim_Worker_Treatment_NoMetrics
   def do_trade
     # decide what to trade on bugmark
     offer = @tracker.get_highest_paying_offer
-    unless offer == nil
+    unless offer.nil?
       counter = OfferCmd::CreateCounter.new(offer[:offer], {user_uuid: @uuid}).project.offer
       ContractCmd::Cross.new(counter, :expand).project
     end

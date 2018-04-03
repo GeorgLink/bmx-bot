@@ -51,7 +51,7 @@ class Bmxsim_Issue
   def get_highest_paying_offer
     offer = nil
     @open_offer_bu.each do |off|
-      offer = off if offer == nil
+      offer = off if offer.nil?
       offer = off if offer[:price]<off[:price]
     end
     return offer
@@ -102,8 +102,8 @@ class Bmxsim_IssueTracker
     offer = nil
     @issues.each do |iss|
       iss_off = iss.get_highest_paying_offer
-      unless iss_off == nil
-        offer = iss_off if offer == nil
+      unless iss_off.nil?
+        offer = iss_off if offer.nil?
         offer = iss_off if offer[:price] < iss_off[:price]
       end
     end
