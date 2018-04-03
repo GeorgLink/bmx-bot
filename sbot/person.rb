@@ -152,10 +152,8 @@ class Bmxsim_Worker_Treatment_NoMetrics
     offer = @tracker.get_highest_paying_offer
     unless offer.nil?
       projection = OfferCmd::CreateCounter.new(offer[:offer], {user_uuid: @uuid}).project
-      puts projection
       unless projection.nil?
         counter = projection.offer
-        puts counter
         binding.pry
         ContractCmd::Cross.new(counter, :expand).project
       end
