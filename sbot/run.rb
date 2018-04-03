@@ -39,14 +39,15 @@ puts "Process Name: #{PROCNAME}"
 puts "Loading Environment..."
 STDOUT.flush
 
-require_relative 'issuetracker'
-require_relative 'person'
-
 require File.expand_path("~/src/bugmark/config/environment")
 
 # delete all host data and create admin user
 BugmHost.reset
 BugmTime.set_day_offset(-1 * SIMULATION_DAYS)
+
+# simulation classes
+require_relative 'issuetracker'
+require_relative 'person'
 
 # create repository
 bmx_repo = FB.create(:repo).repo
