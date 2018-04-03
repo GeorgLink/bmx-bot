@@ -54,9 +54,9 @@ bmx_repo = FB.create(:repo).repo
 repo = Bmxsim_IssueTracker.new(bmx_repo)
 
 # create funders and workers
-funders = []
+puts "create workers"
 workers = []
-(1..NUMBER_OF_WORKERS).each do |worker_id|
+(1..NUMBER_OF_WORKERS).to_a.each do |worker_id|
   worker = FB.create(:user, email: "worker#{worker_id}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
   case worker_id
   when (1..12)
@@ -69,7 +69,9 @@ workers = []
     workers.push(Bmxsim_Worker_Treatment_BothMetrics.new(worker,repo))
   end
 end
-(1..NUMBER_OF_FUNDERS).each do |funder_id|
+puts "create funders"
+funders = []
+(1..NUMBER_OF_FUNDERS).to_a.each do |funder_id|
   funder = FB.create(:user, email: "funder#{funder_id}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
   skill = (1..3).to_a.sample
   case funder_id
@@ -85,7 +87,7 @@ end
 end
 
 # loop for each day
-(1..SIMULATION_DAYS).each do |day|
+(1..SIMULATION_DAYS).to_a.each do |day|
   print "#{day}: "
   # call funders in a random order
   funders.shuffle.each do |funder|
