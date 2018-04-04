@@ -49,9 +49,10 @@ class Bmxsim_Issue
     offer[:issue_id] = @id
     @open_offer_bu.push(offer)
   end
-  def get_highest_paying_offer
+  def get_highest_paying_offer(max_cost=nil)
     offer = nil
     @open_offer_bu.each do |off|
+      binding.pry
       offer = off if offer.nil?
       offer = off if offer[:price]<off[:price]
     end
