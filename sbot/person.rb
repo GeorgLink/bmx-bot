@@ -153,7 +153,7 @@ class Bmxsim_Worker_Treatment_NoMetrics
     # binding.pry
     unless offer.nil?
       projection = OfferCmd::CreateCounter.new(offer[:offer], {user_uuid: @uuid}).project
-      binding.pry unless projection.valid?
+      binding.pry
       counter = projection.offer
       unless counter.valid?
         # binding.pry
