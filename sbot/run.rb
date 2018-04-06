@@ -85,7 +85,7 @@ workers = []
   STDOUT.write "\rcreate workers: #{worker_id} / #{NUMBER_OF_WORKERS}"
   worker = FB.create(:user, email: "worker#{worker_id}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
   skill = (1..3).to_a.sample
-  workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker, repo, skill, 'w#{worker_id}'))
+  workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker, repo, skill, "w#{worker_id}""))
   # group_size = NUMBER_OF_WORKERS/4
   # case worker_id
   # when (1..group_size)
