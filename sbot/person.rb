@@ -150,10 +150,8 @@ class Bmxsim_Worker_Treatment_NoMetrics
   def do_trade
     # decide what to trade on bugmark
     offer = @tracker.get_highest_paying_offer
-    # binding.pry
     unless offer.nil?
       projection = OfferCmd::CreateCounter.new(offer[:offer], {user_uuid: @uuid}).project
-      binding.pry
       counter = projection.offer
       if counter.valid?
         # binding.pry
