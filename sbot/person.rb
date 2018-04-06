@@ -40,7 +40,7 @@ class Bmxsim_Funder_InversePay
   def do_work
     # decide what issue to work on
     # create twelve issues
-    (1..11).to_a.each do
+    (1..1).to_a.each do
       issue = @tracker.open_issue(@project)
 
       # args is a hash
