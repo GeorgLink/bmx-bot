@@ -124,7 +124,49 @@ class Bmxsim_Funder_RandomPay
   end
 end
 
-class Bmxsim_Worker_Treatment_NoMetrics
+
+class Bmxsim_Worker_Treatment_NoMetricsNoPrices
+  def initialize(bmx_user, issue_tracker, skill=nil)
+    @bmx_user = bmx_user
+    @uuid = bmx_user.uuid
+    @tracker = issue_tracker
+    @skill = skill
+  end
+  def uuid
+    @uuid
+  end
+  def do_work
+    # decide what issue to work on
+
+    # MR: In the initial simulation all workers are modeled as having the same
+    # skill level: skill level 3. Here the number of units of time required to
+    # complete a task increases with the difficulty level of the task. That is,
+    # difficulty levels 1, 2, 3 take 1, 2, 3 units of time respectively. We also
+    # assume that there is no time limit facing a worker to complete a set of
+    # tasks in say 1 week. If there were such a time limit then workers would
+    # need to preselect the set of issues whose maturation dates fall within the
+    # remainaining time (database query). Instead workers are time constrained
+    # only by individual issue maturation dates.
+
+    # In this treatment workers are "in the dark". They have no price signals
+    # and no metrics. They do, however, see the maturation date of each issue.
+    # Because workers know their skill level, they reason in one of these ways:
+    # => 1) Pick an issue arbitrarily.
+    # => 2) Pick an issue with maturation date >= 3 units of time from now to be
+    # sure that the task is successfully completed and the unknown reward paid.
+
+    # More reflective of the current way of peer production, we can try setting
+    # maturation dates to all be very far out thereby making them irrelevant in
+    # decision making. Then workes would simply pick issues arbitrarily.
+
+  end
+  def do_trade
+    # decide what to trade on bugmark
+  end
+end
+
+
+class Bmxsim_Worker_Treatment_NoMetricsWithPrices
   def initialize(bmx_user, issue_tracker, skill=nil)
     @bmx_user = bmx_user
     @uuid = bmx_user.uuid
@@ -137,6 +179,15 @@ class Bmxsim_Worker_Treatment_NoMetrics
   end
   def do_work
     # decide what issue to work on
+    # MR: In the absence of any metrics, workers decide myopically according
+    # to the signals available to them, namely price and maturation date, as
+    # well as their own knowledge of their skill level.
+
+    # => Given a set of existing, open issues, decide in one of these ways:
+    # => 1) Pick an issue with the highest reward. If more than one such issue
+    # => then tie-break with issue with later maturation date.
+    # => 2) Pick an issue with maturation date >= 3 units of time from now. If
+    # => more than one such issue then tie-break with issue with highest reward.
 
     # make sure to have an issue to work on
     do_trade if @issue_workingon.nil?
@@ -164,7 +215,7 @@ class Bmxsim_Worker_Treatment_NoMetrics
 end
 
 
-class Bmxsim_Worker_Treatment_HealthMetrics
+class Bmxsim_Worker_Treatment_HealthMetricsNoPrices
   def initialize(bmx_user, issue_tracker, skill=nil)
     @bmx_user = bmx_user
     @uuid = bmx_user.uuid
@@ -176,6 +227,39 @@ class Bmxsim_Worker_Treatment_HealthMetrics
   end
   def do_work
     # decide what issue to work on
+
+    # MR: Not fully fleshed out yet. The idea is as follows:
+    # => Health Metrics used to compute a "difficulty estimate or likelihood",
+    # => referred to as diff_estimate. Workers choose to work on issues where
+    # => the maturation date allows sufficient time given diff_estimate. This is
+    # => similar to the NoPricesNoMetrics_FullTaskInfoNoTimeLimit treatment.
+
+  end
+  def do_trade
+    # decide what to trade on bugmark
+  end
+end
+
+
+class Bmxsim_Worker_Treatment_HealthMetricsWithPrices
+  def initialize(bmx_user, issue_tracker, skill=nil)
+    @bmx_user = bmx_user
+    @uuid = bmx_user.uuid
+    @tracker = issue_tracker
+    @skill = skill
+  end
+  def uuid
+    @uuid
+  end
+  def do_work
+    # decide what issue to work on
+
+    # MR: Not fully fleshed out yet. The idea is as follows:
+    # => Health Metrics used to compute a "difficulty estimate or likelihood",
+    # => referred to as diff_estimate. Workers choose to work on issues with the
+    # => highest reward subject to the maturation date allowing sufficient time
+    # => given diff_estimate. 
+
   end
   def do_trade
     # decide what to trade on bugmark
@@ -214,6 +298,54 @@ class Bmxsim_Worker_Treatment_BothMetrics
   end
   def do_work
     # decide what issue to work on
+  end
+  def do_trade
+    # decide what to trade on bugmark
+  end
+end
+
+
+class Bmxsim_Worker_Treatment_NoPricesNoMetrics_FullTaskInfoNoTimeLimit
+  def initialize(bmx_user, issue_tracker, skill=nil)
+    @bmx_user = bmx_user
+    @uuid = bmx_user.uuid
+    @tracker = issue_tracker
+    @skill = skill
+  end
+  def uuid
+    @uuid
+  end
+  def do_work
+    # decide what issue to work on
+    # MR: No time limit to complete all tasks so no packing problem to solve.
+    # Instead workers pick the issue where the maturation date and difficulty
+    # level being such that there is enough time to complete the issue and get
+    # paid. If not enough time for any issues then workers do not work! Why
+    # bother working knowing you will not be paid?
+
+  end
+  def do_trade
+    # decide what to trade on bugmark
+  end
+end
+
+
+class Bmxsim_Worker_Treatment_NoPricesNoMetrics_FullTaskInfoWithTimeLimit
+  def initialize(bmx_user, issue_tracker, skill=nil)
+    @bmx_user = bmx_user
+    @uuid = bmx_user.uuid
+    @tracker = issue_tracker
+    @skill = skill
+  end
+  def uuid
+    @uuid
+  end
+  def do_work
+    # decide what issue to work on
+    # MR: full task information means that workers know the difficulty of the
+    # open issues. Workers are, however, myopic. So at each decision, solve the
+    # packing problem with "eligible" issues and pick first issue in the
+    # solution (highest reward issue greedily)
   end
   def do_trade
     # decide what to trade on bugmark
