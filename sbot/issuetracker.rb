@@ -105,7 +105,7 @@ class Bmxsim_IssueTracker
     end
     return result
   end
-  def get_highest_paying_offer(max_cost=nil)
+  def get_highest_paying_offer(max_cost=0)
     offer = nil
     @issues.each do |iss|
       iss_off = iss.get_highest_paying_offer(max_cost)
