@@ -10,7 +10,7 @@ require File.expand_path("~/src/bugmark/config/environment")
 class Bmxsim_Issue
   def initialize(id, repo_uuid, project=1, difficulty=1)
     @status = 'open'  # closed or open
-    @progress = 0  # percentage of completion
+    @progress = 0.0  # percentage of completion
     @project = project  # in the simulation we have different projects
     @difficulty = difficulty  # difficulty level of issue
     @id = id  # id of this issue
@@ -41,9 +41,9 @@ class Bmxsim_Issue
   end
   def work(effort)
     # figure out how much work is left to do
-    @progress = [(1.0*effort/@difficulty*100).ceil,1].min
+    @progress = [(100.0*effort/@difficulty).ceil,100].min
     # close issue, if work is complete
-    close unless @progress < 1
+    close unless @progress < 100
   end
   def add_offer_bu(offer)
     offer[:issue_id] = @id
