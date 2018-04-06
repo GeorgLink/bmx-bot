@@ -120,5 +120,5 @@ puts ""
 end
 
 puts "-- simulation finished --"
-bindings.pry
+binding.pry
 # FINI
