@@ -33,6 +33,9 @@ class Bmxsim_Issue
   def get_status
     @status
   end
+  def get_progress
+    @progress
+  end
   def get_id
     @id
   end

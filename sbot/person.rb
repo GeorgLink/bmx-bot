@@ -125,15 +125,28 @@ class Bmxsim_Funder_RandomPay
 end
 
 class Bmxsim_Worker_Treatment_NoMetrics
-  def initialize(bmx_user, issue_tracker, skill=nil)
+  def initialize(bmx_user, issue_tracker, skill=nil, name='workerx')
     @bmx_user = bmx_user
     @uuid = bmx_user.uuid
     @tracker = issue_tracker
     @skill = skill
     @issue_workingon = nil
+    @name = name
+  end
+  def get_name
+    @name
   end
   def uuid
     @uuid
+  end
+  def get_skill
+    @skill
+  end
+  def issue_status
+    if @issue_workingon.nil?
+      return 'no issue in works'
+    end
+    return "#{@issue_workingon.get_progress}% #{@issue_workingon.get_status}"
   end
   def do_work
     # decide what issue to work on

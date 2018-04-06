@@ -76,7 +76,7 @@ workers = []
   STDOUT.write "\rcreate workers: #{worker_id} / #{NUMBER_OF_WORKERS}"
   worker = FB.create(:user, email: "worker#{worker_id}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
   skill = (1..3).to_a.sample
-  workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker, repo, skill))
+  workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker, repo, skill, 'w#{worker_id}'))
   # group_size = NUMBER_OF_WORKERS/4
   # case worker_id
   # when (1..group_size)
@@ -93,16 +93,21 @@ puts ""
 
 # loop for each day
 (1..SIMULATION_DAYS).to_a.each do |day|
-  print "#{day}: "
+  puts "Day #{day}: #{BugmTime.now}"
+  # print "#{day}: "
   # call funders in a random order
   funders.shuffle.each do |funder|
-    print "f"
+    # print "f"
     funder.do_work
   end
   # call workers in a random order
   workers.shuffle.each do |worker|
-    print "w"
+    # print "w"
     worker.do_work
+    amendments = Position.where(user_uuid: worker.uuid).pluck('amendment_uuid')
+    contracts = Amendment.where(uuid: amendments).pluck('contract_uuid')
+    maturation = Contract.open.where(uuid: contracts).pluck('maturation')
+    puts "worker[#{worker.get_name}:#{worker.get_skill}]: #{worker.issue_status} | contract: #{maturation}"
   end
   # go to next day
   puts " next day"
