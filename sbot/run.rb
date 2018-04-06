@@ -119,5 +119,6 @@ puts ""
   puts " DAY COMPLETE" ; STDOUT.flush
 end
 
+puts "-- simulation finished --"
 
 # FINI
