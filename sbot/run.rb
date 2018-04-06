@@ -33,6 +33,13 @@ SIMULATION_DAYS = 30
 BMX_SAVE_EVENTS  = "FALSE"
 BMX_SAVE_METRICS = "FALSE"
 
+require 'io/console'
+def continue_story
+  print "press any key"
+  STDIN.getch
+  print "            \r" # extra space to overwrite in case next sentence is short
+end
+
 puts "----- BUGMARK BOT -------------------------------------------"
 puts "START #{Time.now} | C-c to exit"
 puts "Process Name: #{PROCNAME}"
@@ -44,6 +51,8 @@ require File.expand_path("~/src/bugmark/config/environment")
 # delete all host data and create admin user
 BugmHost.reset
 BugmTime.set_day_offset(-1 * SIMULATION_DAYS)
+
+puts "Simulate #{SIMULATION_DAYS}, starting on #{BugmTime.now}"
 
 # simulation classes
 require_relative 'issuetracker'
@@ -122,6 +131,7 @@ puts ""
   end
   #signal end of day
   puts " DAY COMPLETE" ; STDOUT.flush
+  continue_story
 end
 
 puts "-- simulation finished --"
