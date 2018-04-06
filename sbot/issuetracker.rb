@@ -53,9 +53,11 @@ class Bmxsim_Issue
     offer = nil
     @open_offer_bu.each do |off|
       binding.pry
-      if max_cost.nil? XOR (max_cost > ((1-off[:price])*off[:volume]))
+      if max_cost.nil
         offer = off if offer.nil?
-        offer = off if offer[:price]<off[:price]
+        unless max_cost > ((1-off[:price])*off[:volume])
+          offer = off if offer[:value]<off[:value]
+        end
       end
     end
     return offer
