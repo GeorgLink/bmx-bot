@@ -55,7 +55,7 @@ class Bmxsim_Issue
       binding.pry
       offer = off if offer.nil?
       if max_cost == 0 || max_cost > ((1-off[:price])*off[:volume])
-        offer = off if offer[:value]<off[:value]
+        offer = off if offer[:value]<off[:offer][:value]
       end
     end
     return offer
@@ -111,7 +111,7 @@ class Bmxsim_IssueTracker
       iss_off = iss.get_highest_paying_offer(max_cost)
       unless iss_off.nil?
         offer = iss_off if offer.nil?
-        offer = iss_off if offer[:price] < iss_off[:price]
+        offer = iss_off if offer[:value] < iss_off[:offer][:value]
       end
     end
     return offer
