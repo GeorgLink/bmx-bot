@@ -131,7 +131,7 @@ puts ""
   end
   #signal end of day
   puts " DAY COMPLETE" ; STDOUT.flush
-  continue_story
+  # continue_story
 end
 
 puts "-- simulation finished --"
