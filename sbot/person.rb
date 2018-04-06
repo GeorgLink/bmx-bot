@@ -149,7 +149,8 @@ class Bmxsim_Worker_Treatment_NoMetrics
   end
   def do_trade
     # decide what to trade on bugmark
-    offer = @tracker.get_highest_paying_offer
+    @bmx_user.reload  # update user from db
+    offer = @tracker.get_highest_paying_offer(@bmx_user[:balance])
     unless offer.nil?
       projection = OfferCmd::CreateCounter.new(offer[:offer], {user_uuid: @uuid}).project
       counter = projection.offer
