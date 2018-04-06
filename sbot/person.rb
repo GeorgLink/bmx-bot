@@ -158,8 +158,8 @@ class Bmxsim_Worker_Treatment_NoMetrics
       unless counter.valid?
         # binding.pry
         ContractCmd::Cross.new(counter, :expand).project
-        @tracker.remove_offer(offer)
         @issue_workingon = @tracker.get_issue(offer[:issue_id])
+        @tracker.remove_offer(offer)
       end
     end
 
