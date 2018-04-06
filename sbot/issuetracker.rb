@@ -52,7 +52,7 @@ class Bmxsim_Issue
   def get_highest_paying_offer(max_cost=nil)
     offer = nil
     @open_offer_bu.each do |off|
-      if max_cost.nil? OR max_cost >= ((1-off[:price])*off[:volume])
+      if max_cost.nil? XOR max_cost >= ((1-off[:price])*off[:volume])
         offer = off if offer.nil?
         offer = off if offer[:price]<off[:price]
       end
