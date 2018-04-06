@@ -49,7 +49,7 @@ class Bmxsim_Funder_InversePay
         price: (1.0/(issue.get_difficulty+1)).round(2),
         volume: 100,
         stm_issue_uuid: issue.uuid,
-        maturation: BugmTime.next_week_ends[2]
+        maturation: BugmTime.next_week_ends[1]
       }
       offer = FB.create(:offer_bu, args).offer
       ContractCmd::Cross.new(offer, :expand).project
@@ -132,6 +132,7 @@ class Bmxsim_Worker_Treatment_NoMetrics
     @skill = skill
     @issue_workingon = nil
     @name = name
+    @last_issue
   end
   def get_name
     @name
