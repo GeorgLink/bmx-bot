@@ -22,8 +22,8 @@ trap "SIGTERM" do
 end
 
 # SIMULATION PARAMETERS
-NUMBER_OF_WORKERS = 4
-NUMBER_OF_FUNDERS = 4
+NUMBER_OF_WORKERS = 1
+NUMBER_OF_FUNDERS = 1
 NUMBER_OF_ISSUES = 10
 FUNDER_STARTING_BALANCE = 100000000
 WORKER_STARTING_BALANCE = 100
@@ -58,16 +58,17 @@ funders = []
 (1..NUMBER_OF_FUNDERS).to_a.each do |funder_id|
   STDOUT.write "\rcreate funders: #{funder_id} / #{NUMBER_OF_FUNDERS}"
   funder = FB.create(:user, email: "funder#{funder_id}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
-  case funder_id
-  when 1
-    funders.push(Bmxsim_Funder_InversePay.new(funder, repo))
-  when 2
-    funders.push(Bmxsim_Funder_CorrelatedPay.new(funder, repo))
-  when 3
-    funders.push(Bmxsim_Funder_FixedPay.new(funder, repo))
-  else
-    funders.push(Bmxsim_Funder_RandomPay.new(funder, repo))
-  end
+  funders.push(Bmxsim_Funder_InversePay.new(funder, repo))
+  # case funder_id
+  # when 1
+  #   funders.push(Bmxsim_Funder_InversePay.new(funder, repo))
+  # when 2
+  #   funders.push(Bmxsim_Funder_CorrelatedPay.new(funder, repo))
+  # when 3
+  #   funders.push(Bmxsim_Funder_FixedPay.new(funder, repo))
+  # else
+  #   funders.push(Bmxsim_Funder_RandomPay.new(funder, repo))
+  # end
 end
 puts ""
 workers = []
@@ -75,17 +76,18 @@ workers = []
   STDOUT.write "\rcreate workers: #{worker_id} / #{NUMBER_OF_WORKERS}"
   worker = FB.create(:user, email: "worker#{worker_id}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
   skill = (1..3).to_a.sample
-  group_size = NUMBER_OF_WORKERS/4
-  case worker_id
-  when (1..group_size)
-    workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker, repo, skill))
-  when ((group_size+1)..(2*group_size))
-    workers.push(Bmxsim_Worker_Treatment_HealthMetrics.new(worker, repo, skill))
-  when ((2*group_size+1)..(3*group_size))
-    workers.push(Bmxsim_Worker_Treatment_MarketMetrics.new(worker, repo, skill))
-  else
-    workers.push(Bmxsim_Worker_Treatment_BothMetrics.new(worker, repo, skill))
-  end
+  workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker, repo, skill))
+  # group_size = NUMBER_OF_WORKERS/4
+  # case worker_id
+  # when (1..group_size)
+  #   workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker, repo, skill))
+  # when ((group_size+1)..(2*group_size))
+  #   workers.push(Bmxsim_Worker_Treatment_HealthMetrics.new(worker, repo, skill))
+  # when ((2*group_size+1)..(3*group_size))
+  #   workers.push(Bmxsim_Worker_Treatment_MarketMetrics.new(worker, repo, skill))
+  # else
+  #   workers.push(Bmxsim_Worker_Treatment_BothMetrics.new(worker, repo, skill))
+  # end
 end
 puts ""
 
