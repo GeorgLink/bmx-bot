@@ -152,7 +152,9 @@ class Bmxsim_Worker_Treatment_NoMetrics
     offer = @tracker.get_highest_paying_offer
     binding.pry
     unless offer.nil?
-      counter = OfferCmd::CreateCounter.new(offer[:offer], {user_uuid: @uuid}).project.offer
+      projection = OfferCmd::CreateCounter.new(offer[:offer], {user_uuid: @uuid}).project
+      binding.pry unless projection.valid?
+      counter = projection.offer
       unless counter.valid?
         # binding.pry
         ContractCmd::Cross.new(counter, :expand).project
