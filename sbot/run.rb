@@ -24,11 +24,12 @@ end
 # SIMULATION PARAMETERS
 NUMBER_OF_WORKERS = 4
 NUMBER_OF_FUNDERS = 4  # equals number of projects
-NUMBER_OF_ISSUES = 10
+NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 1  # equals number of offers created; #issue=#offer
+MATURATION_DAYS_IN_FUTURE = 7 # end of:  0 = today, 1 = tomorrow
 FUNDER_STARTING_BALANCE = 100000000
 WORKER_STARTING_BALANCE = 0
 WORKER_SKILLS = [1]  # ability to randomly create workers with different skills
-SIMULATION_DAYS = 14
+RUN_SIMULATION_DAYS = 14
 
 # run in turbo mode
 BMX_SAVE_EVENTS  = "FALSE"
@@ -102,7 +103,7 @@ end
 puts ""
 
 # loop for each day
-(1..SIMULATION_DAYS).to_a.each do |day|
+(1..RUN_SIMULATION_DAYS).to_a.each do |day|
   puts "Day #{day}: #{BugmTime.now}"
   # print "#{day}: "
   # call funders in a random order
@@ -130,12 +131,12 @@ puts ""
   end
   #signal end of day
   puts " DAY COMPLETE" ; STDOUT.flush
-  # continue_story
+  # continue_story  # wait for key press
 end
 
-puts "-- simulation finished --"
+puts "--------------------------- simulation finished ---------------------------"
 # Calling binding.pry to allow investigating the state of the simulation
-# Type "c" to continue and end the program 
+# Type "c" to continue and end the program
 binding.pry
 puts 'FINI'
 # FINI

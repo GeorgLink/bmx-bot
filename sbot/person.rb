@@ -9,65 +9,8 @@
 # #  FUNDERS
 # ##################################################
 
-# pays less for difficult tasks
-class Bmxsim_Funder_InversePay
-  def initialize(bmx_user, issue_tracker, skill=nil)
-    @bmx_user = bmx_user
-    @uuid = bmx_user.uuid
-    @tracker = issue_tracker
-    @skill = skill
-    @project = 1
-  end
-  def uuid
-    @uuid
-  end
-  def do_work
-    # create twelve issues
-    (1..1).to_a.each do
-      issue = @tracker.open_issue(@project)
-
-      # args is a hash
-      args  = {
-        user_uuid: @uuid,
-        price: (1.0/(issue.get_difficulty+1)).round(2),
-        volume: 100,
-        stm_issue_uuid: issue.uuid,
-        maturation: BugmTime.next_week_ends[1]
-      }
-      offer = FB.create(:offer_bu, args).offer
-      ContractCmd::Cross.new(offer, :expand).project
-      args[:offer] = offer
-      issue.add_offer_bu(args)
-      # binding.pry
-    end
-  end
-  def do_trade
-    # decide what to trade on bugmark
-  end
-end
-
-# pays more for difficult tasks
-class Bmxsim_Funder_CorrelatedPay
-  def initialize(bmx_user, issue_tracker, skill=nil)
-    @bmx_user = bmx_user
-    @uuid = bmx_user.uuid
-    @tracker = issue_tracker
-    @skill = skill
-    @project = 2
-  end
-  def uuid
-    @uuid
-  end
-  def do_work
-    # decide what issue to work on
-  end
-  def do_trade
-    # decide what to trade on bugmark
-  end
-end
-
-# pays always same amount
-class Bmxsim_Funder_FixedPay
+# template for funders
+class Bmxsim_Funder
   def initialize(bmx_user, issue_tracker, proj_number)
     @bmx_user = bmx_user
     @uuid = bmx_user.uuid
@@ -79,19 +22,27 @@ class Bmxsim_Funder_FixedPay
     @uuid
   end
   def do_work
+    # function being called by simulation for funder to do something
+  end
+end
+
+# pays always same amount
+class Bmxsim_Funder_FixedPay < Bmxsim_Funder
+  def do_work
+    # function being called by simulation for funder to do something
 
     # Create n issues and one offer each
-    n = 1
+    n = NUMBER_OF_ISSUES_DAILY_PER_FUNDER
     (1..n).to_a.each do
       issue = @tracker.open_issue(@project)
 
       # args is a hash
       args  = {
         user_uuid: @uuid,
-        price: 1,  # always fixed price 1
+        price: 1.00,  # always fixed price 1
         volume: 100,
         stm_issue_uuid: issue.uuid,
-        maturation: BugmTime.end_of_day(7)  # always 7 days in the future
+        maturation: BugmTime.end_of_day(MATURATION_DAYS_IN_FUTURE)
       }
       offer = FB.create(:offer_bu, args).offer
       ContractCmd::Cross.new(offer, :expand).project
@@ -99,29 +50,91 @@ class Bmxsim_Funder_FixedPay
       # issue.add_offer_bu(args)
     end
   end
-  def do_trade
-    # decide what to trade on bugmark
+end
+
+
+# pays less for difficult tasks
+class Bmxsim_Funder_InversePay < Bmxsim_Funder
+  def do_work
+    # function being called by simulation for funder to do something
+
+    # Create n issues and one offer each
+    n = NUMBER_OF_ISSUES_DAILY_PER_FUNDER
+    (1..n).to_a.each do
+      issue = @tracker.open_issue(@project)
+
+      # args is a hash
+      args  = {
+        user_uuid: @uuid,
+        price: (1.0/(issue.get_difficulty+1)).round(2),
+        volume: 100,
+        stm_issue_uuid: issue.uuid,
+        maturation: BugmTime.end_of_day(MATURATION_DAYS_IN_FUTURE)
+      }
+      offer = FB.create(:offer_bu, args).offer
+      ContractCmd::Cross.new(offer, :expand).project
+      args[:offer] = offer
+      issue.add_offer_bu(args)
+      # binding.pry
+    end
+  end
+end
+
+
+# pays more for difficult tasks
+class Bmxsim_Funder_CorrelatedPay < Bmxsim_Funder
+  def do_work
+    # function being called by simulation for funder to do something
+
+    # Create n issues and one offer each
+    n = NUMBER_OF_ISSUES_DAILY_PER_FUNDER
+    (1..n).to_a.each do
+      issue = @tracker.open_issue(@project)
+
+      # args is a hash
+      args  = {
+        user_uuid: @uuid,
+        price: (1.0*(issue.get_difficulty+1)/4).round(2),
+        volume: 100,
+        stm_issue_uuid: issue.uuid,
+        maturation: BugmTime.end_of_day(MATURATION_DAYS_IN_FUTURE)
+      }
+      offer = FB.create(:offer_bu, args).offer
+      ContractCmd::Cross.new(offer, :expand).project
+      args[:offer] = offer
+      issue.add_offer_bu(args)
+      # binding.pry
+    end
   end
 end
 
 
 # pays a random price
-class Bmxsim_Funder_RandomPay
-  def initialize(bmx_user, issue_tracker, skill=nil)
-    @bmx_user = bmx_user
-    @uuid = bmx_user.uuid
-    @tracker = issue_tracker
-    @skill = skill
-    @project = 4
-  end
-  def uuid
-    @uuid
-  end
+class Bmxsim_Funder_RandomPay < Bmxsim_Funder
   def do_work
-    # decide what issue to work on
-  end
-  def do_trade
-    # decide what to trade on bugmark
+    # function being called by simulation for funder to do something
+
+    prices = [1.00, 0.75, 0.50, 0.25]  # available prices
+
+    # Create n issues and one offer each
+    n = NUMBER_OF_ISSUES_DAILY_PER_FUNDER
+    (1..n).to_a.each do
+      issue = @tracker.open_issue(@project)
+
+      # args is a hash
+      args  = {
+        user_uuid: @uuid,
+        price: prices.sample,  # randomly choose one of the prices
+        volume: 100,
+        stm_issue_uuid: issue.uuid,
+        maturation: BugmTime.end_of_day(MATURATION_DAYS_IN_FUTURE)
+      }
+      offer = FB.create(:offer_bu, args).offer
+      ContractCmd::Cross.new(offer, :expand).project
+      # args[:offer] = offer
+      # issue.add_offer_bu(args)
+    end
+
   end
 end
 
