@@ -186,6 +186,7 @@ class Bmxsim_Worker_Treatment_NoMetrics
     # decide what to trade on bugmark
 
     # select first by maturation range, at least 2 days in the future
+    matures_after_days = 2
     #   the 90 day end is chosen arbitrarily
     offers = Offer.by_maturation_range(BugmTime.end_of_day(matures_after_days)..BugmTime.end_of_day(90))
     # then filter by unassigned, since we want offers that are still up for the taking
