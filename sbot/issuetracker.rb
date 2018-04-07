@@ -17,7 +17,7 @@ class Bmxsim_Issue
     @bmx_issue = FB.create(:issue, stm_repo_uuid: repo_uuid, exid: id, stm_status: "open").issue
     @uuid = @bmx_issue.uuid
     # puts "New issue (#{@id}) with uuid: #{@uuid}"
-    @open_offer_bu = []
+    # @open_offer_bu = []
   end
   def uuid
     @uuid
@@ -48,35 +48,35 @@ class Bmxsim_Issue
     # close issue, if work is complete
     close unless @progress < 100
   end
-  def add_offer_bu(offer)
-    offer[:issue_id] = @id
-    @open_offer_bu.push(offer)
-  end
-  def get_highest_paying_offer(max_cost=0)
-    offer = nil
-    @open_offer_bu.each do |off|
-      off[:offer].reload
-      if off[:offer][:status] != "open"
-        remove_offer(off)
-        next
-      end
-      offer = off if offer.nil?
-      if max_cost == 0 || max_cost > ((1-off[:price])*off[:volume])
-        # binding.pry
-        offer = off if offer[:offer][:value]<off[:offer][:value]
-      end
-    end
-    return offer
-  end
-  def remove_offer(offer)
-    @open_offer_bu.delete(offer)
-  end
-  def remove_offer_by_uuid(uuid)
-    offer = nil
-    @open_offer_bu.each do |off|
-      offer = off if off[:offer][:uuid] == uuid
-    end
-  end
+  # def add_offer_bu(offer)
+  #   offer[:issue_id] = @id
+  #   @open_offer_bu.push(offer)
+  # end
+  # def get_highest_paying_offer(max_cost=0)
+  #   offer = nil
+  #   @open_offer_bu.each do |off|
+  #     off[:offer].reload
+  #     if off[:offer][:status] != "open"
+  #       remove_offer(off)
+  #       next
+  #     end
+  #     offer = off if offer.nil?
+  #     if max_cost == 0 || max_cost > ((1-off[:price])*off[:volume])
+  #       # binding.pry
+  #       offer = off if offer[:offer][:value]<off[:offer][:value]
+  #     end
+  #   end
+  #   return offer
+  # end
+  # def remove_offer(offer)
+  #   @open_offer_bu.delete(offer)
+  # end
+  # def remove_offer_by_uuid(uuid)
+  #   offer = nil
+  #   @open_offer_bu.each do |off|
+  #     offer = off if off[:offer][:uuid] == uuid
+  #   end
+  # end
 end
 
 class Bmxsim_IssueTracker
@@ -90,7 +90,9 @@ class Bmxsim_IssueTracker
     @uuid
   end
   def add_project(proj_number)
-    bmx_repo = FB.create(:repo).repo
+
+    bmx_repo = RepoCmd::Sync.new({name: 'TestRepo'+proj_number.to_s, type: 'Repo::Test'}).project.repo
+    # bmx_repo = FB.create(:repo).repo
     # @project_bmx_repo.insert(proj_number, bmx_repo)
     @project_bmx_repo_uuid.insert(proj_number, bmx_repo.uuid)
     return bmx_repo.uuid
@@ -128,17 +130,17 @@ class Bmxsim_IssueTracker
     end
     return result
   end
-  def get_highest_paying_offer(max_cost=0)
-    offer = nil
-    @issues.each do |iss|
-      iss_off = iss.get_highest_paying_offer(max_cost)
-      unless iss_off.nil?
-        offer = iss_off if offer.nil?
-        offer = iss_off if offer[:offer][:value] < iss_off[:offer][:value]
-      end
-    end
-    return offer
-  end
+  # def get_highest_paying_offer(max_cost=0)
+  #   offer = nil
+  #   @issues.each do |iss|
+  #     iss_off = iss.get_highest_paying_offer(max_cost)
+  #     unless iss_off.nil?
+  #       offer = iss_off if offer.nil?
+  #       offer = iss_off if offer[:offer][:value] < iss_off[:offer][:value]
+  #     end
+  #   end
+  #   return offer
+  # end
   def get_highest_paying_offer_db(max_cost=0)
     # select first by maturation range, at least 2 days in the future
     #   the 90 day end is chosen arbitrarily
