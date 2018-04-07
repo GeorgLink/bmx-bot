@@ -67,7 +67,7 @@ funders = []
 (1..NUMBER_OF_FUNDERS).to_a.each do |funder_id|
   STDOUT.write "\rcreate funders: #{funder_id} / #{NUMBER_OF_FUNDERS}"
   funder = FB.create(:user, email: "funder#{funder_id}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
-  funders.push(Bmxsim_Funder_FixedPay.new(funder, issue_tracker))
+  funders.push(Bmxsim_Funder_FixedPay.new(funder, issue_tracker, funder_id))
   # case funder_id
   # when 1
   #   funders.push(Bmxsim_Funder_InversePay.new(funder, issue_tracker))
