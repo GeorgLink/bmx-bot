@@ -120,9 +120,9 @@ puts ""
   puts " next day"
   BugmTime.go_past_end_of_day
   # resolve contracts
+  STDOUT.write "resolve contracts: 0 / 0"
   counter = 0
   max_counter = Contract.pending_resolution.count
-  STDOUT.write "\rresolve contracts: 0 / #{max_counter}"
   Contract.pending_resolution.each do |contract|
     counter += 1
     STDOUT.write "\rresolve contracts: #{counter} / #{max_counter}"
