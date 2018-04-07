@@ -52,9 +52,9 @@ require File.expand_path("~/src/bugmark/config/environment")
 
 # delete all host data and create admin user
 BugmHost.reset
-BugmTime.set_day_offset(-1 * SIMULATION_DAYS)
+BugmTime.set_day_offset(-1 * RUN_SIMULATION_DAYS)
 
-puts "Simulate #{SIMULATION_DAYS}, starting on #{BugmTime.now}"
+puts "Simulate #{RUN_SIMULATION_DAYS}, starting on #{BugmTime.now}"
 
 # simulation classes
 require_relative 'issuetracker'
