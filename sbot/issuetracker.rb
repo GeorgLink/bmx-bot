@@ -128,6 +128,19 @@ class Bmxsim_IssueTracker
     end
     return offer
   end
+  def get_highest_paying_offer_db(max_cost=0)
+    # select first by maturation range, at least 2 days in the future
+    #   the 90 day end is chosen arbitrarily
+    offers = Offer.by_maturation_range(BugmTime.end_of_day(2)..BugmTime.end_of_day(90))
+    # then filter by unassigned, since we want offers that are still up for the taking
+    offers = offers.unassigned
+    # then filter by max_cost to counter the offer
+    offers = offers.where('((1-price)*volume) <= '+max_cost)
+    # then get the most paying
+    offer = offers.order('value desc').first
+    return nil unless offer.valid?
+    return offer
+  end
   def remove_offer(offer)
     get_issue(offer[:issue_id]).remove_offer(offer)
   end
