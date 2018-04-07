@@ -240,7 +240,7 @@ class Bmxsim_Worker_Treatment_NoMetricsNoPrices < Bmxsim_Worker
     # randomly select an offer
     offer = Offer.where(uuid: offers_uuid.sample).first
 
-    if offer.valid?
+    if !offer.nil? && offer.valid?
       projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
       counter = projection.offer
       if counter.valid?
