@@ -117,7 +117,7 @@ puts ""
     worker.do_work
     amendments = Position.where(user_uuid: worker.uuid).pluck('amendment_uuid')
     contracts = Amendment.where(uuid: amendments).pluck('contract_uuid')
-    maturation = Contract.open.where(uuid: contracts).last.pluck('maturation')
+    maturation = Contract.open.where(uuid: contracts).pluck('maturation').last
     puts "worker[#{worker.get_name}:#{worker.get_skill}](#{worker.get_balance}): #{worker.issue_status} | contract: #{maturation}"
   end
   # go to next day
