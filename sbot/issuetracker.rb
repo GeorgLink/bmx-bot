@@ -66,6 +66,12 @@ class Bmxsim_Issue
   def remove_offer(offer)
     @open_offer_bu.delete(offer)
   end
+  def remove_offer_by_uuid(uuid)
+    offer = nil
+    @open_offer_bu.each do |off|
+      offer = off if off[:offer][:uuid] == uuid
+    end
+  end
 end
 
 class Bmxsim_IssueTracker
@@ -143,5 +149,8 @@ class Bmxsim_IssueTracker
   end
   def remove_offer(offer)
     get_issue(offer[:issue_id]).remove_offer(offer)
+  end
+  def remove_offer_by_uuid(issue_id, uuid)
+    get_issue(issue_id).remove_offer_by_uuid(uuid)
   end
 end
