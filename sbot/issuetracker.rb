@@ -10,7 +10,7 @@ require File.expand_path("~/src/bugmark/config/environment")
 class Bmxsim_Issue
   def initialize(id, repo_uuid, project=1, difficulty=1)
     @status = 'open'  # closed or open
-    @progress = 0.0  # percentage of completion
+    @progress = 0  # percentage of completion
     @project = project  # in the simulation we have different projects
     @difficulty = difficulty  # difficulty level of issue
     @id = id  # id of this issue
