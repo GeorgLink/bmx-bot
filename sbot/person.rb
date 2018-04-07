@@ -38,7 +38,6 @@ class Bmxsim_Funder_InversePay
     @uuid
   end
   def do_work
-    # decide what issue to work on
     # create twelve issues
     (1..1).to_a.each do
       issue = @tracker.open_issue(@project)
@@ -96,7 +95,25 @@ class Bmxsim_Funder_FixedPay
     @uuid
   end
   def do_work
-    # decide what issue to work on
+
+    # Create n issues and one offer each
+    n = 1
+    (1..n).to_a.each do
+      issue = @tracker.open_issue(@project)
+
+      # args is a hash
+      args  = {
+        user_uuid: @uuid,
+        price: 1,  # always fixed price 1
+        volume: 100,
+        stm_issue_uuid: issue.uuid,
+        maturation: BugmTime.end_of_day(7)  # always 7 days in the future
+      }
+      offer = FB.create(:offer_bu, args).offer
+      ContractCmd::Cross.new(offer, :expand).project
+      args[:offer] = offer
+      issue.add_offer_bu(args)
+    end
   end
   def do_trade
     # decide what to trade on bugmark
