@@ -135,7 +135,7 @@ class Bmxsim_IssueTracker
     # then filter by unassigned, since we want offers that are still up for the taking
     offers = offers.unassigned
     # then filter by max_cost to counter the offer
-    offers = offers.where('((1-price)*volume) <= '+max_cost)
+    offers = offers.where('((1-price)*volume) <= '+max_cost.to_s)
     # then get the most paying
     offer = offers.order('value desc').first
     return nil unless offer.valid?
