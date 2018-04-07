@@ -69,21 +69,30 @@ class Bmxsim_Issue
 end
 
 class Bmxsim_IssueTracker
-  def initialize(bmx_repo)
+  def initialize()
     @issues = []
-    @bmx_repo = bmx_repo
-    @uuid = @bmx_repo.uuid
+    @project_bmx_repo = []
+    @project_bmx_repo_uuid = []
     # puts "New Issue tracker, with uuid: #{@uuid}"
   end
   def uuid
     @uuid
+  end
+  def add_project(proj_number)
+    bmx_repo = FB.create(:repo).repo
+    bmx_repos.insert(proj_number, bmx_repo)
+    @project_bmx_repo_uuid.insert(proj_number, bmx_repo.uuid)
+    return bmx_repo.uuid
+  end
+  def get_project_repo_uuid(proj_number)
+    @project_bmx_repo_uuid.fetch(proj_number)
   end
   def open_issue(project=1, difficulty=0)
     # puts "new issue #{(@issues.count+1)}"
     if difficulty == 0 then
       difficulty = (1..3).to_a.sample
     end
-    iss = Bmxsim_Issue.new((@issues.count+1), @uuid, project, difficulty)
+    iss = Bmxsim_Issue.new((@issues.count+1), get_project_repo_uuid(project), project, difficulty)
     @issues.push(iss)
     return @issues.last
   end

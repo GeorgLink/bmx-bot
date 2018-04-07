@@ -23,7 +23,7 @@ end
 
 # SIMULATION PARAMETERS
 NUMBER_OF_WORKERS = 4
-NUMBER_OF_FUNDERS = 4
+NUMBER_OF_FUNDERS = 4  # equals number of projects
 NUMBER_OF_ISSUES = 10
 FUNDER_STARTING_BALANCE = 100000000
 WORKER_STARTING_BALANCE = 0
@@ -59,25 +59,24 @@ puts "Simulate #{SIMULATION_DAYS}, starting on #{BugmTime.now}"
 require_relative 'issuetracker'
 require_relative 'person'
 
-# create repository
-bmx_repo = FB.create(:repo).repo
-repo = Bmxsim_IssueTracker.new(bmx_repo)
+# create Issue Tracker
+issue_tracker = Bmxsim_IssueTracker.new
 
 # create funders and workers
 funders = []
 (1..NUMBER_OF_FUNDERS).to_a.each do |funder_id|
   STDOUT.write "\rcreate funders: #{funder_id} / #{NUMBER_OF_FUNDERS}"
   funder = FB.create(:user, email: "funder#{funder_id}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
-  funders.push(Bmxsim_Funder_FixedPay.new(funder, repo))
+  funders.push(Bmxsim_Funder_FixedPay.new(funder, issue_tracker))
   # case funder_id
   # when 1
-  #   funders.push(Bmxsim_Funder_InversePay.new(funder, repo))
+  #   funders.push(Bmxsim_Funder_InversePay.new(funder, issue_tracker))
   # when 2
-  #   funders.push(Bmxsim_Funder_CorrelatedPay.new(funder, repo))
+  #   funders.push(Bmxsim_Funder_CorrelatedPay.new(funder, issue_tracker))
   # when 3
-  #   funders.push(Bmxsim_Funder_FixedPay.new(funder, repo))
+  #   funders.push(Bmxsim_Funder_FixedPay.new(funder, issue_tracker))
   # else
-  #   funders.push(Bmxsim_Funder_RandomPay.new(funder, repo))
+  #   funders.push(Bmxsim_Funder_RandomPay.new(funder, issue_tracker))
   # end
 end
 puts ""
@@ -87,17 +86,17 @@ workers = []
   worker = FB.create(:user, email: "worker#{worker_id}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
   # skill = (1..3).to_a.sample
   skill = WORKER_SKILLS.sample
-  workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker, repo, skill, "w#{worker_id}"))
+  workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker, issue_tracker, skill, "w#{worker_id}"))
   # group_size = NUMBER_OF_WORKERS/4
   # case worker_id
   # when (1..group_size)
-  #   workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker, repo, skill))
+  #   workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker, issue_tracker, skill))
   # when ((group_size+1)..(2*group_size))
-  #   workers.push(Bmxsim_Worker_Treatment_HealthMetrics.new(worker, repo, skill))
+  #   workers.push(Bmxsim_Worker_Treatment_HealthMetrics.new(worker, issue_tracker, skill))
   # when ((2*group_size+1)..(3*group_size))
-  #   workers.push(Bmxsim_Worker_Treatment_MarketMetrics.new(worker, repo, skill))
+  #   workers.push(Bmxsim_Worker_Treatment_MarketMetrics.new(worker, issue_tracker, skill))
   # else
-  #   workers.push(Bmxsim_Worker_Treatment_BothMetrics.new(worker, repo, skill))
+  #   workers.push(Bmxsim_Worker_Treatment_BothMetrics.new(worker, issue_tracker, skill))
   # end
 end
 puts ""

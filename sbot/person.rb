@@ -84,12 +84,13 @@ end
 
 # pays always same amount
 class Bmxsim_Funder_FixedPay
-  def initialize(bmx_user, issue_tracker, skill=nil)
+  def initialize(bmx_user, issue_tracker, proj_number)
     @bmx_user = bmx_user
     @uuid = bmx_user.uuid
     @tracker = issue_tracker
     @skill = skill
-    @project = 3
+    @project = proj_number
+    @proj_repo_uuid = @tracker.add_project(proj_number)
   end
   def uuid
     @uuid
