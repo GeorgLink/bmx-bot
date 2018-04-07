@@ -160,6 +160,10 @@ class Bmxsim_Worker_Treatment_NoMetrics
   def get_skill
     @skill
   end
+  def get_balance
+    @bmx_user.reload
+    @bmx_user[:balance]
+  end
   def issue_status
     if @issue_workingon.nil?
       return 'no issue in works'

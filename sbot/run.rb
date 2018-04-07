@@ -26,8 +26,9 @@ NUMBER_OF_WORKERS = 4
 NUMBER_OF_FUNDERS = 4
 NUMBER_OF_ISSUES = 10
 FUNDER_STARTING_BALANCE = 100000000
-WORKER_STARTING_BALANCE = 100
-SIMULATION_DAYS = 5
+WORKER_STARTING_BALANCE = 0
+WORKER_SKILLS = [1]  # ability to randomly create workers with different skills
+SIMULATION_DAYS = 14
 
 # run in turbo mode
 BMX_SAVE_EVENTS  = "FALSE"
@@ -85,7 +86,7 @@ workers = []
   STDOUT.write "\rcreate workers: #{worker_id} / #{NUMBER_OF_WORKERS}"
   worker = FB.create(:user, email: "worker#{worker_id}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
   # skill = (1..3).to_a.sample
-  skill = 1
+  skill = WORKER_SKILLS.sample
   workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker, repo, skill, "w#{worker_id}"))
   # group_size = NUMBER_OF_WORKERS/4
   # case worker_id
@@ -116,8 +117,8 @@ puts ""
     worker.do_work
     amendments = Position.where(user_uuid: worker.uuid).pluck('amendment_uuid')
     contracts = Amendment.where(uuid: amendments).pluck('contract_uuid')
-    maturation = Contract.open.where(uuid: contracts).pluck('maturation')
-    puts "worker[#{worker.get_name}:#{worker.get_skill}]: #{worker.issue_status} | contract: #{maturation}"
+    maturation = Contract.open.where(uuid: contracts).last.pluck('maturation')
+    puts "worker[#{worker.get_name}:#{worker.get_skill}](#{worker.get_balance}): #{worker.issue_status} | contract: #{maturation}"
   end
   # go to next day
   puts " next day"
