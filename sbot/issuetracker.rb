@@ -9,7 +9,7 @@ require File.expand_path("~/src/bugmark/config/environment")
 
 class Bmxsim_Issue
   def initialize(id, repo_uuid, project=1, difficulty=1)
-    @status = '  open'  # closed or open
+    @status = '   open'  # closed or open
     @progress = 0  # percentage of completion
     @project = project  # in the simulation we have different projects
     @difficulty = difficulty  # difficulty level of issue
@@ -25,7 +25,7 @@ class Bmxsim_Issue
     IssueCmd::Sync.new({exid: @id, stm_status: "closed"}).project
   end
   def reopen
-    @status = '  open '
+    @status = '   open '
     IssueCmd::Sync.new({exid: @id, stm_status: "open"}).project
   end
   def get_status
