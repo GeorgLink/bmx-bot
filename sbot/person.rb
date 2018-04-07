@@ -359,8 +359,6 @@ class Bmxsim_Worker_Treatment_BothMetrics
     # decide what to trade on bugmark
   end
 end
-<<<<<<< HEAD
-=======
 
 
 class Bmxsim_Worker_Treatment_NoPricesNoMetrics_FullTaskInfoNoTimeLimit
@@ -409,4 +407,3 @@ class Bmxsim_Worker_Treatment_NoPricesNoMetrics_FullTaskInfoWithTimeLimit
     # decide what to trade on bugmark
   end
 end
->>>>>>> master
