@@ -137,4 +137,5 @@ end
 
 puts "-- simulation finished --"
 binding.pry
+puts 'FINI'
 # FINI

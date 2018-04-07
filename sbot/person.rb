@@ -166,7 +166,7 @@ class Bmxsim_Worker_Treatment_NoMetrics
   end
   def issue_status
     if @issue_workingon.nil?
-      return 'no issue in works'
+      return 'no issue'
     end
     return "#{@issue_workingon.get_progress}% #{@issue_workingon.get_status}"
   end
