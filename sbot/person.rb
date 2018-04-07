@@ -165,18 +165,21 @@ class Bmxsim_Worker_Treatment_NoMetrics
     @bmx_user[:balance]
   end
   def issue_status
-    if @issue_workingon.nil?
+    if @last_issue.nil?
       return 'no issue'
     end
-    return "#{@issue_workingon.get_progress}% #{@issue_workingon.get_status}"
+    maturation = Position.joins(contract: :issue).where(user_uuid: "#{@uuid}").where("issues.uuid = '#{@last_issue.uuid}'").select("maturation")
+    @last_issue.uuid
+    return "#{@last_issue.get_progress}% #{@last_issue.get_status}, due: #{maturation}"
   end
   def do_work
-    # decide what issue to work on
-
+    # do work
+    @last_issue = nil
     # make sure to have an issue to work on
     do_trade if @issue_workingon.nil?
     unless @issue_workingon.nil?
       # do the work
+      @last_issue = @issue_workingon
       @issue_workingon.work(@skill)
       # get ready for new issue, if current issue was closed
       @issue_workingon = nil if @issue_workingon.get_status == 'closed'
