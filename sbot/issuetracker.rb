@@ -91,7 +91,7 @@ class Bmxsim_IssueTracker
   end
   def add_project(proj_number)
 
-    bmx_repo = RepoCmd::Sync.new({name: 'TestRepo'+proj_number.to_s, type: 'Repo::Test'}).project.repo
+    bmx_repo = RepoCmd::Create.new({name: 'TestRepo'+proj_number.to_s, type: 'Repo::Test'}).project.repo
     # bmx_repo = FB.create(:repo).repo
     # @project_bmx_repo.insert(proj_number, bmx_repo)
     @project_bmx_repo_uuid.insert(proj_number, bmx_repo.uuid)
