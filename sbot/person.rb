@@ -40,7 +40,7 @@ class Bmxsim_Funder_InversePay
   def do_work
     # decide what issue to work on
     # create twelve issues
-    (1..12).to_a.each do
+    (1..1).to_a.each do
       issue = @tracker.open_issue(@project)
 
       # args is a hash
@@ -49,7 +49,7 @@ class Bmxsim_Funder_InversePay
         price: (1.0/(issue.get_difficulty+1)).round(2),
         volume: 100,
         stm_issue_uuid: issue.uuid,
-        maturation: BugmTime.next_week_ends[2]
+        maturation: BugmTime.next_week_ends[1]
       }
       offer = FB.create(:offer_bu, args).offer
       ContractCmd::Cross.new(offer, :expand).project
@@ -123,6 +123,62 @@ class Bmxsim_Funder_RandomPay
     # decide what to trade on bugmark
   end
 end
+
+class Bmxsim_Worker_Treatment_NoMetrics
+  def initialize(bmx_user, issue_tracker, skill=nil, name='workerx')
+    @bmx_user = bmx_user
+    @uuid = bmx_user.uuid
+    @tracker = issue_tracker
+    @skill = skill
+    @issue_workingon = nil
+    @name = name
+    @last_issue
+  end
+  def get_name
+    @name
+  end
+  def uuid
+    @uuid
+  end
+  def get_skill
+    @skill
+  end
+  def issue_status
+    if @issue_workingon.nil?
+      return 'no issue in works'
+    end
+    return "#{@issue_workingon.get_progress}% #{@issue_workingon.get_status}"
+  end
+  def do_work
+    # decide what issue to work on
+
+    # make sure to have an issue to work on
+    do_trade if @issue_workingon.nil?
+    unless @issue_workingon.nil?
+      # do the work
+      @issue_workingon.work(@skill)
+      # get ready for new issue, if current issue was closed
+      @issue_workingon = nil if @issue_workingon.get_status == 'closed'
+    end
+  end
+  def do_trade
+    # decide what to trade on bugmark
+    @bmx_user.reload  # update user from db
+    offer = @tracker.get_highest_paying_offer(@bmx_user[:balance])
+    unless offer.nil?
+      projection = OfferCmd::CreateCounter.new(offer[:offer], {user_uuid: @uuid}).project
+      counter = projection.offer
+      if counter.valid?
+        # binding.pry
+        ContractCmd::Cross.new(counter, :expand).project
+        @issue_workingon = @tracker.get_issue(offer[:issue_id])
+        @tracker.remove_offer(offer)
+      end
+    end
+
+  end
+end
+
 
 
 class Bmxsim_Worker_Treatment_NoMetricsNoPrices
@@ -258,7 +314,7 @@ class Bmxsim_Worker_Treatment_HealthMetricsWithPrices
     # => Health Metrics used to compute a "difficulty estimate or likelihood",
     # => referred to as diff_estimate. Workers choose to work on issues with the
     # => highest reward subject to the maturation date allowing sufficient time
-    # => given diff_estimate. 
+    # => given diff_estimate.
 
   end
   def do_trade

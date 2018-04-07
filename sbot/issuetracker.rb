@@ -33,6 +33,9 @@ class Bmxsim_Issue
   def get_status
     @status
   end
+  def get_progress
+    @progress
+  end
   def get_id
     @id
   end
@@ -41,20 +44,21 @@ class Bmxsim_Issue
   end
   def work(effort)
     # figure out how much work is left to do
-    @progress = [(1.0*effort/@difficulty*100).ceil,1].min
+    @progress += [(100.0*effort/@difficulty).ceil,100].min
     # close issue, if work is complete
-    close unless @progress < 1
+    close unless @progress < 100
   end
   def add_offer_bu(offer)
     offer[:issue_id] = @id
     @open_offer_bu.push(offer)
   end
-  def get_highest_paying_offer(max_cost=nil)
+  def get_highest_paying_offer(max_cost=0)
     offer = nil
     @open_offer_bu.each do |off|
-      if max_cost.nil? OR ((1-off[:price])*off[:volume]) <= max_cost
-        offer = off if offer.nil?
-        offer = off if offer[:price]<off[:price]
+      offer = off if offer.nil?
+      if max_cost == 0 || max_cost > ((1-off[:price])*off[:volume])
+        # binding.pry
+        offer = off if offer[:offer][:value]<off[:offer][:value]
       end
     end
     return offer
@@ -104,13 +108,13 @@ class Bmxsim_IssueTracker
     end
     return result
   end
-  def get_highest_paying_offer(max_cost=nil)
+  def get_highest_paying_offer(max_cost=0)
     offer = nil
     @issues.each do |iss|
       iss_off = iss.get_highest_paying_offer(max_cost)
       unless iss_off.nil?
         offer = iss_off if offer.nil?
-        offer = iss_off if offer[:price] < iss_off[:price]
+        offer = iss_off if offer[:offer][:value] < iss_off[:offer][:value]
       end
     end
     return offer
