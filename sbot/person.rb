@@ -283,7 +283,7 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices < Bmxsim_Worker
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
     # then get the most paying
     offer = offers.order('value asc').first
-    if offer.valid?
+    if !offer.nil? && offer.valid?
       projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
       counter = projection.offer
       if counter.valid?
