@@ -134,6 +134,8 @@ puts ""
 end
 
 puts "-- simulation finished --"
+# Calling binding.pry to allow investigating the state of the simulation
+# Type "c" to continue and end the program 
 binding.pry
 puts 'FINI'
 # FINI
