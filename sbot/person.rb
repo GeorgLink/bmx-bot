@@ -111,8 +111,8 @@ class Bmxsim_Funder_FixedPay
       }
       offer = FB.create(:offer_bu, args).offer
       ContractCmd::Cross.new(offer, :expand).project
-      args[:offer] = offer
-      issue.add_offer_bu(args)
+      # args[:offer] = offer
+      # issue.add_offer_bu(args)
     end
   end
   def do_trade
