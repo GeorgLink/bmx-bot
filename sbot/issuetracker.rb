@@ -55,6 +55,11 @@ class Bmxsim_Issue
   def get_highest_paying_offer(max_cost=0)
     offer = nil
     @open_offer_bu.each do |off|
+      off[:offer].reload
+      if off[:offer][:status] != "open"
+        remove_offer(off)
+        next
+      end
       offer = off if offer.nil?
       if max_cost == 0 || max_cost > ((1-off[:price])*off[:volume])
         # binding.pry
