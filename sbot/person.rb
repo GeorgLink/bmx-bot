@@ -168,7 +168,7 @@ class Bmxsim_Worker_Treatment_NoMetrics
     if @last_issue.nil?
       return 'no issue'
     end
-    maturation = Position.joins(contract: :issue).where(user_uuid: "#{@uuid}").where("issues.uuid = '#{@last_issue.uuid}'").select("maturation")
+    maturation = Position.joins(contract: :issue).where(user_uuid: "#{@uuid}").where("issues.uuid = '#{@last_issue.uuid}'").pluck("maturation")
     @last_issue.uuid
     return "#{@last_issue.get_progress}% #{@last_issue.get_status}, due: #{maturation}"
   end
