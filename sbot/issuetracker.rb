@@ -71,7 +71,7 @@ end
 class Bmxsim_IssueTracker
   def initialize()
     @issues = []
-    @project_bmx_repo = []
+    # @project_bmx_repo = []
     @project_bmx_repo_uuid = []
     # puts "New Issue tracker, with uuid: #{@uuid}"
   end
@@ -80,7 +80,7 @@ class Bmxsim_IssueTracker
   end
   def add_project(proj_number)
     bmx_repo = FB.create(:repo).repo
-    bmx_repos.insert(proj_number, bmx_repo)
+    # @project_bmx_repo.insert(proj_number, bmx_repo)
     @project_bmx_repo_uuid.insert(proj_number, bmx_repo.uuid)
     return bmx_repo.uuid
   end
