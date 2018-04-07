@@ -121,8 +121,8 @@ puts ""
   BugmTime.go_past_end_of_day
   # resolve contracts
   counter = 0
-  max_counter = Contract.open.count
-  Contract.open.each do |contract|
+  max_counter = Contract.pending_resolution.count
+  Contract.pending_resolution.each do |contract|
     counter += 1
     STDOUT.write "\rresolve contracts: #{counter} / #{max_counter}"
     ContractCmd::Resolve.new(contract).project
