@@ -88,7 +88,6 @@ class Bmxsim_Funder_FixedPay
     @bmx_user = bmx_user
     @uuid = bmx_user.uuid
     @tracker = issue_tracker
-    @skill = skill
     @project = proj_number
     @proj_repo_uuid = @tracker.add_project(proj_number)
   end
