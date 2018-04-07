@@ -16,8 +16,6 @@ class Bmxsim_Issue
     @id = id  # id of this issue
     @bmx_issue = FB.create(:issue, stm_repo_uuid: repo_uuid, exid: id, stm_status: "open").issue
     @uuid = @bmx_issue.uuid
-    # puts "New issue (#{@id}) with uuid: #{@uuid}"
-    # @open_offer_bu = []
   end
   def uuid
     @uuid
@@ -48,35 +46,6 @@ class Bmxsim_Issue
     # close issue, if work is complete
     close unless @progress < 100
   end
-  # def add_offer_bu(offer)
-  #   offer[:issue_id] = @id
-  #   @open_offer_bu.push(offer)
-  # end
-  # def get_highest_paying_offer(max_cost=0)
-  #   offer = nil
-  #   @open_offer_bu.each do |off|
-  #     off[:offer].reload
-  #     if off[:offer][:status] != "open"
-  #       remove_offer(off)
-  #       next
-  #     end
-  #     offer = off if offer.nil?
-  #     if max_cost == 0 || max_cost > ((1-off[:price])*off[:volume])
-  #       # binding.pry
-  #       offer = off if offer[:offer][:value]<off[:offer][:value]
-  #     end
-  #   end
-  #   return offer
-  # end
-  # def remove_offer(offer)
-  #   @open_offer_bu.delete(offer)
-  # end
-  # def remove_offer_by_uuid(uuid)
-  #   offer = nil
-  #   @open_offer_bu.each do |off|
-  #     offer = off if off[:offer][:uuid] == uuid
-  #   end
-  # end
 end
 
 class Bmxsim_IssueTracker
@@ -129,35 +98,5 @@ class Bmxsim_IssueTracker
       i.get_status == 'closed'
     end
     return result
-  end
-  # def get_highest_paying_offer(max_cost=0)
-  #   offer = nil
-  #   @issues.each do |iss|
-  #     iss_off = iss.get_highest_paying_offer(max_cost)
-  #     unless iss_off.nil?
-  #       offer = iss_off if offer.nil?
-  #       offer = iss_off if offer[:offer][:value] < iss_off[:offer][:value]
-  #     end
-  #   end
-  #   return offer
-  # end
-  def get_highest_paying_offer_db(max_cost=0)
-    # select first by maturation range, at least 2 days in the future
-    #   the 90 day end is chosen arbitrarily
-    offers = Offer.by_maturation_range(BugmTime.end_of_day(2)..BugmTime.end_of_day(90))
-    # then filter by unassigned, since we want offers that are still up for the taking
-    offers = offers.unassigned
-    # then filter by max_cost to counter the offer
-    offers = offers.where('((1-price)*volume) <= '+max_cost.to_s)
-    # then get the most paying
-    offer = offers.order('value desc').first
-    return nil unless offer.valid?
-    return offer
-  end
-  def remove_offer(offer)
-    get_issue(offer[:issue_id]).remove_offer(offer)
-  end
-  def remove_offer_by_uuid(issue_id, uuid)
-    get_issue(issue_id).remove_offer_by_uuid(uuid)
   end
 end

@@ -184,7 +184,16 @@ class Bmxsim_Worker_Treatment_NoMetrics
   end
   def do_trade
     # decide what to trade on bugmark
-    offer = @tracker.get_highest_paying_offer_db(get_balance)
+
+    # select first by maturation range, at least 2 days in the future
+    #   the 90 day end is chosen arbitrarily
+    offers = Offer.by_maturation_range(BugmTime.end_of_day(matures_after_days)..BugmTime.end_of_day(90))
+    # then filter by unassigned, since we want offers that are still up for the taking
+    offers = offers.unassigned
+    # then filter by max_cost to counter the offer
+    offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
+    # then get the most paying
+    offer = offers.order('value desc').first
     if offer.valid?
       projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
       counter = projection.offer
@@ -193,7 +202,6 @@ class Bmxsim_Worker_Treatment_NoMetrics
         # binding.pry
         issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).pluck('exid')[0]
         @issue_workingon = @tracker.get_issue(issue_id.to_i)
-        # @issue_workingon.remove_offer_by_uuid(offer[:uuid])
       end
     end
 
