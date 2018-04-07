@@ -290,6 +290,8 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices
     # => the maturation date allows sufficient time given diff_estimate. This is
     # => similar to the NoPricesNoMetrics_FullTaskInfoNoTimeLimit treatment.
 
+    
+
   end
   def do_trade
     # decide what to trade on bugmark
