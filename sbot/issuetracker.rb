@@ -100,9 +100,9 @@ class Bmxsim_IssueTracker
 
     # issues with open contracts
     issues_not_abandoned = []
-    issues_contracted = Contract.join(:issue).open.where('issues.stm_status = ?', 'open').pluck('stm_issue_uuid')
+    issues_contracted = Contract.joins(:issue).open.where('issues.stm_status = ?', 'open').pluck('stm_issue_uuid')
     issues_not_abandoned.concat(issues_contracted)
-    issues_offered = Offer.join(:issue).open.where('issues.stm_status = ?', 'open').pluck('stm_issue_uuid')
+    issues_offered = Offer.joins(:issue).open.where('issues.stm_status = ?', 'open').pluck('stm_issue_uuid')
     issues_not_abandoned.concat(issues_offered)
     abandoned_issue_count = Issue.open.where('uuid NOT IN (?)', issues_not_abandoned).count
 
