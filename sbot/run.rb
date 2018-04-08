@@ -26,7 +26,7 @@ time = Benchmark.measure do
   # SIMULATION PARAMETERS
   NUMBER_OF_WORKERS = 5
   NUMBER_OF_FUNDERS = 1  # equals number of projects
-  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 3  # equals number of offers created; #issue=#offer
+  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 10  # equals number of offers created; #issue=#offer
   MATURATION_DAYS_IN_FUTURE = 5 # end of:  0 = today, 1 = tomorrow
   FUNDER_STARTING_BALANCE = 100000000
   WORKER_STARTING_BALANCE = 0
