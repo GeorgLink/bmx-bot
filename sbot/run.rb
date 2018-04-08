@@ -32,7 +32,7 @@ WORKER_SKILLS = [1]  # ability to randomly create workers with different skills
 RUN_SIMULATION_DAYS = 30
 
 # output
-BMXSIM_OUTPUT = # 0 no output, 1 slim output, 9 detailed output
+BMXSIM_OUTPUT = 1  # 0 no output, 1 slim output, 9 detailed output
 
 # run in turbo mode
 BMX_SAVE_EVENTS  = "FALSE"
