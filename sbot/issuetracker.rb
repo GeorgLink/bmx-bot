@@ -42,6 +42,7 @@ class Bmxsim_Issue
     @id
   end
   def get_age
+    binding.pry
     $sim_day - $create_day
   end
   def get_resolution_days
