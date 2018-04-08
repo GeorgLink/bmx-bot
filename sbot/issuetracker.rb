@@ -113,7 +113,7 @@ class Bmxsim_IssueTracker
     ages = 0
     issues = 0
     @issues.each do |iss|
-      if iss.status == 'open'
+      if iss.get_status == 'open'
         ages += $iss.get_age
         issues += 1
       end
