@@ -82,11 +82,11 @@ class Bmxsim_IssueTracker
   def get_project_health(proj_number)
     repo_uuid = get_project_repo_uuid(proj_number)
     proj_health = {
-      open_issues => nil,  # What is the number of open issues?
-      closed_issues => nil,  # What is the number of closed issues?
-      resolution_efficiency => nil, # What is the number of closed issues/number of abandoned issues?
-      open_issue_age => nil,  # What is the the age of open issues?
-      closed_issue_resolution_duration => nil  # What is the duration of time for issues to be resolved?
+      open_issues: nil,  # What is the number of open issues?
+      closed_issues: nil,  # What is the number of closed issues?
+      resolution_efficiency: nil, # What is the number of closed issues/number of abandoned issues?
+      open_issue_age: nil,  # What is the the age of open issues?
+      closed_issue_resolution_duration: nil  # What is the duration of time for issues to be resolved?
     }
 
     # Open Issues --> What is the number of open issues?
