@@ -147,6 +147,7 @@ time = Benchmark.measure do
 
   # Calling binding.pry to allow investigating the state of the simulation
   # Type "c" to continue and end the program
+  issue_tracker.get_project_health(1)
   binding.pry
   puts "--------------------------- simulation finished ---------------------------"
 end
