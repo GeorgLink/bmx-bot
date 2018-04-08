@@ -124,7 +124,7 @@ class Bmxsim_IssueTracker
     ages = 0
     issues = 0
     @issues.each do |iss|
-      if iss.status == 'closed'
+      if iss.get_status == 'closed'
         ages += iss.get_resolution_days
         issues += 1
       end
