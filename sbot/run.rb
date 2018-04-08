@@ -31,6 +31,9 @@ WORKER_STARTING_BALANCE = 0
 WORKER_SKILLS = [1]  # ability to randomly create workers with different skills
 RUN_SIMULATION_DAYS = 30
 
+# output
+BMXSIM_OUTPUT = # 0 no output, 1 slim output, 9 detailed output
+
 # run in turbo mode
 BMX_SAVE_EVENTS  = "FALSE"
 BMX_SAVE_METRICS = "FALSE"
@@ -44,8 +47,8 @@ end
 
 puts "----- BUGMARK BOT -------------------------------------------"
 puts "START #{Time.now} | C-c to exit"
-puts "Process Name: #{PROCNAME}"
-puts "Loading Environment..."
+puts "Process Name: #{PROCNAME}" if BMXSIM_OUTPUT > 0
+puts "Loading Environment..." if BMXSIM_OUTPUT > 0
 STDOUT.flush
 
 require File.expand_path("~/src/bugmark/config/environment")
@@ -66,7 +69,7 @@ issue_tracker = Bmxsim_IssueTracker.new
 # create funders and workers
 funders = []
 (1..NUMBER_OF_FUNDERS).to_a.each do |funder_id|
-  STDOUT.write "\rcreate funders: #{funder_id} / #{NUMBER_OF_FUNDERS}"
+  STDOUT.write "\rcreate funders: #{funder_id} / #{NUMBER_OF_FUNDERS}"  if BMXSIM_OUTPUT > 0
   funder = FB.create(:user, email: "funder#{funder_id}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
   funders.push(Bmxsim_Funder_FixedPay.new(funder, issue_tracker, funder_id))
   # case funder_id
@@ -80,10 +83,10 @@ funders = []
   #   funders.push(Bmxsim_Funder_RandomPay.new(funder, issue_tracker))
   # end
 end
-puts ""
+puts "" if BMXSIM_OUTPUT > 0
 workers = []
 (1..NUMBER_OF_WORKERS).to_a.each do |worker_id|
-  STDOUT.write "\rcreate workers: #{worker_id} / #{NUMBER_OF_WORKERS}"
+  STDOUT.write "\rcreate workers: #{worker_id} / #{NUMBER_OF_WORKERS}" if BMXSIM_OUTPUT > 0
   worker = FB.create(:user, email: "worker#{worker_id}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
   # skill = (1..3).to_a.sample
   skill = WORKER_SKILLS.sample
@@ -100,37 +103,39 @@ workers = []
   #   workers.push(Bmxsim_Worker_Treatment_BothMetrics.new(worker, issue_tracker, skill))
   # end
 end
-puts ""
+puts "" if BMXSIM_OUTPUT > 0
 
 # loop for each day
 (1..RUN_SIMULATION_DAYS).to_a.each do |day|
-  puts "Day #{day}: #{BugmTime.now}"
+  puts "Day #{day}: #{BugmTime.now}"  if BMXSIM_OUTPUT > 0
   # print "#{day}: "
   # call funders in a random order
   funders.shuffle.each do |funder|
-    # print "f"
+    print "f" if BMXSIM_OUTPUT > 0 && BMXSIM_OUTPUT < 9
     funder.do_work
+    puts "funder[#{funder.get_name}](#{funder.get_balance})"  if BMXSIM_OUTPUT > 8
   end
   # call workers in a random order
   workers.shuffle.each do |worker|
-    # print "w"
+    print "w"  if BMXSIM_OUTPUT > 0 && BMXSIM_OUTPUT < 9
     worker.do_work
-    puts "worker[#{worker.get_name}:#{worker.get_skill}](#{worker.get_balance}): #{worker.issue_status}"
+    puts "worker[#{worker.get_name}:#{worker.get_skill}](#{worker.get_balance}): #{worker.issue_status}" if BMXSIM_OUTPUT > 8
   end
   # go to next day
-  puts " next day"
+  puts " next day"  if BMXSIM_OUTPUT > 0
   BugmTime.go_past_end_of_day
   # resolve contracts
-  STDOUT.write "resolve contracts: 0 / 0"
+  STDOUT.write "resolve contracts: 0 / 0" if BMXSIM_OUTPUT > 0
   counter = 0
   max_counter = Contract.pending_resolution.count
   Contract.pending_resolution.each do |contract|
     counter += 1
-    STDOUT.write "\rresolve contracts: #{counter} / #{max_counter}"
+    STDOUT.write "\rresolve contracts: #{counter} / #{max_counter}" if BMXSIM_OUTPUT > 0
     ContractCmd::Resolve.new(contract).project
   end
   #signal end of day
-  puts " DAY COMPLETE" ; STDOUT.flush
+  puts " DAY COMPLETE"  if BMXSIM_OUTPUT > 0
+  STDOUT.flush
   # continue_story  # wait for key press
 end
 
@@ -138,5 +143,5 @@ puts "--------------------------- simulation finished --------------------------
 # Calling binding.pry to allow investigating the state of the simulation
 # Type "c" to continue and end the program
 binding.pry
-puts 'FINI'
+puts 'FINI' if false  # this line is only here for binding.pry to work
 # FINI
