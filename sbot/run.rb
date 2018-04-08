@@ -56,6 +56,8 @@ BugmTime.set_day_offset(-1 * RUN_SIMULATION_DAYS)
 
 puts "Simulate #{RUN_SIMULATION_DAYS}, starting on #{BugmTime.now}"
 
+puts "Simulate #{SIMULATION_DAYS}, starting on #{BugmTime.now}"
+
 # simulation classes
 require_relative 'issuetracker'
 require_relative 'person'
