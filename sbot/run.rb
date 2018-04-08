@@ -40,6 +40,9 @@ time = Benchmark.measure do
   BMX_SAVE_EVENTS  = "FALSE"
   BMX_SAVE_METRICS = "FALSE"
 
+  # global day variable
+  $sim_day = 0
+
   require 'io/console'
   def continue_story
     print "press any key"
@@ -111,7 +114,7 @@ time = Benchmark.measure do
   # loop for each day
   (1..RUN_SIMULATION_DAYS).to_a.each do |day|
     puts "Day #{day}: #{BugmTime.now}"  if BMXSIM_OUTPUT > 0
-    # print "#{day}: "
+    $sim_day = day
     # call funders in a random order
     funders.shuffle.each do |funder|
       print "f" if BMXSIM_OUTPUT > 0 && BMXSIM_OUTPUT < 9
