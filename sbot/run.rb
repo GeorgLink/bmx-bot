@@ -145,11 +145,11 @@ time = Benchmark.measure do
     # continue_story  # wait for key press
   end
 
+  # Calling binding.pry to allow investigating the state of the simulation
+  # Type "c" to continue and end the program
+  binding.pry
   puts "--------------------------- simulation finished ---------------------------"
 end
 puts time
-# Calling binding.pry to allow investigating the state of the simulation
-# Type "c" to continue and end the program
-binding.pry
 puts 'FINI' if false  # this line is only here for binding.pry to work
 # FINI
