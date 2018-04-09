@@ -297,6 +297,7 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices < Bmxsim_Worker
   end
 end
 
+
 # ===== Worker: Yes Health Metrics, No Market Metrics, No Prices =====
 #
 # MR: Not fully fleshed out yet. The idea is as follows:
