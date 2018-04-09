@@ -297,31 +297,6 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices < Bmxsim_Worker
   end
 end
 
-
-<<<<<<< HEAD
-class Bmxsim_Worker_Treatment_HealthMetricsNoPrices
-  def initialize(bmx_user, issue_tracker, skill=nil)
-    @bmx_user = bmx_user
-    @uuid = bmx_user.uuid
-    @tracker = issue_tracker
-    @skill = skill
-  end
-  def uuid
-    @uuid
-  end
-  def do_work
-    # decide what issue to work on
-
-    # MR: Not fully fleshed out yet. The idea is as follows:
-    # => Health Metrics used to compute a "difficulty estimate or likelihood",
-    # => referred to as diff_estimate. Workers choose to work on issues where
-    # => the maturation date allows sufficient time given diff_estimate. This is
-    # => similar to the NoPricesNoMetrics_FullTaskInfoNoTimeLimit treatment.
-
-    
-
-  end
-=======
 # ===== Worker: Yes Health Metrics, No Market Metrics, No Prices =====
 #
 # MR: Not fully fleshed out yet. The idea is as follows:
@@ -331,7 +306,6 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices
 # => similar to the NoPricesNoMetrics_FullTaskInfoNoTimeLimit treatment.
 #
 class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
->>>>>>> 9cdfffcfeef98438ab854b97038ebea22920e9d2
   def do_trade
     # find an open offer to match and associated issue
   end
