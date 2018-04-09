@@ -298,30 +298,6 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices < Bmxsim_Worker
 end
 
 
-<<<<<<< HEAD
-class Bmxsim_Worker_Treatment_HealthMetricsNoPrices
-  def initialize(bmx_user, issue_tracker, skill=nil)
-    @bmx_user = bmx_user
-    @uuid = bmx_user.uuid
-    @tracker = issue_tracker
-    @skill = skill
-  end
-  def uuid
-    @uuid
-  end
-  def do_work
-    # decide what issue to work on
-
-    # MR: Not fully fleshed out yet. The idea is as follows:
-    # => Health Metrics used to compute a "difficulty estimate or likelihood",
-    # => referred to as diff_estimate. Workers choose to work on issues where
-    # => the maturation date allows sufficient time given diff_estimate. This is
-    # => similar to the NoPricesNoMetrics_FullTaskInfoNoTimeLimit treatment.
-
-    
-
-  end
-=======
 # ===== Worker: Yes Health Metrics, No Market Metrics, No Prices =====
 #
 # MR: Not fully fleshed out yet. The idea is as follows:
@@ -331,7 +307,6 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices
 # => similar to the NoPricesNoMetrics_FullTaskInfoNoTimeLimit treatment.
 #
 class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
->>>>>>> 9cdfffcfeef98438ab854b97038ebea22920e9d2
   def do_trade
     # find an open offer to match and associated issue
   end
@@ -345,6 +320,22 @@ end
 # => referred to as diff_estimate. Workers choose to work on issues with the
 # => highest reward subject to the maturation date allowing sufficient time
 # => given diff_estimate.
+#
+# => Consider the health metric, resolution_efficiency. Redefine it as
+# => resolution_efficiency = number of closed issues / (number of closed +
+# => number of abandoned issues) to avoid divide by zero problems. This term
+# => gives us a fraction that we can use in the following way (the higher the
+# => value the easier the task): fractional values lie between 0 and 1. So given
+# => a value v, the task is "easy" with probability v and "difficult" with
+# => probability (1-v). With 3 levels of difficulty we can simply segment the
+# => [0, 1] interval into [0-0.3] implies level 3, (0.3, 0.7] implies level 2,
+# => (0.7, 1] imples level 1.
+#
+# => With the health metric, closed_issue_resolution_duration the difficulty
+# => levels can be interpreted directly (how long it took == difficulty level).
+#
+# => The health metric, open_issue_age, may be interpreted similarly to
+# => resolution_efficiency.
 #
 class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
   def do_trade
