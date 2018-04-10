@@ -167,6 +167,8 @@ class Bmxsim_IssueTracker
       projects[repo_uuid][:norm_closed_issue_resolution_duration] = projects[repo_uuid][:closed_issue_resolution_duration].to_f / max_closed_issue_resolution_duration
     end
 
+# TODO: fix if rank order should be the same based on value
+
     # get rank for open_issues and add to project health
     sort_open_issues = projects.sort_by {|key, value| value[:norm_open_issues]}
     rank = 1
