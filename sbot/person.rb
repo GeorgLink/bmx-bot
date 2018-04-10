@@ -324,12 +324,22 @@ end
 # => Consider the health metric, resolution_efficiency. Redefine it as
 # => resolution_efficiency = number of closed issues / (number of closed +
 # => number of abandoned issues) to avoid divide by zero problems. This term
-# => gives us a fraction that we can use in the following way (the higher the
-# => value the easier the task): fractional values lie between 0 and 1. So given
-# => a value v, the task is "easy" with probability v and "difficult" with
-# => probability (1-v). With 3 levels of difficulty we can simply segment the
-# => [0, 1] interval into [0-0.3] implies level 3, (0.3, 0.7] implies level 2,
-# => (0.7, 1] imples level 1.
+# => gives us a fraction that we can use in the following way: the higher the
+# => value the easier the task and fractional values lie between 0 and 1. With
+# => 3 levels of difficulty we can simply segment the resolution_efficiency's
+# => [0, 1] interval into 3 parts. Thus [0-0.3] implies level 3, (0.3, 0.7]
+# => implies level 2, and (0.7, 1] implies level 1. We can leave it like this or
+# => introduce a probabilistic layer. Consider the 3 cases:
+# => 1) resolution_efficiency lies in [0-0.3]. Generate a random number in the
+# => interval [0, 1]. If the number <= 0.9 then level 3 else level 2.
+# => 2) resolution_efficiency lies in (0.3, 0.7]. Generate a random number in the
+# => interval [0, 1]. If the number <= 0.8 then level 2, else either level 3 or
+# => 1 with equal probability.
+# => 3) resolution_efficiency lies in [0.7-1]. Generate a random number in the
+# => interval [0, 1]. If the number <= 0.9 then level 1 else level 2.
+# => Note that we are assuming that there can be an error in inferring get_difficulty
+# => from the health metrics and that error is w.r.t. "adjacent" levels. There
+# => can be more natural variations of this scheme but this is a simple start.
 #
 # => With the health metric, closed_issue_resolution_duration the difficulty
 # => levels can be interpreted directly (how long it took == difficulty level).
