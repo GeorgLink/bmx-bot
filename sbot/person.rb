@@ -350,6 +350,10 @@ end
 class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
+    projects_health = @tracker.get_project_health_all_projects
+    projects_health.each do |proj_h|
+      puts proj_h[:resolution_efficiency]
+    end
   end
 end
 
