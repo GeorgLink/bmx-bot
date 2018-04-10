@@ -139,7 +139,7 @@ class Bmxsim_IssueTracker
   def get_project_health_all_projects
     projects = {}
     (0...get_projects.length).each do |proj_number|
-      projects[repo_uuid(proj_number)] = get_project_health(proj_number)
+      projects[get_project_repo_uuid(proj_number)] = get_project_health(proj_number)
     end
   end
   def open_issue(project=1, difficulty=0)
