@@ -76,6 +76,9 @@ class Bmxsim_IssueTracker
     @project_bmx_repo_uuid.insert(proj_number, bmx_repo.uuid)
     return bmx_repo.uuid
   end
+  def get_projects
+    @project_bmx_repo_uuid
+  end
   def get_project_repo_uuid(proj_number)
     @project_bmx_repo_uuid.fetch(proj_number)
   end
@@ -132,6 +135,12 @@ class Bmxsim_IssueTracker
     proj_health[:closed_issue_resolution_duration] = ages.to_f/issues.to_f
 
     return proj_health
+  end
+  def get_project_health_all_projects
+    projects = {}
+    get_projects.each do |proj_uuid|
+      projects[proj_uuid] = get_project_health(proj_uuid)
+    end
   end
   def open_issue(project=1, difficulty=0)
     # puts "new issue #{(@issues.count+1)}"
