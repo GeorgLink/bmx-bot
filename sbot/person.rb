@@ -42,6 +42,7 @@ class Bmxsim_Funder_FixedPay < Bmxsim_Funder
         price: 1.00,  # always fixed price 1
         volume: 100,
         stm_issue_uuid: issue.uuid,
+        expiration: BugmTime.end_of_day(MATURATION_DAYS_IN_FUTURE),
         maturation: BugmTime.end_of_day(MATURATION_DAYS_IN_FUTURE)
       }
       offer = FB.create(:offer_bu, args).offer

@@ -158,8 +158,8 @@ class Bmxsim_IssueTracker
     end
 
     # Normalize health metrics for each Project
-    get_projects.to_a.each do |proj_number|
-      repo_uuid = get_project_repo_uuid(proj_number)
+    get_projects.to_a.each do |proj_number,repo_uuid|
+      # repo_uuid = get_project_repo_uuid(proj_number)
       projects[repo_uuid][:norm_open_issues] = projects[repo_uuid][:open_issues].to_f / max_closed_issues
       projects[repo_uuid][:norm_closed_issues] = projects[repo_uuid][:closed_issues].to_f / max_closed_issues
       projects[repo_uuid][:norm_resolution_efficiency] = 1 - projects[repo_uuid][:resolution_efficiency].to_f # reverse already normalized
