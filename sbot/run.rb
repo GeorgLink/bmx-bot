@@ -58,6 +58,7 @@ time = Benchmark.measure do
   STDOUT.flush
 
   require File.expand_path("~/src/bugmark/config/environment")
+  binding.pry
 
   # delete all host data and create admin user
   BugmHost.reset
