@@ -62,7 +62,7 @@ class Bmxsim_IssueTracker
   def initialize()
     @issues = []
     # @project_bmx_repo = []
-    @project_bmx_repo_uuid = []
+    @project_bmx_repo_uuid = {}
     # puts "New Issue tracker, with uuid: #{@uuid}"
   end
   def uuid
@@ -73,14 +73,14 @@ class Bmxsim_IssueTracker
     bmx_repo = RepoCmd::Create.new({name: 'TestRepo'+proj_number.to_s, type: 'Repo::Test'}).project.repo
     # bmx_repo = FB.create(:repo).repo
     # @project_bmx_repo.insert(proj_number, bmx_repo)
-    @project_bmx_repo_uuid.insert(proj_number, bmx_repo.uuid)
+    @project_bmx_repo_uuid[proj_number] = bmx_repo.uuid
     return bmx_repo.uuid
   end
   def get_projects
     @project_bmx_repo_uuid
   end
   def get_project_repo_uuid(proj_number)
-    @project_bmx_repo_uuid.fetch(proj_number)
+    @project_bmx_repo_uuid[proj_number]
   end
   def get_project_health(proj_number)
     repo_uuid = get_project_repo_uuid(proj_number)
@@ -146,8 +146,8 @@ class Bmxsim_IssueTracker
 
     # get project health
     projects = {}
-    (1..get_projects.length).to_a.each do |proj_number|
-      repo_uuid = get_project_repo_uuid(proj_number)
+    get_projects.to_a.each do |proj_number,repo_uuid|
+      # repo_uuid = get_project_repo_uuid(proj_number)
       projects[repo_uuid] = get_project_health(proj_number)
       # Update extreme values
       max_open_issues = projects[repo_uuid][:open_issues].to_f if max_open_issues < projects[repo_uuid][:open_issues].to_f
@@ -158,7 +158,7 @@ class Bmxsim_IssueTracker
     end
 
     # Normalize health metrics for each Project
-    (1..get_projects.length).to_a.each do |proj_number|
+    get_projects.to_a.each do |proj_number|
       repo_uuid = get_project_repo_uuid(proj_number)
       projects[repo_uuid][:norm_open_issues] = projects[repo_uuid][:open_issues].to_f / max_closed_issues
       projects[repo_uuid][:norm_closed_issues] = projects[repo_uuid][:closed_issues].to_f / max_closed_issues
