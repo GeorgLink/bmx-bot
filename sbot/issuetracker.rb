@@ -141,6 +141,7 @@ class Bmxsim_IssueTracker
     (0...get_projects.length).to_a.each do |proj_number|
       projects[get_project_repo_uuid(proj_number)] = get_project_health(proj_number)
     end
+    projects
   end
   def open_issue(project=1, difficulty=0)
     # puts "new issue #{(@issues.count+1)}"
