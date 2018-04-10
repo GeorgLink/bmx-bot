@@ -207,7 +207,7 @@ class Bmxsim_Worker_Treatment_Random < Bmxsim_Worker
     # then filter by cost<balance to be able to counter the offer
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
     # randomly select an offer UUI
-    offer = offers.order('RANDOM()').select('uuid').first
+    offer = offers.order('RANDOM()').select('uuid').first[:uuid]
 
     if !offer.nil? && offer.valid?
       projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
@@ -259,7 +259,7 @@ class Bmxsim_Worker_Treatment_NoMetricsNoPrices_riskAverse < Bmxsim_Worker
     # then filter by cost<balance to be able to counter the offer
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
     # randomly select an offer UUI
-    offer = offers.order('maturation_range desc').first.pluck('uuid')
+    offer = offers.order('maturation_range desc').select('uuid').first[:uuid]
 
     if !offer.nil? && offer.valid?
       projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
@@ -284,7 +284,7 @@ class Bmxsim_Worker_Treatment_NoMetricsNoPrices_random < Bmxsim_Worker
     # then filter by cost<balance to be able to counter the offer
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
     # randomly select an offer UUI
-    offer = offers.order('RANDOM()').first.pluck('uuid')
+    offer = offers.order('RANDOM()').select('uuid').first['uuid']
 
     if !offer.nil? && offer.valid?
       projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
@@ -325,7 +325,7 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices_riskAverse < Bmxsim_Worker
     # then filter by max_cost to counter the offer
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
     # then get the most paying but furthest in the future maturation date
-    offer = offers.order('value asc, maturation_range desc').first
+    offer = offers.order('value asc, maturation_range desc').select('uuid').first[:uuid]
     if !offer.nil? && offer.valid?
       projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
       counter = projection.offer
@@ -356,7 +356,7 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices_rewardSeeking < Bmxsim_Worker
     # then filter by max_cost to counter the offer
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
     # then get the most paying
-    offer = offers.order('value asc').first
+    offer = offers.order('value asc').select('uuid').first[:uuid]
     if !offer.nil? && offer.valid?
       projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
       counter = projection.offer
