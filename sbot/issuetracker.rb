@@ -110,7 +110,7 @@ class Bmxsim_IssueTracker
     abandoned_issue_count = Issue.open.where('uuid NOT IN (?)', issues_not_abandoned).count
 
 
-    proj_health[:resolution_efficiency] = proj_health[:closed_issues].to_f / abandoned_issue_count.to_f
+    proj_health[:resolution_efficiency] = proj_health[:closed_issues].to_f / (proj_health[:closed_issues].to_f + abandoned_issue_count.to_f)
 
     # Open Issue Age --> What is the the age of open issues?
     ages = 0
@@ -137,10 +137,83 @@ class Bmxsim_IssueTracker
     return proj_health
   end
   def get_project_health_all_projects
+    # track the extreme values
+    max_open_issues = 0.0
+    max_closed_issues = 0.0
+    min_resolution_efficiency = 1.0
+    max_open_issue_age = 0.0
+    max_closed_issue_resolution_duration = 0.0
+
+    # get project health
     projects = {}
     (1..get_projects.length).to_a.each do |proj_number|
-      projects[get_project_repo_uuid(proj_number)] = get_project_health(proj_number)
+      repo_uuid = get_project_repo_uuid(proj_number)
+      projects[repo_uuid] = get_project_health(proj_number)
+      # Update extreme values
+      max_open_issues = projects[repo_uuid][:open_issues].to_f if max_open_issues < projects[repo_uuid][:open_issues].to_f
+      max_closed_issues = projects[repo_uuid][:closed_issues].to_f if max_closed_issues < projects[repo_uuid][:closed_issues].to_f
+      min_resolution_efficiency = projects[repo_uuid][:resolution_efficiency].to_f if min_resolution_efficiency > projects[repo_uuid][:resolution_efficiency].to_f
+      max_open_issue_age = projects[repo_uuid][:open_issue_age].to_f if max_open_issue_age < projects[repo_uuid][:open_issue_age].to_f
+      max_closed_issue_resolution_duration = projects[repo_uuid][:closed_issue_resolution_duration].to_f if max_closed_issue_resolution_duration < projects[repo_uuid][:closed_issue_resolution_duration].to_f
     end
+
+    # Normalize health metrics for each Project
+    (1..get_projects.length).to_a.each do |proj_number|
+      repo_uuid = get_project_repo_uuid(proj_number)
+      projects[repo_uuid][:norm_open_issues] = projects[repo_uuid][:open_issues].to_f / max_closed_issues
+      projects[repo_uuid][:norm_closed_issues] = projects[repo_uuid][:closed_issues].to_f / max_closed_issues
+      projects[repo_uuid][:norm_resolution_efficiency] = 1 - projects[repo_uuid][:resolution_efficiency].to_f # reverse already normalized
+      projects[repo_uuid][:norm_open_issue_age] = projects[repo_uuid][:open_issue_age].to_f / max_open_issue_age
+      projects[repo_uuid][:norm_closed_issue_resolution_duration] = projects[repo_uuid][:closed_issue_resolution_duration].to_f / max_closed_issue_resolution_duration
+    end
+
+    # get rank for open_issues and add to project health
+    sort_open_issues = projects.sort_by {|key, value| value[:norm_open_issues]}
+    rank = 1
+    sort_open_issues.each do |proj|
+      projects[proj[0]][:rank_open_issues] = rank
+      rank += 1
+    end
+
+    # get rank for closed_issues and add to project health
+    sort_closed_issues = projects.sort_by {|key, value| value[:norm_closed_issues]}
+    rank = 1
+    sort_closed_issues.each do |proj|
+      projects[proj[0]][:rank_closed_issues] = rank
+      rank += 1
+    end
+
+    # get rank for resolution_efficiency and add to project health
+    sort_resolution_efficiency = projects.sort_by {|key, value| value[:norm_resolution_efficiency]}
+    rank = 1
+    sort_resolution_efficiency.each do |proj|
+      projects[proj[0]][:rank_resolution_efficiency] = rank
+      rank += 1
+    end
+
+    # get rank for open_issue_age and add to project health
+    sort_open_issue_age = projects.sort_by {|key, value| value[:norm_open_issue_age]}
+    rank = 1
+    sort_open_issue_age.each do |proj|
+      projects[proj[0]][:rank_open_issue_age] = rank
+      rank += 1
+    end
+
+    # get rank for closed_issue_resolution_duration and add to project health
+    sort_closed_issue_resolution_duration = projects.sort_by {|key, value| value[:norm_closed_issue_resolution_duration]}
+    rank = 1
+    sort_closed_issue_resolution_duration.each do |proj|
+      projects[proj[0]][:rank_closed_issue_resolution_duration] = rank
+      rank += 1
+    end
+
+
+    # include extreme values in output
+    projects[:max_open_issues] = max_open_issues
+    projects[:max_closed_issues] = max_closed_issues
+    projects[:min_resolution_efficiency] = min_resolution_efficiency
+    projects[:max_open_issue_age] = max_open_issue_age
+    projects[:max_closed_issue_resolution_duration] = max_closed_issue_resolution_duration
     projects
   end
   def open_issue(project=1, difficulty=0)

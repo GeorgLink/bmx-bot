@@ -96,7 +96,7 @@ time = Benchmark.measure do
     worker = FB.create(:user, email: "worker#{worker_id}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
     # skill = (1..3).to_a.sample
     skill = WORKER_SKILLS.sample
-    workers.push(Bmxsim_Worker_Treatment_NoMetricsWithPrices.new(worker, issue_tracker, skill, "w#{worker_id}"))
+    workers.push(Bmxsim_Worker_Treatment_Random.new(worker, issue_tracker, skill, "w#{worker_id}"))
     # group_size = NUMBER_OF_WORKERS/4
     # case worker_id
     # when (1..group_size)
