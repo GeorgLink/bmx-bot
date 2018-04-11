@@ -174,7 +174,7 @@ class Bmxsim_IssueTracker
     rank = 0
     prev_val = nil
     sort_open_issues.each do |proj|
-      rank += 1 unless prev_val == proj[1]
+      rank += 1 unless prev_val.eql? proj[1]
       prev_val = proj[1]
       projects[proj[0]][:rank_open_issues] = rank
     end
@@ -184,7 +184,7 @@ class Bmxsim_IssueTracker
     rank = 1
     prev_val = nil
     sort_closed_issues.each do |proj|
-      rank += 1 unless prev_val == proj[1]
+      rank += 1 unless prev_val.eql? proj[1]
       prev_val = proj[1]
       projects[proj[0]][:rank_closed_issues] = rank
     end
@@ -194,7 +194,7 @@ class Bmxsim_IssueTracker
     rank = 1
     prev_val = nil
     sort_resolution_efficiency.each do |proj|
-      rank += 1 unless prev_val == proj[1]
+      rank += 1 unless prev_val.eql? proj[1]
       prev_val = proj[1]
       projects[proj[0]][:rank_resolution_efficiency] = rank
     end
@@ -204,7 +204,7 @@ class Bmxsim_IssueTracker
     rank = 1
     prev_val = nil
     sort_open_issue_age.each do |proj|
-      rank += 1 unless prev_val == proj[1]
+      rank += 1 unless prev_val.eql? proj[1]
       prev_val = proj[1]
       projects[proj[0]][:rank_open_issue_age] = rank
     end
@@ -214,7 +214,7 @@ class Bmxsim_IssueTracker
     rank = 1
     prev_val = nil
     sort_closed_issue_resolution_duration.each do |proj|
-      rank += 1 unless prev_val == proj[1]
+      rank += 1 unless prev_val.eql? proj[1]
       prev_val = proj[1]
       projects[proj[0]][:rank_closed_issue_resolution_duration] = rank
     end
