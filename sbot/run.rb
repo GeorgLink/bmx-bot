@@ -37,7 +37,7 @@ time = Benchmark.measure do
   # output
   BMXSIM_OUTPUT = 1  # 0 no output, 1 slim output, 9 detailed output
   # CSV output file
-  CSV_FILE = 'sim_' + Time.now.to_s[0..18].gsub(/:/,'-') + '.csv'
+  CSV_FILE = 'simout/sim_' + Time.now.to_s[0..18].gsub(/\s/,'_').gsub(/:/,'-') + '.csv'
   File.new(CSV_FILE, "w").close
 
   # run in turbo mode
@@ -144,17 +144,27 @@ time = Benchmark.measure do
       STDOUT.write "\rresolve contracts: #{counter} / #{max_counter}" if BMXSIM_OUTPUT > 0
       ContractCmd::Resolve.new(contract).project
     end
+
+    # Write project health data to a
+    health_h = issue_tracker.get_project_health_all_projects.to_a
+    health_a = []
+    health_h.to_a.each do |key, val|
+      if val.is_a? then
+        health_a.push(val[1])
+      else
+        health_a.push(val)
+      end
+    end
+    CSV.open(CSV_FILE, "wb") do |csv|
+      csv << health_a
+    end
+
     #signal end of day
     puts " DAY COMPLETE"  if BMXSIM_OUTPUT > 0
     STDOUT.flush
     # continue_story  # wait for key press
   end
 
-  # Write project health data to a
-  issue_tracker.get_project_health(1)
-  CSV.open(CSV_FILE, "wb") do |csv|
-    csv << issue_tracker.get_project_health_all_projects.to_a
-  end
 
   # Calling binding.pry to allow investigating the state of the simulation
   # Type "c" to continue and end the program
