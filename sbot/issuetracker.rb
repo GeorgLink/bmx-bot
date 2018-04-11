@@ -171,42 +171,52 @@ class Bmxsim_IssueTracker
 
     # get rank for open_issues and add to project health
     sort_open_issues = projects.sort_by {|key, value| value[:norm_open_issues]}
-    rank = 1
+    rank = 0
+    prev_val = nil
     sort_open_issues.each do |proj|
+      rank += 1 unless prev_val == proj[1]
+      prev_val = proj[1]
       projects[proj[0]][:rank_open_issues] = rank
-      rank += 1
     end
 
     # get rank for closed_issues and add to project health
     sort_closed_issues = projects.sort_by {|key, value| value[:norm_closed_issues]}
     rank = 1
+    prev_val = nil
     sort_closed_issues.each do |proj|
+      rank += 1 unless prev_val == proj[1]
+      prev_val = proj[1]
       projects[proj[0]][:rank_closed_issues] = rank
-      rank += 1
     end
 
     # get rank for resolution_efficiency and add to project health
     sort_resolution_efficiency = projects.sort_by {|key, value| value[:norm_resolution_efficiency]}
     rank = 1
+    prev_val = nil
     sort_resolution_efficiency.each do |proj|
+      rank += 1 unless prev_val == proj[1]
+      prev_val = proj[1]
       projects[proj[0]][:rank_resolution_efficiency] = rank
-      rank += 1
     end
 
     # get rank for open_issue_age and add to project health
     sort_open_issue_age = projects.sort_by {|key, value| value[:norm_open_issue_age]}
     rank = 1
+    prev_val = nil
     sort_open_issue_age.each do |proj|
+      rank += 1 unless prev_val == proj[1]
+      prev_val = proj[1]
       projects[proj[0]][:rank_open_issue_age] = rank
-      rank += 1
     end
 
     # get rank for closed_issue_resolution_duration and add to project health
     sort_closed_issue_resolution_duration = projects.sort_by {|key, value| value[:norm_closed_issue_resolution_duration]}
     rank = 1
+    prev_val = nil
     sort_closed_issue_resolution_duration.each do |proj|
+      rank += 1 unless prev_val == proj[1]
+      prev_val = proj[1]
       projects[proj[0]][:rank_closed_issue_resolution_duration] = rank
-      rank += 1
     end
 
 
