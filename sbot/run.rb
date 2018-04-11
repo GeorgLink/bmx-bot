@@ -149,7 +149,7 @@ time = Benchmark.measure do
     health_h = issue_tracker.get_project_health_all_projects.to_a
     health_a = []
     health_h.to_a.each do |key, val|
-      if val.is_a? then
+      if val.is_a?(Array) then
         health_a.push(val[1])
       else
         health_a.push(val)
