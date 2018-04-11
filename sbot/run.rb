@@ -37,7 +37,7 @@ time = Benchmark.measure do
   # output
   BMXSIM_OUTPUT = 1  # 0 no output, 1 slim output, 9 detailed output
   # CSV output file
-  CVS_FILE = '~/georg/sim_' + Time.now.to_s[0..18].gsub(/:/,'-') + '.csv'
+  CSV_FILE = '~/georg/sim_' + Time.now.to_s[0..18].gsub(/:/,'-') + '.csv'
   File.new(CSV_FILE, "w").close
 
   # run in turbo mode
@@ -152,7 +152,7 @@ time = Benchmark.measure do
 
   # Write project health data to a
   issue_tracker.get_project_health(1)
-  CSV.open(CVS_FILE, "wb") do |csv|
+  CSV.open(CSV_FILE, "wb") do |csv|
     csv << issue_tracker.get_project_health_all_projects.to_a
   end
 
