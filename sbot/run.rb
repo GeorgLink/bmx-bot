@@ -38,6 +38,7 @@ time = Benchmark.measure do
   BMXSIM_OUTPUT = 1  # 0 no output, 1 slim output, 9 detailed output
   # CSV output file
   CVS_FILE = '~/georg/sim_' + Time.now.to_s[0..18].gsub(/:/,'-') + '.csv'
+  File.new(CSV_FILE, "w").close
 
   # run in turbo mode
   BMX_SAVE_EVENTS  = "FALSE"
