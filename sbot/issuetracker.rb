@@ -190,14 +190,14 @@ class Bmxsim_IssueTracker
     end
 
     # get rank for resolution_efficiency and add to project health
-    sort_resolution_efficiency = projects.sort_by {|key, value| value[:norm_resolution_efficiency]}
-    rank = 1
-    prev_val = nil
-    sort_resolution_efficiency.each do |proj|
-      rank += 1 unless prev_val.eql? proj[1]
-      prev_val = proj[1]
-      projects[proj[0]][:rank_resolution_efficiency] = rank
-    end
+    # sort_resolution_efficiency = projects.sort_by {|key, value| value[:norm_resolution_efficiency]}
+    # rank = 1
+    # prev_val = nil
+    # sort_resolution_efficiency.each do |proj|
+    #   rank += 1 unless prev_val.eql? proj[1]
+    #   prev_val = proj[1]
+    #   projects[proj[0]][:rank_resolution_efficiency] = rank
+    # end
 
     # get rank for open_issue_age and add to project health
     sort_open_issue_age = projects.sort_by {|key, value| value[:norm_open_issue_age]}
