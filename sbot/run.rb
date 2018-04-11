@@ -6,6 +6,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 require 'benchmark'
+require 'csv'
 time = Benchmark.measure do
   PROCNAME = "cscw_bot"
   Process.setproctitle(PROCNAME)
@@ -35,6 +36,8 @@ time = Benchmark.measure do
 
   # output
   BMXSIM_OUTPUT = 1  # 0 no output, 1 slim output, 9 detailed output
+  # CSV output file
+  CVS_FILE = '~/georg/sim_' + Time.now.to_s[0..18].gsub(/:/,'-') + '.csv'
 
   # run in turbo mode
   BMX_SAVE_EVENTS  = "FALSE"
@@ -146,9 +149,14 @@ time = Benchmark.measure do
     # continue_story  # wait for key press
   end
 
+  # Write project health data to a
+  issue_tracker.get_project_health(1)
+  CSV.open(CVS_FILE, "wb") do |csv|
+    csv << issue_tracker.get_project_health_all_projects.to_a
+  end
+
   # Calling binding.pry to allow investigating the state of the simulation
   # Type "c" to continue and end the program
-  issue_tracker.get_project_health(1)
   binding.pry
   puts "--------------------------- simulation finished ---------------------------"
 end
