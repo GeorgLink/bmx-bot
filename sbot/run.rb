@@ -155,7 +155,7 @@ time = Benchmark.measure do
         health_a.push(val)
       end
     end
-    CSV.open(CSV_FILE, "wb") do |csv|
+    CSV.open(CSV_FILE, "ab") do |csv|
       csv << health_a
     end
 
