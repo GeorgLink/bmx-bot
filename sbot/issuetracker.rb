@@ -103,6 +103,7 @@ class Bmxsim_IssueTracker
 
     # issues with open contracts
     abandoned_issue_count = Issue.open.where.not(uuid: Offer.open.where('expiration > ?', BugmTime.now).select('stm_issue_uuid')).where.not(uuid: Contract.open.select('stm_issue_uuid')).count
+    abandoned_issue_count = 1.0 if abandoned_issue_count.nan?
     # abandoned_issue_count = Issue.open.where('uuid NOT IN (?)', Offer.open.where('expiration > ?', BugmTime.now).select('stm_issue_uuid')).where('uuid NOT IN (?)', Contract.open.select('stm_issue_uuid')).count
 
 
