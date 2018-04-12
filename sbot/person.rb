@@ -34,7 +34,19 @@ class Bmxsim_Funder_FixedPay < Bmxsim_Funder
     # Create n issues and one offer each
     n = NUMBER_OF_ISSUES_DAILY_PER_FUNDER
     (1..n).to_a.each do
-      issue = @tracker.open_issue(@project)
+      difficulty = 1
+      difficulty_c = (1..100).to_a.sample
+      case difficulty_c
+      when (1..30)
+        difficulty = 1
+      when (31..60)
+        difficulty = 2
+      when (61..90)
+        difficulty = 3
+      else
+        difficulty = 4
+      end
+      issue = @tracker.open_issue(@project, difficulty)
 
       # args is a hash
       args  = {
@@ -42,6 +54,7 @@ class Bmxsim_Funder_FixedPay < Bmxsim_Funder
         price: 1.00,  # always fixed price 1
         volume: 100,
         stm_issue_uuid: issue.uuid,
+        expiration: BugmTime.end_of_day(MATURATION_DAYS_IN_FUTURE),
         maturation: BugmTime.end_of_day(MATURATION_DAYS_IN_FUTURE)
       }
       offer = FB.create(:offer_bu, args).offer
@@ -196,6 +209,33 @@ class Bmxsim_Worker
 end
 
 
+# ===== Worker: Randomly choose one offer =====
+#
+class Bmxsim_Worker_Treatment_Random < Bmxsim_Worker
+  def do_trade
+    # find an open offer to match and associated issue
+
+    # Filter by unassigned, since we want offers that are still up for the taking
+    offers = Offer.unassigned
+    # then filter by cost<balance to be able to counter the offer
+    offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
+    # randomly select an offer UUI
+    offer = offers.order('RANDOM()').first
+
+    if !offer.nil? && offer.valid?
+      projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
+      counter = projection.offer
+      if counter.valid?
+        ContractCmd::Cross.new(counter, :expand).project
+        # binding.pry
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).pluck('exid')[0]
+        @issue_workingon = @tracker.get_issue(issue_id.to_i)
+      end
+    end
+  end
+end
+
+
 # ===== Worker: No Metrics, No Prices =====
 #
 # MR: In the initial simulation all workers are modeled as having the same
@@ -211,9 +251,9 @@ end
 # In this treatment workers are "in the dark". They have no price signals
 # and no metrics. They do, however, see the maturation date of each issue.
 # Because workers know their skill level, they reason in one of these ways:
-# => 1) Pick an issue arbitrarily.
-# => 2) Pick an issue with maturation date >= 3 units of time (days) from now to be
-# sure that the task is successfully completed and the unknown reward paid.
+# => 1) Pick an issue arbitrarily. (random)
+# => 2) Pick an issue with latest possible maturation date to be
+# sure that the task is successfully completed and the unknown reward paid. (risk averse)
 #
 # More reflective of the current way of peer production, we can try setting
 # maturation dates to all be very far out thereby making them irrelevant in
@@ -223,22 +263,41 @@ end
 #           to complete the issue is 3 days. Thus, a worker will only match
 #           offers that are at least two days in the future (3 days of work)
 #
-class Bmxsim_Worker_Treatment_NoMetricsNoPrices < Bmxsim_Worker
+class Bmxsim_Worker_Treatment_NoMetricsNoPrices_riskAverse < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
 
-    # select first by maturation range, at least 2 days in the future
-    matures_after_days = 2
-    #   the 90 day end is chosen arbitrarily
-    offers = Offer.by_maturation_range(BugmTime.end_of_day(matures_after_days)..BugmTime.end_of_day(90))
     # then filter by unassigned, since we want offers that are still up for the taking
-    offers = offers.unassigned
+    offers = Offer.unassigned
     # then filter by cost<balance to be able to counter the offer
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
-    # get all UUIDs
-    offers_uuid = offers.pluck('uuid')
-    # randomly select an offer
-    offer = Offer.where(uuid: offers_uuid.sample).first
+    # randomly select an offer UUI
+    offer = offers.order('maturation_range desc').first
+
+    if !offer.nil? && offer.valid?
+      projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
+      counter = projection.offer
+      if counter.valid?
+        ContractCmd::Cross.new(counter, :expand).project
+        # binding.pry
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).pluck('exid')[0]
+        @issue_workingon = @tracker.get_issue(issue_id.to_i)
+      end
+    end
+  end
+end
+
+
+class Bmxsim_Worker_Treatment_NoMetricsNoPrices_random < Bmxsim_Worker
+  def do_trade
+    # find an open offer to match and associated issue
+
+    # Filter by unassigned, since we want offers that are still up for the taking
+    offers = Offer.unassigned
+    # then filter by cost<balance to be able to counter the offer
+    offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
+    # randomly select an offer UUI
+    offer = offers.order('RANDOM()').select('uuid').first['uuid']
 
     if !offer.nil? && offer.valid?
       projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
@@ -263,15 +322,43 @@ end
 #
 # => Given a set of existing, open issues, decide in one of these ways:
 # => 1) Pick an issue with the highest reward. If more than one such issue
-# => then tie-break with issue with later maturation date.
-# => 2) Pick an issue with maturation date >= 3 units of time from now. If
-# => more than one such issue then tie-break with issue with highest reward.
+# => then tie-break with issue with later maturation date. (rewardSeeking)
+# => 2) Pick an issue with latest possible maturation date. If
+# => more than one such issue then tie-break with issue with highest reward. (riskAverse)
 #
-class Bmxsim_Worker_Treatment_NoMetricsWithPrices < Bmxsim_Worker
+class Bmxsim_Worker_Treatment_NoMetricsWithPrices_riskAverse < Bmxsim_Worker
+  #version 2
   def do_trade
     # find an open offer to match and associated issue
 
-    # find most profitable and soon outpaying offer
+    # find most profitable offer with latest possible maturation
+
+    # then filter by unassigned, since we want offers that are still up for the taking
+    offers = Offer.unassigned
+    # then filter by max_cost to counter the offer
+    offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
+    # then get the most paying but furthest in the future maturation date
+    offer = offers.order('value asc, maturation_range desc').first
+    if !offer.nil? && offer.valid?
+      projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
+      counter = projection.offer
+      if counter.valid?
+        ContractCmd::Cross.new(counter, :expand).project
+        # binding.pry
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).pluck('exid')[0]
+        @issue_workingon = @tracker.get_issue(issue_id.to_i)
+      end
+    end
+
+  end
+end
+
+class Bmxsim_Worker_Treatment_NoMetricsWithPrices_rewardSeeking < Bmxsim_Worker
+  #version 1
+  def do_trade
+    # find an open offer to match and associated issue
+
+    # find soon outpaying offer
 
     # select first by maturation range, at least 2 days in the future
     matures_after_days = 2
@@ -306,21 +393,6 @@ end
 # => the maturation date allows sufficient time given diff_estimate. This is
 # => similar to the NoPricesNoMetrics_FullTaskInfoNoTimeLimit treatment.
 #
-class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
-  def do_trade
-    # find an open offer to match and associated issue
-  end
-end
-
-
-# ===== Worker: Yes Health Metrics, No Market Metrics, Yes Prices =====
-#
-# MR: Not fully fleshed out yet. The idea is as follows:
-# => Health Metrics used to compute a "difficulty estimate or likelihood",
-# => referred to as diff_estimate. Workers choose to work on issues with the
-# => highest reward subject to the maturation date allowing sufficient time
-# => given diff_estimate.
-#
 # => Consider the health metric, resolution_efficiency. Redefine it as
 # => resolution_efficiency = number of closed issues / (number of closed +
 # => number of abandoned issues) to avoid divide by zero problems. This term
@@ -347,12 +419,72 @@ end
 # => The health metric, open_issue_age, may be interpreted similarly to
 # => resolution_efficiency.
 #
-class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
+class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
+
+    # difficulty level = probabilistic (start with resolution efficiency)
+
+    # health metrics are used to rank projects on each metric
+    # normalized [0..1] for each metric +. add them together and calculate global rank
+# --> 1 best, 0 worst
+# --> this makes sure we always have a project at 1
+# --> if projects are close together in one metric, then it will be weighted less compared to another metric
+
+#  alternatively: rank separtely
+#  -->
+
+# --> future work: workers learn, which metric is most indicative of difficulty
+
+# focus on issue resolution efficiency and closed issue resolution duration
+#  --> flat out ranking
+# randomize other three
+#  --> create dividing threashold, percentiles
+
+# MR: Global ranking of projects: for each project take the average of the
+# normalized scores for the various health metric (make sure the scores all
+# run in the same direction, e.g., 0 implies easy and 1 implies difficult).
+# Thus workers can select according to the global ranking or the separate metric
+# tankings of the projects.
+
+
+
+    # 1st: guess the average difficulty level of issues (on a project)
+    # filter out issues that are expected to not be completed on time
+    #  --> where statement for each project filtering minimum maturation date
+    # 2nd:
+    # option 1: random selection
+    # option 2: latest maturation date
+    # option 3: soonest maturation date
+
+
+    # select first by maturation range, at least 2 days in the future
+    matures_after_days = 2
+    #   the 90 day end is chosen arbitrarily
+    offers = Offer.by_maturation_range(BugmTime.end_of_day(matures_after_days)..BugmTime.end_of_day(90))
+
+
   end
 end
 
+
+# ===== Worker: Yes Health Metrics, No Market Metrics, Yes Prices =====
+#
+class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
+  def do_trade
+    # find an open offer to match and associated issue
+
+
+  # same as without price and then choose most valuable (highest reward, not yet discounted of reward)
+
+    projects_health = @tracker.get_project_health_all_projects
+    projects_health.each do |proj_h|
+      puts proj_h[:resolution_efficiency]
+    end
+  end
+end
+
+# Ignore everything down for now!
 
 class Bmxsim_Worker_Treatment_MarketMetrics < Bmxsim_Worker
   def do_trade
