@@ -6,6 +6,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 require 'benchmark'
+require 'csv'
 time = Benchmark.measure do
   PROCNAME = "cscw_bot"
   Process.setproctitle(PROCNAME)
@@ -24,17 +25,20 @@ time = Benchmark.measure do
   end
 
   # SIMULATION PARAMETERS
-  NUMBER_OF_WORKERS = 1
-  NUMBER_OF_FUNDERS = 1  # equals number of projects
+  NUMBER_OF_WORKERS = 100
+  NUMBER_OF_FUNDERS = 5  # equals number of projects
   NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 10  # equals number of offers created; #issue=#offer
-  MATURATION_DAYS_IN_FUTURE = 5 # end of:  0 = today, 1 = tomorrow
+  MATURATION_DAYS_IN_FUTURE = 2 # end of:  0 = today, 1 = tomorrow
   FUNDER_STARTING_BALANCE = 100000000
   WORKER_STARTING_BALANCE = 0
   WORKER_SKILLS = [1]  # ability to randomly create workers with different skills
-  RUN_SIMULATION_DAYS = 60
+  RUN_SIMULATION_DAYS = 365
 
   # output
   BMXSIM_OUTPUT = 1  # 0 no output, 1 slim output, 9 detailed output
+  # CSV output file
+  CSV_FILE = 'simout/sim_' + Time.now.to_s[0..18].gsub(/\s/,'_').gsub(/:/,'-') + '.csv'
+  File.new(CSV_FILE, "w").close
 
   # run in turbo mode
   BMX_SAVE_EVENTS  = "FALSE"
@@ -58,6 +62,7 @@ time = Benchmark.measure do
   STDOUT.flush
 
   require File.expand_path("~/src/bugmark/config/environment")
+  # binding.pry
 
   # delete all host data and create admin user
   BugmHost.reset
@@ -96,7 +101,7 @@ time = Benchmark.measure do
     worker = FB.create(:user, email: "worker#{worker_id}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
     # skill = (1..3).to_a.sample
     skill = WORKER_SKILLS.sample
-    workers.push(Bmxsim_Worker_Treatment_NoMetricsWithPrices.new(worker, issue_tracker, skill, "w#{worker_id}"))
+    workers.push(Bmxsim_Worker_Treatment_Random.new(worker, issue_tracker, skill, "w#{worker_id}"))
     # group_size = NUMBER_OF_WORKERS/4
     # case worker_id
     # when (1..group_size)
@@ -139,16 +144,36 @@ time = Benchmark.measure do
       STDOUT.write "\rresolve contracts: #{counter} / #{max_counter}" if BMXSIM_OUTPUT > 0
       ContractCmd::Resolve.new(contract).project
     end
+
+    # Write project health data to a
+    health_h = issue_tracker.get_project_health_all_projects.to_a
+    health_a = []
+    health_h.to_a.each do |val|
+      if val[1].is_a?(Hash) then  # this is a project
+        health_a.push(val[0])  # uuid of project
+        health_a.push(val[1][:open_issues])
+        health_a.push(val[1][:closed_issues])
+        health_a.push(val[1][:resolution_efficiency])
+        health_a.push(val[1][:open_issue_age])
+        health_a.push(val[1][:closed_issue_resolution_duration])
+      else
+        health_a.push(val[1])
+      end
+    end
+    CSV.open(CSV_FILE, "ab") do |csv|
+      csv << health_a
+    end
+
     #signal end of day
     puts " DAY COMPLETE"  if BMXSIM_OUTPUT > 0
     STDOUT.flush
     # continue_story  # wait for key press
   end
 
+
   # Calling binding.pry to allow investigating the state of the simulation
   # Type "c" to continue and end the program
-  issue_tracker.get_project_health(1)
-  binding.pry
+  # binding.pry
   puts "--------------------------- simulation finished ---------------------------"
 end
 puts time
