@@ -180,7 +180,6 @@ class Bmxsim_IssueTracker
       end
     end
 
-# TODO: fix if rank order should be the same based on value
 
     # get rank for open_issues and add to project health
     sort_open_issues = projects.sort_by {|key, value| value[:norm_open_issues]}
@@ -201,7 +200,7 @@ class Bmxsim_IssueTracker
       prev_val = proj[1]
       projects[proj[0]][:rank_closed_issues] = rank
     end
-    binding.pry
+
     # get rank for resolution_efficiency and add to project health
     sort_resolution_efficiency = projects.sort_by {|key, value| value[:norm_resolution_efficiency]}
     rank = 1
