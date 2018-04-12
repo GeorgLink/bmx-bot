@@ -25,8 +25,8 @@ time = Benchmark.measure do
   end
 
   # SIMULATION PARAMETERS
-  NUMBER_OF_WORKERS = 1
-  NUMBER_OF_FUNDERS = 1  # equals number of projects
+  NUMBER_OF_WORKERS = 5
+  NUMBER_OF_FUNDERS = 5  # equals number of projects
   NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 2  # equals number of offers created; #issue=#offer
   MATURATION_DAYS_IN_FUTURE = 2 # end of:  0 = today, 1 = tomorrow
   FUNDER_STARTING_BALANCE = 100000000
@@ -155,7 +155,7 @@ time = Benchmark.measure do
         health_a.push(val[1][:closed_issues])
         health_a.push(val[1][:resolution_efficiency])
         health_a.push(val[1][:open_issue_age])
-        health_a.push(val[1][:closed_issue_resolution_duration]) 
+        health_a.push(val[1][:closed_issue_resolution_duration])
       else
         health_a.push(val[1])
       end
