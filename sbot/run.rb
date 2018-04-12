@@ -148,11 +148,16 @@ time = Benchmark.measure do
     # Write project health data to a
     health_h = issue_tracker.get_project_health_all_projects.to_a
     health_a = []
-    health_h.to_a.each do |key, val|
-      if val.is_a?(Array) then
-        health_a.push(val[1])
+    health_h.to_a.each do |val|
+      if val[1].is_a?(Hash) then  # this is a project
+        health_a.push(val[0])  # uuid of project
+        health_a.push(val[1][:open_issues])
+        health_a.push(val[1][:closed_issues])
+        health_a.push(val[1][:resolution_efficiency])
+        health_a.push(val[1][:open_issue_age])
+        health_a.push(val[1][:closed_issue_resolution_duration]) 
       else
-        health_a.push(val)
+        health_a.push(val[1])
       end
     end
     CSV.open(CSV_FILE, "ab") do |csv|
