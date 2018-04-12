@@ -28,7 +28,7 @@ time = Benchmark.measure do
   NUMBER_OF_WORKERS = 1
   NUMBER_OF_FUNDERS = 1  # equals number of projects
   NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 2  # equals number of offers created; #issue=#offer
-  MATURATION_DAYS_IN_FUTURE = 0 # end of:  0 = today, 1 = tomorrow
+  MATURATION_DAYS_IN_FUTURE = 1 # end of:  0 = today, 1 = tomorrow
   FUNDER_STARTING_BALANCE = 100000000
   WORKER_STARTING_BALANCE = 0
   WORKER_SKILLS = [1]  # ability to randomly create workers with different skills
