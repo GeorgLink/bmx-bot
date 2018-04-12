@@ -201,6 +201,7 @@ class Bmxsim_IssueTracker
       projects[proj[0]][:rank_closed_issues] = rank
     end
 
+    bindings.pry
     # get rank for resolution_efficiency and add to project health
     sort_resolution_efficiency = projects.sort_by {|key, value| value[:norm_resolution_efficiency]}
     rank = 1
