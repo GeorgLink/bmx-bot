@@ -156,11 +156,27 @@ class Bmxsim_IssueTracker
     # Normalize health metrics for each Project
     get_projects.to_a.each do |proj_number,repo_uuid|
       # repo_uuid = get_project_repo_uuid(proj_number)
-      projects[repo_uuid][:norm_open_issues] = projects[repo_uuid][:open_issues].to_f / max_closed_issues
-      projects[repo_uuid][:norm_closed_issues] = projects[repo_uuid][:closed_issues].to_f / max_closed_issues
+      unless max_open_issues == 0.0 then
+        projects[repo_uuid][:norm_open_issues] = projects[repo_uuid][:open_issues].to_f / max_closed_issues
+      else
+        projects[repo_uuid][:norm_open_issues] = 0.0
+      end
+      unless max_closed_issues == 0.0 then
+        projects[repo_uuid][:norm_closed_issues] = projects[repo_uuid][:closed_issues].to_f / max_closed_issues
+      else
+        projects[repo_uuid][:norm_closed_issues] = 0.0
+      end
       projects[repo_uuid][:norm_resolution_efficiency] = 1 - projects[repo_uuid][:resolution_efficiency].to_f # reverse already normalized
-      projects[repo_uuid][:norm_open_issue_age] = projects[repo_uuid][:open_issue_age].to_f / max_open_issue_age
-      projects[repo_uuid][:norm_closed_issue_resolution_duration] = projects[repo_uuid][:closed_issue_resolution_duration].to_f / max_closed_issue_resolution_duration
+      unless max_open_issue_age == 0.0 then
+        projects[repo_uuid][:norm_open_issue_age] = projects[repo_uuid][:open_issue_age].to_f / max_open_issue_age
+      else
+        projects[repo_uuid][:norm_open_issue_age] = 0.0
+      end
+      unless max_closed_issue_resolution_duration == 0.0 then
+        projects[repo_uuid][:norm_closed_issue_resolution_duration] = projects[repo_uuid][:closed_issue_resolution_duration].to_f / max_closed_issue_resolution_duration
+      else
+        projects[repo_uuid][:norm_closed_issue_resolution_duration] = 0.0
+      end
     end
 
 # TODO: fix if rank order should be the same based on value
