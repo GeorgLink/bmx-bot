@@ -441,6 +441,12 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
 # randomize other three
 #  --> create dividing threashold, percentiles
 
+# MR: Global ranking of projects: for each project take the average of the
+# normalized scores for the various health metric (make sure the scores all
+# run in the same direction, e.g., 0 implies easy and 1 implies difficult).
+# Thus workers can select according to the global ranking or the separate metric
+# tankings of the projects.
+
 
 
     # 1st: guess the average difficulty level of issues (on a project)
@@ -463,12 +469,6 @@ end
 
 
 # ===== Worker: Yes Health Metrics, No Market Metrics, Yes Prices =====
-#
-# MR: Not fully fleshed out yet. The idea is as follows:
-# => Health Metrics used to compute a "difficulty estimate or likelihood",
-# => referred to as diff_estimate. Workers choose to work on issues with the
-# => highest reward subject to the maturation date allowing sufficient time
-# => given diff_estimate.
 #
 class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
   def do_trade
