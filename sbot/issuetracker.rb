@@ -93,10 +93,12 @@ class Bmxsim_IssueTracker
     }
 
     # Open Issues --> What is the number of open issues?
-    proj_health[:open_issues] = Issue.where(stm_repo_uuid: "#{repo_uuid}").open.count
+    proj_health[:open_issues] = Issue.where(stm_repo_uuid: "#{repo_uuid}").open.count.to_f
+    proj_health[:open_issues] = 1.0 if proj_health[:open_issues].nan?
 
     # Closed Issues --> What is the number of closed issues?
-    proj_health[:closed_issues] = Issue.where(stm_repo_uuid: "#{repo_uuid}").closed.count
+    proj_health[:closed_issues] = Issue.where(stm_repo_uuid: "#{repo_uuid}").closed.count.to_f
+    proj_health[:closed_issues] = 1.0 if proj_health[:closed_issues].nan?
 
     # Issue Resolution Efficiency --> What is the number of closed issues/number of abandoned issues?
     # abandoned issue = open issue with no no offer and no open contract
@@ -107,7 +109,7 @@ class Bmxsim_IssueTracker
     # abandoned_issue_count = Issue.open.where('uuid NOT IN (?)', Offer.open.where('expiration > ?', BugmTime.now).select('stm_issue_uuid')).where('uuid NOT IN (?)', Contract.open.select('stm_issue_uuid')).count
 
 
-    proj_health[:resolution_efficiency] = proj_health[:closed_issues].to_f / (proj_health[:closed_issues].to_f + abandoned_issue_count.to_f)
+    proj_health[:resolution_efficiency] = proj_health[:closed_issues] / (proj_health[:closed_issues] + abandoned_issue_count)
 
     # Open Issue Age --> What is the the age of open issues?
     ages = 0
