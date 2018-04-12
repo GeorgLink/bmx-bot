@@ -173,7 +173,7 @@ time = Benchmark.measure do
 
   # Calling binding.pry to allow investigating the state of the simulation
   # Type "c" to continue and end the program
-  binding.pry
+  # binding.pry
   puts "--------------------------- simulation finished ---------------------------"
 end
 puts time
