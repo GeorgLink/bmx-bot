@@ -34,7 +34,7 @@ class Bmxsim_Funder_FixedPay < Bmxsim_Funder
     # Create n issues and one offer each
     n = NUMBER_OF_ISSUES_DAILY_PER_FUNDER
     (1..n).to_a.each do
-      issue = @tracker.open_issue(@project)
+      issue = @tracker.open_issue(@project, 1)
 
       # args is a hash
       args  = {

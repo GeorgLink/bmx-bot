@@ -32,7 +32,7 @@ time = Benchmark.measure do
   FUNDER_STARTING_BALANCE = 100000000
   WORKER_STARTING_BALANCE = 0
   WORKER_SKILLS = [1]  # ability to randomly create workers with different skills
-  RUN_SIMULATION_DAYS = 2
+  RUN_SIMULATION_DAYS = 3
 
   # output
   BMXSIM_OUTPUT = 1  # 0 no output, 1 slim output, 9 detailed output
