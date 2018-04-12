@@ -25,14 +25,14 @@ time = Benchmark.measure do
   end
 
   # SIMULATION PARAMETERS
-  NUMBER_OF_WORKERS = 5
+  NUMBER_OF_WORKERS = 100
   NUMBER_OF_FUNDERS = 5  # equals number of projects
-  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 2  # equals number of offers created; #issue=#offer
+  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 10  # equals number of offers created; #issue=#offer
   MATURATION_DAYS_IN_FUTURE = 2 # end of:  0 = today, 1 = tomorrow
   FUNDER_STARTING_BALANCE = 100000000
   WORKER_STARTING_BALANCE = 0
   WORKER_SKILLS = [1]  # ability to randomly create workers with different skills
-  RUN_SIMULATION_DAYS = 9
+  RUN_SIMULATION_DAYS = 365
 
   # output
   BMXSIM_OUTPUT = 1  # 0 no output, 1 slim output, 9 detailed output

@@ -34,7 +34,19 @@ class Bmxsim_Funder_FixedPay < Bmxsim_Funder
     # Create n issues and one offer each
     n = NUMBER_OF_ISSUES_DAILY_PER_FUNDER
     (1..n).to_a.each do
-      issue = @tracker.open_issue(@project, 1)
+      difficulty = 1
+      difficulty_c = (1..100).to_a.sample
+      case difficulty_c
+      when (1..30)
+        difficulty = 1
+      when (31..60)
+        difficulty = 2
+      when (61..90)
+        difficulty = 3
+      else
+        difficulty = 4
+      end
+      issue = @tracker.open_issue(@project, difficulty)
 
       # args is a hash
       args  = {
