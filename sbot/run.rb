@@ -25,24 +25,48 @@ time = Benchmark.measure do
   end
 
   # SIMULATION PARAMETERS
-  NUMBER_OF_WORKERS = 100
+  NUMBER_OF_WORKERS = 5
   NUMBER_OF_FUNDERS = 5  # equals number of projects
-  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 10  # equals number of offers created; #issue=#offer
+  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 2  # equals number of offers created; #issue=#offer
   MATURATION_DAYS_IN_FUTURE = 2 # end of:  0 = today, 1 = tomorrow
   FUNDER_STARTING_BALANCE = 100000000
   WORKER_STARTING_BALANCE = 0
   WORKER_SKILLS = [1]  # ability to randomly create workers with different skills
-  RUN_SIMULATION_DAYS = 365
+  RUN_SIMULATION_DAYS = 10
 
   # output
   BMXSIM_OUTPUT = 1  # 0 no output, 1 slim output, 9 detailed output
-  # CSV output file
-  CSV_FILE = 'simout/sim_' + Time.now.to_s[0..18].gsub(/\s/,'_').gsub(/:/,'-') + '.csv'
-  File.new(CSV_FILE, "w").close
 
   # run in turbo mode
   BMX_SAVE_EVENTS  = "FALSE"
   BMX_SAVE_METRICS = "FALSE"
+
+  # CSV output file
+  CSV_FILE = 'simout/sim_' + Time.now.to_s[0..18].gsub(/\s/,'_').gsub(/:/,'-') + '.csv'
+  File.new(CSV_FILE, "w").close
+  health_a = ["day"]
+  (1..NUMBER_OF_FUNDERS).to_a.each do |val|
+    health_a.push("Proj.#{val} uuid")  # uuid of project
+    health_a.push("Proj.#{val} open_issues")
+    health_a.push("Proj.#{val} closed_issues")
+    health_a.push("Proj.#{val} resolution_efficiency")
+    health_a.push("Proj.#{val} open_issue_age")
+    health_a.push("Proj.#{val} closed_issue_resolution_duration")
+    health_a.push("Proj.#{val} norm_open_issues")
+    health_a.push("Proj.#{val} norm_closed_issues")
+    health_a.push("Proj.#{val} norm_resolution_efficiency")
+    health_a.push("Proj.#{val} norm_open_issue_age")
+    health_a.push("Proj.#{val} norm_closed_issue_resolution_duration")
+  end
+  health_a.push("max_open_issues")
+  health_a.push("max_closed_issues")
+  health_a.push("max_resolution_efficiency")
+  health_a.push("max_open_issue_age")
+  health_a.push("max_closed_issue_resolution_duration")
+
+  CSV.open(CSV_FILE, "ab") do |csv|
+    csv << health_a
+  end
 
   # global day variable
   $sim_day = 0
@@ -147,7 +171,7 @@ time = Benchmark.measure do
 
     # Write project health data to a
     health_h = issue_tracker.get_project_health_all_projects.to_a
-    health_a = []
+    health_a = [$sim_day]
     health_h.to_a.each do |val|
       if val[1].is_a?(Hash) then  # this is a project
         health_a.push(val[0])  # uuid of project
@@ -156,6 +180,11 @@ time = Benchmark.measure do
         health_a.push(val[1][:resolution_efficiency])
         health_a.push(val[1][:open_issue_age])
         health_a.push(val[1][:closed_issue_resolution_duration])
+        health_a.push(val[1][:norm_open_issues])
+        health_a.push(val[1][:norm_closed_issues])
+        health_a.push(val[1][:norm_resolution_efficiency])
+        health_a.push(val[1][:norm_open_issue_age])
+        health_a.push(val[1][:norm_closed_issue_resolution_duration])
       else
         health_a.push(val[1])
       end
