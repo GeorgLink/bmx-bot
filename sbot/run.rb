@@ -71,7 +71,7 @@ time = Benchmark.measure do
   out_file.puts("")
   out_file.close
   health_a = ["day"]
-  (1..NUMBER_OF_FUNDERS).to_a.each do |val|
+  FUNDERS.each do |val|
     health_a.push("Proj.#{val} uuid")  # uuid of project
     health_a.push("Proj.#{val} open_issues")
     health_a.push("Proj.#{val} closed_issues")
