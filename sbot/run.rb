@@ -31,7 +31,7 @@ time = Benchmark.measure do
   # - randomPay
   # - inversePay
   # - correlatedpay
-  FUNDERS = ['random']  # number of elements equals number of projects
+  FUNDERS = ['randomPay', 'fixedPay', 'inversePay', 'correlatedpay']  # number of elements equals number of projects
   # #issue=#offer created
   NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 2  # value is 0..maximum
   MATURATION_DAYS_IN_FUTURE = 2 # end of:  0 = today, 1 = tomorrow
