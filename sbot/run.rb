@@ -44,6 +44,8 @@ time = Benchmark.measure do
   # CSV output file
   CSV_FILE = 'simout/sim_' + Time.now.to_s[0..18].gsub(/\s/,'_').gsub(/:/,'-') + '.csv'
   out_file = File.new(CSV_FILE, "w")
+  # Save the parameters
+  out_file.puts("GIT SHA1 = #{`git rev-parse HEAD`}")
   out_file.puts("NUMBER_OF_WORKERS = #{NUMBER_OF_WORKERS}")
   out_file.puts("NUMBER_OF_FUNDERS = #{NUMBER_OF_FUNDERS}")
   out_file.puts("NUMBER_OF_ISSUES_DAILY_PER_FUNDER = #{NUMBER_OF_ISSUES_DAILY_PER_FUNDER}")
