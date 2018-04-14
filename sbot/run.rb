@@ -25,7 +25,7 @@ time = Benchmark.measure do
   end
 
   # SIMULATION PARAMETERS
-  NUMBER_OF_WORKERS = 5
+  NUMBER_OF_WORKERS = 10
   # funder options:
   # - fixedPay
   # - randomPay
@@ -38,7 +38,7 @@ time = Benchmark.measure do
   FUNDER_STARTING_BALANCE = 100000000
   WORKER_STARTING_BALANCE = 1000
   WORKER_SKILLS = [1]  # ability to randomly create workers with different skills
-  RUN_SIMULATION_DAYS = 10
+  RUN_SIMULATION_DAYS = 365
   # PRICES and DIFFICULTIES need to have the same number of elements
   # PRICES are float values. The first value is fixed price bot's value
   PRICES = [0.95, 0.90, 0.85, 0.80]

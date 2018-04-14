@@ -63,8 +63,6 @@ class Bmxsim_Funder_FixedPay < Bmxsim_Funder
       }
       offer = FB.create(:offer_bu, args).offer
       ContractCmd::Cross.new(offer, :expand).project
-      # args[:offer] = offer
-      # issue.add_offer_bu(args)
     end
   end
 end
@@ -95,9 +93,6 @@ class Bmxsim_Funder_InversePay < Bmxsim_Funder
       }
       offer = FB.create(:offer_bu, args).offer
       ContractCmd::Cross.new(offer, :expand).project
-      args[:offer] = offer
-      issue.add_offer_bu(args)
-      # binding.pry
     end
   end
 end
@@ -128,9 +123,6 @@ class Bmxsim_Funder_CorrelatedPay < Bmxsim_Funder
       }
       offer = FB.create(:offer_bu, args).offer
       ContractCmd::Cross.new(offer, :expand).project
-      args[:offer] = offer
-      issue.add_offer_bu(args)
-      # binding.pry
     end
   end
 end
@@ -159,8 +151,6 @@ class Bmxsim_Funder_RandomPay < Bmxsim_Funder
       }
       offer = FB.create(:offer_bu, args).offer
       ContractCmd::Cross.new(offer, :expand).project
-      # args[:offer] = offer
-      # issue.add_offer_bu(args)
     end
 
   end
