@@ -26,8 +26,13 @@ time = Benchmark.measure do
 
   # SIMULATION PARAMETERS
   NUMBER_OF_WORKERS = 5
-  NUMBER_OF_FUNDERS = 5  # equals number of projects
-  # maximum number of offers created; #issue=#offer
+  # funder options:
+  # - fixedPay
+  # - randomPay
+  # - inversePay
+  # - correlatedpay
+  FUNDERS = ['random']  # number of elements equals number of projects
+  # #issue=#offer created
   NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 2  # value is 0..maximum
   MATURATION_DAYS_IN_FUTURE = 2 # end of:  0 = today, 1 = tomorrow
   FUNDER_STARTING_BALANCE = 100000000
@@ -54,7 +59,7 @@ time = Benchmark.measure do
   out_file.puts("GIT SHA1 = #{`git rev-parse HEAD`}")
   out_file.puts("Time.now = #{Time.now}")
   out_file.puts("NUMBER_OF_WORKERS = #{NUMBER_OF_WORKERS}")
-  out_file.puts("NUMBER_OF_FUNDERS = #{NUMBER_OF_FUNDERS}")
+  out_file.puts("FUNDERS = #{FUNDERS}")
   out_file.puts("NUMBER_OF_ISSUES_DAILY_PER_FUNDER = #{NUMBER_OF_ISSUES_DAILY_PER_FUNDER}")
   out_file.puts("MATURATION_DAYS_IN_FUTURE = #{MATURATION_DAYS_IN_FUTURE}")
   out_file.puts("FUNDER_STARTING_BALANCE = #{FUNDER_STARTING_BALANCE}")
@@ -124,20 +129,29 @@ time = Benchmark.measure do
 
   # create funders and workers
   funders = []
-  (1..NUMBER_OF_FUNDERS).to_a.each do |funder_id|
-    STDOUT.write "\rcreate funders: #{funder_id} / #{NUMBER_OF_FUNDERS}"  if BMXSIM_OUTPUT > 0
-    funder = FB.create(:user, email: "funder#{funder_id}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
-    funders.push(Bmxsim_Funder_FixedPay.new(funder, issue_tracker, funder_id))
-    # case funder_id
-    # when 1
-    #   funders.push(Bmxsim_Funder_InversePay.new(funder, issue_tracker))
-    # when 2
-    #   funders.push(Bmxsim_Funder_CorrelatedPay.new(funder, issue_tracker))
-    # when 3
-    #   funders.push(Bmxsim_Funder_FixedPay.new(funder, issue_tracker))
-    # else
-    #   funders.push(Bmxsim_Funder_RandomPay.new(funder, issue_tracker))
-    # end
+  # FUNDERS options:
+  # - fixedPay
+  # - randomPay
+  # - inversePay
+  # - correlatedpay
+  project = 0
+  (FUNDERS).to_a.each do |funder_type|
+    project += 1
+    STDOUT.write "\rcreate funders: #{project} / #{FUNDERS.length}"  if BMXSIM_OUTPUT > 0
+    funder = FB.create(:user, email: "funder#{funder_type}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
+    case funder_type
+    when 'fixedPay'
+      funders.push(Bmxsim_Funder_FixedPay.new(funder, issue_tracker, project))
+    when 'randomPay'
+      funders.push(Bmxsim_Funder_RandomPay.new(funder, issue_tracker, project))
+    when 'inversePay'
+      funders.push(Bmxsim_Funder_InversePay.new(funder, issue_tracker, project))
+    when 'correlatedpay'
+      funders.push(Bmxsim_Funder_CorrelatedPay.new(funder, issue_tracker, project))
+    else
+      puts 'ERROR: unknown funder'
+      raise "ERROR: unknown funder"
+    end
   end
   puts "" if BMXSIM_OUTPUT > 0
   workers = []
