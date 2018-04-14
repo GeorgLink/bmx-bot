@@ -43,7 +43,17 @@ time = Benchmark.measure do
 
   # CSV output file
   CSV_FILE = 'simout/sim_' + Time.now.to_s[0..18].gsub(/\s/,'_').gsub(/:/,'-') + '.csv'
-  File.new(CSV_FILE, "w").close
+  out_file = File.new(CSV_FILE, "w")
+  out_file.puts("NUMBER_OF_WORKERS = #{NUMBER_OF_WORKERS}")
+  out_file.puts("NUMBER_OF_FUNDERS = #{NUMBER_OF_FUNDERS}")
+  out_file.puts("NUMBER_OF_ISSUES_DAILY_PER_FUNDER = #{NUMBER_OF_ISSUES_DAILY_PER_FUNDER}")
+  out_file.puts("MATURATION_DAYS_IN_FUTURE = #{MATURATION_DAYS_IN_FUTURE}")
+  out_file.puts("FUNDER_STARTING_BALANCE = #{FUNDER_STARTING_BALANCE}")
+  out_file.puts("WORKER_STARTING_BALANCE = #{WORKER_STARTING_BALANCE}")
+  out_file.puts("WORKER_SKILLS = #{WORKER_SKILLS}")
+  out_file.puts("RUN_SIMULATION_DAYS = #{RUN_SIMULATION_DAYS}")
+  out_file.puts("")
+  out_file.close
   health_a = ["day"]
   (1..NUMBER_OF_FUNDERS).to_a.each do |val|
     health_a.push("Proj.#{val} uuid")  # uuid of project
