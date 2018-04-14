@@ -116,7 +116,7 @@ class Bmxsim_Funder_CorrelatedPay < Bmxsim_Funder
       issue = @tracker.open_issue(@project, difficulty)
 
       # determine price
-      price = PRICES[PRICES.lenght-difficulty]
+      price = PRICES[PRICES.length-difficulty]
 
       # args is a hash
       args  = {
