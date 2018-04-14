@@ -5,6 +5,17 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 
+# Utility function
+def difficulty_picker(options)
+  # from https://stackoverflow.com/questions/19261061/picking-a-random-option-where-each-option-has-a-different-probability-of-being
+  current, max = 0, options.values.inject(:+)
+  random_value = rand(max) + 1
+  options.each do |key,val|
+     current += val
+     return key if random_value <= current
+  end
+end
+
 # ##################################################
 # #  FUNDERS
 # ##################################################
@@ -32,26 +43,20 @@ class Bmxsim_Funder_FixedPay < Bmxsim_Funder
     # function being called by simulation for funder to do something
 
     # Create n issues and one offer each
-    n = NUMBER_OF_ISSUES_DAILY_PER_FUNDER
-    (1..n).to_a.each do
-      difficulty = 1
-      difficulty_c = (1..100).to_a.sample
-      case difficulty_c
-      when (1..30)
-        difficulty = 1
-      when (31..60)
-        difficulty = 2
-      when (61..90)
-        difficulty = 3
-      else
-        difficulty = 4
-      end
+    n = (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample
+    (1..n).to_a.sample.times do
+
+      # create issue
+      difficulty = difficulty_picker(DIFFICULTIES)
       issue = @tracker.open_issue(@project, difficulty)
+
+      # determine price
+      price = PRICES[0]
 
       # args is a hash
       args  = {
         user_uuid: @uuid,
-        price: 1.00,  # always fixed price 1
+        price: price,  # always fixed price 1
         volume: 100,
         stm_issue_uuid: issue.uuid,
         expiration: BugmTime.end_of_day(MATURATION_DAYS_IN_FUTURE),
@@ -72,14 +77,20 @@ class Bmxsim_Funder_InversePay < Bmxsim_Funder
     # function being called by simulation for funder to do something
 
     # Create n issues and one offer each
-    n = NUMBER_OF_ISSUES_DAILY_PER_FUNDER
-    (1..n).to_a.each do
-      issue = @tracker.open_issue(@project)
+    n = (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample
+    (1..n).to_a.sample.times do
+
+      # create issue
+      difficulty = difficulty_picker(DIFFICULTIES)
+      issue = @tracker.open_issue(@project, difficulty)
+
+      # determine price
+      price = PRICES[difficulty-1]
 
       # args is a hash
       args  = {
         user_uuid: @uuid,
-        price: (1.0/(issue.get_difficulty+1)).round(2),
+        price: (price).round(2),
         volume: 100,
         stm_issue_uuid: issue.uuid,
         maturation: BugmTime.end_of_day(MATURATION_DAYS_IN_FUTURE)
@@ -100,14 +111,20 @@ class Bmxsim_Funder_CorrelatedPay < Bmxsim_Funder
     # function being called by simulation for funder to do something
 
     # Create n issues and one offer each
-    n = NUMBER_OF_ISSUES_DAILY_PER_FUNDER
-    (1..n).to_a.each do
-      issue = @tracker.open_issue(@project)
+    n = (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample
+    (1..n).to_a.sample.times do
+
+      # create issue
+      difficulty = difficulty_picker(DIFFICULTIES)
+      issue = @tracker.open_issue(@project, difficulty)
+
+      # determine price
+      price = PRICES[PRICES.lenght-difficulty]
 
       # args is a hash
       args  = {
         user_uuid: @uuid,
-        price: (1.0*(issue.get_difficulty+1)/4).round(2),
+        price: (price).round(2),
         volume: 100,
         stm_issue_uuid: issue.uuid,
         maturation: BugmTime.end_of_day(MATURATION_DAYS_IN_FUTURE)
@@ -127,17 +144,19 @@ class Bmxsim_Funder_RandomPay < Bmxsim_Funder
   def do_work
     # function being called by simulation for funder to do something
 
-    prices = [1.00, 0.75, 0.50, 0.25]  # available prices
 
     # Create n issues and one offer each
-    n = NUMBER_OF_ISSUES_DAILY_PER_FUNDER
-    (1..n).to_a.each do
-      issue = @tracker.open_issue(@project)
+    n = (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample
+    (1..n).to_a.sample.times do
+      difficulty = difficulty_picker(DIFFICULTIES)
+      issue = @tracker.open_issue(@project, difficulty)
+
+      price = PRICES.sample
 
       # args is a hash
       args  = {
         user_uuid: @uuid,
-        price: prices.sample,  # randomly choose one of the prices
+        price: price,  # randomly choose one of the prices
         volume: 100,
         stm_issue_uuid: issue.uuid,
         maturation: BugmTime.end_of_day(MATURATION_DAYS_IN_FUTURE)

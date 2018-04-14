@@ -27,12 +27,18 @@ time = Benchmark.measure do
   # SIMULATION PARAMETERS
   NUMBER_OF_WORKERS = 5
   NUMBER_OF_FUNDERS = 5  # equals number of projects
-  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 2  # equals number of offers created; #issue=#offer
+  # maximum number of offers created; #issue=#offer
+  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 2  # value is 0..maximum
   MATURATION_DAYS_IN_FUTURE = 2 # end of:  0 = today, 1 = tomorrow
   FUNDER_STARTING_BALANCE = 100000000
-  WORKER_STARTING_BALANCE = 0
+  WORKER_STARTING_BALANCE = 1000
   WORKER_SKILLS = [1]  # ability to randomly create workers with different skills
   RUN_SIMULATION_DAYS = 10
+  # PRICES and DIFFICULTIES need to have the same number of elements
+  # PRICES are float values. The first value is fixed price bot's value
+  PRICES = [0.95, 0.90, 0.85, 0.80]
+  # the keys for DIFFICULTIES need to be integers
+  DIFFICULTIES = { 1 => 30, 2 => 30, 3 => 30, 4 => 10}
 
   # output
   BMXSIM_OUTPUT = 1  # 0 no output, 1 slim output, 9 detailed output
@@ -46,6 +52,7 @@ time = Benchmark.measure do
   out_file = File.new(CSV_FILE, "w")
   # Save the parameters
   out_file.puts("GIT SHA1 = #{`git rev-parse HEAD`}")
+  out_file.puts("Time.now = #{Time.now}")
   out_file.puts("NUMBER_OF_WORKERS = #{NUMBER_OF_WORKERS}")
   out_file.puts("NUMBER_OF_FUNDERS = #{NUMBER_OF_FUNDERS}")
   out_file.puts("NUMBER_OF_ISSUES_DAILY_PER_FUNDER = #{NUMBER_OF_ISSUES_DAILY_PER_FUNDER}")
@@ -54,6 +61,8 @@ time = Benchmark.measure do
   out_file.puts("WORKER_STARTING_BALANCE = #{WORKER_STARTING_BALANCE}")
   out_file.puts("WORKER_SKILLS = #{WORKER_SKILLS}")
   out_file.puts("RUN_SIMULATION_DAYS = #{RUN_SIMULATION_DAYS}")
+  out_file.puts("PRICES = #{PRICES}")
+  out_file.puts("DIFFICULTIES = #{DIFFICULTIES}")
   out_file.puts("")
   out_file.close
   health_a = ["day"]
