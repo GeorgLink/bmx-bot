@@ -196,48 +196,48 @@ class Bmxsim_IssueTracker
     rank = 0
     prev_val = nil
     sort_open_issues.each do |proj|
-      rank += 1 unless prev_val.eql? proj[1]
-      prev_val = proj[1]
+      rank += 1 unless prev_val.eql? proj[1][:norm_open_issues]
+      prev_val = proj[1][:norm_open_issues]
       projects[proj[0]][:rank_open_issues] = rank
     end
 
     # get rank for closed_issues and add to project health
     sort_closed_issues = projects.sort_by {|key, value| value[:norm_closed_issues].to_f}
-    rank = 1
+    rank = 0
     prev_val = nil
     sort_closed_issues.each do |proj|
-      rank += 1 unless prev_val.eql? proj[1]
-      prev_val = proj[1]
+      rank += 1 unless prev_val.eql? proj[1][:norm_closed_issues]
+      prev_val = proj[1][:norm_closed_issues]
       projects[proj[0]][:rank_closed_issues] = rank
     end
 
     # get rank for resolution_efficiency and add to project health
     sort_resolution_efficiency = projects.sort_by {|key, value| value[:norm_resolution_efficiency].to_f}
-    rank = 1
+    rank = 0
     prev_val = nil
     sort_resolution_efficiency.each do |proj|
-      rank += 1 unless prev_val.eql? proj[1]
-      prev_val = proj[1]
+      rank += 1 unless prev_val.eql? proj[1][:norm_resolution_efficiency]
+      prev_val = proj[1][:norm_resolution_efficiency]
       projects[proj[0]][:rank_resolution_efficiency] = rank
     end
 
     # get rank for open_issue_age and add to project health
     sort_open_issue_age = projects.sort_by {|key, value| value[:norm_open_issue_age].to_f}
-    rank = 1
+    rank = 0
     prev_val = nil
     sort_open_issue_age.each do |proj|
-      rank += 1 unless prev_val.eql? proj[1]
-      prev_val = proj[1]
+      rank += 1 unless prev_val.eql? proj[1][:norm_open_issue_age]
+      prev_val = proj[1][:norm_open_issue_age]
       projects[proj[0]][:rank_open_issue_age] = rank
     end
 
     # get rank for closed_issue_resolution_duration and add to project health
     sort_closed_issue_resolution_duration = projects.sort_by {|key, value| value[:norm_closed_issue_resolution_duration].to_f}
-    rank = 1
+    rank = 0
     prev_val = nil
     sort_closed_issue_resolution_duration.each do |proj|
-      rank += 1 unless prev_val.eql? proj[1]
-      prev_val = proj[1]
+      rank += 1 unless prev_val.eql? proj[1][:norm_closed_issue_resolution_duration]
+      prev_val = proj[1][:norm_closed_issue_resolution_duration]
       projects[proj[0]][:rank_closed_issue_resolution_duration] = rank
     end
 
