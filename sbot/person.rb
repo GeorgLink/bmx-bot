@@ -285,7 +285,7 @@ class Bmxsim_Worker_Treatment_NoMetricsNoPrices_riskAverse < Bmxsim_Worker
       if counter.valid?
         ContractCmd::Cross.new(counter, :expand).project
         # binding.pry
-        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first.pluck('exid')[0]
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first[:exid]
         @issue_workingon = @tracker.get_issue(issue_id.to_i)
       end
     end
@@ -310,7 +310,7 @@ class Bmxsim_Worker_Treatment_NoMetricsNoPrices_random < Bmxsim_Worker
       if counter.valid?
         ContractCmd::Cross.new(counter, :expand).project
         # binding.pry
-        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first.pluck('exid')[0]
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first[:exid]
         @issue_workingon = @tracker.get_issue(issue_id.to_i)
       end
     end
@@ -350,7 +350,7 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices_riskAverse < Bmxsim_Worker
       if counter.valid?
         ContractCmd::Cross.new(counter, :expand).project
         # binding.pry
-        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first.pluck('exid')[0]
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first[:exid]
         @issue_workingon = @tracker.get_issue(issue_id.to_i)
       end
     end
@@ -381,7 +381,7 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices_rewardSeeking < Bmxsim_Worker
       if counter.valid?
         ContractCmd::Cross.new(counter, :expand).project
         # binding.pry
-        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first.pluck('exid')[0]
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first[:exid]
         @issue_workingon = @tracker.get_issue(issue_id.to_i)
       end
     end
