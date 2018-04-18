@@ -136,7 +136,11 @@ class Bmxsim_IssueTracker
         issues += 1
       end
     end
-    proj_health[:closed_issue_resolution_duration] = ages.to_f/issues.to_f
+    if issues.to_f == 0 then
+      proj_health[:closed_issue_resolution_duration] = 0
+    else
+      proj_health[:closed_issue_resolution_duration] = ages.to_f/issues.to_f
+    end
 
     return proj_health
   end
@@ -165,7 +169,7 @@ class Bmxsim_IssueTracker
     get_projects.to_a.each do |proj_number,repo_uuid|
       # repo_uuid = get_project_repo_uuid(proj_number)
       unless max_open_issues == 0.0 then
-        projects[repo_uuid][:norm_open_issues] = projects[repo_uuid][:open_issues].to_f / max_closed_issues
+        projects[repo_uuid][:norm_open_issues] = projects[repo_uuid][:open_issues].to_f / max_open_issues
       else
         projects[repo_uuid][:norm_open_issues] = 0.0
       end
