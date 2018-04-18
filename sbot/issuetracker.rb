@@ -181,7 +181,7 @@ class Bmxsim_IssueTracker
       else
         projects[repo_uuid][:norm_closed_issue_resolution_duration] = 0.0
       end
-      binding.pry if projects[repo_uuid][:norm_open_issues].is_nil
+      binding.pry if projects[repo_uuid][:norm_open_issues].nil?
     end
 
 
