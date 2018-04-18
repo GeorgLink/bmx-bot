@@ -46,7 +46,7 @@ time = Benchmark.measure do
     'NoMetricsNoPrices_riskAverse' => 1,
     'NoMetricsNoPrices_random' => 1,
     'NoMetricsWithPrices_riskAverse' => 1,
-    # 'NoMetricsWithPrices_rewardSeeking' => 1,
+    'NoMetricsWithPrices_rewardSeeking' => 1,
     # 'HealthMetricsNoPrices' => 0,
     # 'HealthMetricsWithPrices' => 0,
     # not yet functional:
