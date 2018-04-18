@@ -181,10 +181,10 @@ class Bmxsim_IssueTracker
       else
         projects[repo_uuid][:norm_closed_issue_resolution_duration] = 0.0
       end
-      binding.pry if projects[repo_uuid][:norm_open_issues].nil?
     end
 
 
+    binding.pry
     # get rank for open_issues and add to project health
     sort_open_issues = projects.sort_by {|key, value| value[:norm_open_issues].to_f}
     rank = 0
