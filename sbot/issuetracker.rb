@@ -121,13 +121,17 @@ class Bmxsim_IssueTracker
         issues += 1
       end
     end
-    proj_health[:open_issue_age] = ages.to_f/issues.to_f
+    if issues.to_f == 0 then
+      proj_health[:open_issue_age] = 0.0
+    else
+      proj_health[:open_issue_age] = ages.to_f/issues.to_f
+    end
 
     # Closed Issue Resolution Duration --> What is the duration of time for issues to be resolved?
     ages = 0
     issues = 0
     @issues.each do |iss|
-      if iss.get_status == 'closed'
+      if iss.get_status == 'closed' then
         ages += iss.get_resolution_days
         issues += 1
       end
