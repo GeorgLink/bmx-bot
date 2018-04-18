@@ -25,7 +25,34 @@ time = Benchmark.measure do
   end
 
   # SIMULATION PARAMETERS
-  NUMBER_OF_WORKERS = 10
+  # worker options (provide number of each in hash)
+  # - Random
+  # - NoMetricsNoPrices_riskAverse
+  # - NoMetricsNoPrices_random
+  # - NoMetricsWithPrices_riskAverse
+  # - NoMetricsWithPrices_rewardSeeking
+  # - HealthMetricsNoPrices
+  # - HealthMetricsWithPrices
+  # Options not yet functional:
+  # - MarketMetrics
+  # - BothMetrics
+  # - NoPricesNoMetrics_FullTaskInfoNoTimeLimit
+  # - NoPricesNoMetrics_FullTaskInfoWithTimeLimit
+  WORKERS = {
+    'Random' => 5,
+    'NoMetricsNoPrices_riskAverse' => 5,
+    'NoMetricsNoPrices_random' => 5,
+    'NoMetricsWithPrices_riskAverse' => 5,
+    'NoMetricsWithPrices_rewardSeeking' => 5,
+    'HealthMetricsNoPrices' => 0,
+    'HealthMetricsWithPrices' => 0,
+    # not yet functional:
+    'MarketMetrics' => 0,
+    'BothMetrics' => 0,
+    'NoPricesNoMetrics_FullTaskInfoNoTimeLimit' => 0,
+    'NoPricesNoMetrics_FullTaskInfoWithTimeLimit' => 0,
+  }
+
   # funder options:
   # - fixedPay
   # - randomPay
@@ -38,12 +65,14 @@ time = Benchmark.measure do
   FUNDER_STARTING_BALANCE = 100000000
   WORKER_STARTING_BALANCE = 1000
   WORKER_SKILLS = [1]  # ability to randomly create workers with different skills
-  RUN_SIMULATION_DAYS = 365
+  RUN_SIMULATION_DAYS = 10
   # PRICES and DIFFICULTIES need to have the same number of elements
   # PRICES are float values. The first value is fixed price bot's value
   PRICES = [0.95, 0.90, 0.85, 0.80]
   # the keys for DIFFICULTIES need to be integers
   DIFFICULTIES = { 1 => 30, 2 => 30, 3 => 30, 4 => 10}
+  # 10% chance that issue can never be finished by skill-1 worker
+  # equal chance for other three difficulties
 
   # output
   BMXSIM_OUTPUT = 1  # 0 no output, 1 slim output, 9 detailed output
@@ -59,6 +88,7 @@ time = Benchmark.measure do
   out_file.puts("GIT SHA1 = #{`git rev-parse HEAD`}")
   out_file.puts("Time.now = #{Time.now}")
   out_file.puts("NUMBER_OF_WORKERS = #{NUMBER_OF_WORKERS}")
+  out_file.puts("WORKERS = #{WORKERS}")
   out_file.puts("FUNDERS = #{FUNDERS}")
   out_file.puts("NUMBER_OF_ISSUES_DAILY_PER_FUNDER = #{NUMBER_OF_ISSUES_DAILY_PER_FUNDER}")
   out_file.puts("MATURATION_DAYS_IN_FUTURE = #{MATURATION_DAYS_IN_FUTURE}")
@@ -68,7 +98,7 @@ time = Benchmark.measure do
   out_file.puts("RUN_SIMULATION_DAYS = #{RUN_SIMULATION_DAYS}")
   out_file.puts("PRICES = #{PRICES}")
   out_file.puts("DIFFICULTIES = #{DIFFICULTIES}")
-  out_file.puts("")
+  out_file.puts("")  # empty line before health metrics are output
   out_file.close
   health_a = ["day"]
   FUNDERS.each do |val|

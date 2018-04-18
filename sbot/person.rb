@@ -74,7 +74,7 @@ class Bmxsim_Funder_InversePay < Bmxsim_Funder
     # function being called by simulation for funder to do something
 
     # Create n issues and one offer each
-    (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.times do
+    (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.to_i.times do
 
       # create issue
       difficulty = difficulty_picker(DIFFICULTIES)
@@ -104,7 +104,7 @@ class Bmxsim_Funder_CorrelatedPay < Bmxsim_Funder
     # function being called by simulation for funder to do something
 
     # Create n issues and one offer each
-    (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.times do
+    (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.to_i.times do
 
       # create issue
       difficulty = difficulty_picker(DIFFICULTIES)
@@ -135,7 +135,7 @@ class Bmxsim_Funder_RandomPay < Bmxsim_Funder
 
 
     # Create n issues and one offer each
-    (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.times do
+    (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.to_i.times do
       difficulty = difficulty_picker(DIFFICULTIES)
       issue = @tracker.open_issue(@project, difficulty)
 
