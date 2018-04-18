@@ -247,7 +247,6 @@ class Bmxsim_IssueTracker
     projects[:min_resolution_efficiency] = min_resolution_efficiency
     projects[:max_open_issue_age] = max_open_issue_age
     projects[:max_closed_issue_resolution_duration] = max_closed_issue_resolution_duration
-    binding.pry
     projects
   end
   def open_issue(project=1, difficulty=0)
