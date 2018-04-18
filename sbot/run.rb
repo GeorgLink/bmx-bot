@@ -25,6 +25,9 @@ time = Benchmark.measure do
   end
 
   # SIMULATION PARAMETERS
+  RUN_SIMULATION_DAYS = 10
+
+  # ==== workers ====
   # worker options (provide number of each in hash)
   # - Random
   # - NoMetricsNoPrices_riskAverse
@@ -39,33 +42,39 @@ time = Benchmark.measure do
   # - NoPricesNoMetrics_FullTaskInfoNoTimeLimit
   # - NoPricesNoMetrics_FullTaskInfoWithTimeLimit
   WORKERS = {
-    'Random' => 5,
-    'NoMetricsNoPrices_riskAverse' => 5,
-    'NoMetricsNoPrices_random' => 5,
-    'NoMetricsWithPrices_riskAverse' => 5,
-    'NoMetricsWithPrices_rewardSeeking' => 5,
+    'Random' => 1,
+    'NoMetricsNoPrices_riskAverse' => 1,
+    'NoMetricsNoPrices_random' => 1,
+    'NoMetricsWithPrices_riskAverse' => 1,
+    'NoMetricsWithPrices_rewardSeeking' => 1,
     'HealthMetricsNoPrices' => 0,
     'HealthMetricsWithPrices' => 0,
     # not yet functional:
-    'MarketMetrics' => 0,
-    'BothMetrics' => 0,
-    'NoPricesNoMetrics_FullTaskInfoNoTimeLimit' => 0,
-    'NoPricesNoMetrics_FullTaskInfoWithTimeLimit' => 0,
+    # 'MarketMetrics' => 0,
+    # 'BothMetrics' => 0,
+    # 'NoPricesNoMetrics_FullTaskInfoNoTimeLimit' => 0,
+    # 'NoPricesNoMetrics_FullTaskInfoWithTimeLimit' => 0,
   }
+  WORKER_STARTING_BALANCE = 1000
+  WORKER_SKILLS = [1]  # option to randomly assign different skills to  workers
 
+  # ==== funders ====
   # funder options:
   # - fixedPay
   # - randomPay
   # - inversePay
   # - correlatedpay
-  FUNDERS = ['randomPay', 'fixedPay', 'inversePay', 'correlatedpay']  # number of elements equals number of projects
-  # #issue=#offer created
-  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 2  # value is 0..maximum
-  MATURATION_DAYS_IN_FUTURE = 2 # end of:  0 = today, 1 = tomorrow
+  FUNDERS = [
+    'randomPay',
+    'fixedPay',
+    'inversePay',
+    'correlatedpay',
+  ]  # each funder represents a single project
   FUNDER_STARTING_BALANCE = 100000000
-  WORKER_STARTING_BALANCE = 1000
-  WORKER_SKILLS = [1]  # ability to randomly create workers with different skills
-  RUN_SIMULATION_DAYS = 10
+
+  # ==== issues and contracts ====
+  # #issue=#offer created
+  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 1  # value is 0..maximum
   # PRICES and DIFFICULTIES need to have the same number of elements
   # PRICES are float values. The first value is fixed price bot's value
   PRICES = [0.95, 0.90, 0.85, 0.80]
@@ -73,6 +82,8 @@ time = Benchmark.measure do
   DIFFICULTIES = { 1 => 30, 2 => 30, 3 => 30, 4 => 10}
   # 10% chance that issue can never be finished by skill-1 worker
   # equal chance for other three difficulties
+  MATURATION_DAYS_IN_FUTURE = 2 # end of:  0 = today, 1 = tomorrow
+
 
   # output
   BMXSIM_OUTPUT = 1  # 0 no output, 1 slim output, 9 detailed output
@@ -168,7 +179,7 @@ time = Benchmark.measure do
   (FUNDERS).to_a.each do |funder_type|
     project += 1
     STDOUT.write "\rcreate funders: #{project} / #{FUNDERS.length}"  if BMXSIM_OUTPUT > 0
-    funder = FB.create(:user, email: "funder#{funder_type}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
+    funder = FB.create(:user, email: "funder#{funder_type}_#{funder_type}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
     case funder_type
     when 'fixedPay'
       funders.push(Bmxsim_Funder_FixedPay.new(funder, issue_tracker, project))
@@ -185,23 +196,44 @@ time = Benchmark.measure do
   end
   puts "" if BMXSIM_OUTPUT > 0
   workers = []
-  (1..NUMBER_OF_WORKERS).to_a.each do |worker_id|
-    STDOUT.write "\rcreate workers: #{worker_id} / #{NUMBER_OF_WORKERS}" if BMXSIM_OUTPUT > 0
-    worker = FB.create(:user, email: "worker#{worker_id}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
-    # skill = (1..3).to_a.sample
-    skill = WORKER_SKILLS.sample
-    workers.push(Bmxsim_Worker_Treatment_Random.new(worker, issue_tracker, skill, "w#{worker_id}"))
-    # group_size = NUMBER_OF_WORKERS/4
-    # case worker_id
-    # when (1..group_size)
-    #   workers.push(Bmxsim_Worker_Treatment_NoMetrics.new(worker, issue_tracker, skill))
-    # when ((group_size+1)..(2*group_size))
-    #   workers.push(Bmxsim_Worker_Treatment_HealthMetrics.new(worker, issue_tracker, skill))
-    # when ((2*group_size+1)..(3*group_size))
-    #   workers.push(Bmxsim_Worker_Treatment_MarketMetrics.new(worker, issue_tracker, skill))
-    # else
-    #   workers.push(Bmxsim_Worker_Treatment_BothMetrics.new(worker, issue_tracker, skill))
-    # end
+  number_of_workers = 0
+  WORKERS.to_a.each {|v| number_of_workers += v[1]}
+  worker_id = 0
+  WORKERS.each do |worker_type, worker_number|
+    worker_number.times do
+      worker_id += 1
+      STDOUT.write "\rcreate workers: #{worker_id} / #{number_of_workers}" if BMXSIM_OUTPUT > 0
+      worker = FB.create(:user, email: "worker#{worker_id}_#{worker_type}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
+      skill = WORKER_SKILLS.sample
+      case worker_type
+      when 'Random'
+        workers.push(Bmxsim_Worker_Treatment_Random.new(worker, issue_tracker, skill, "w#{worker_id}"))
+      when 'NoMetricsNoPrices_riskAverse'
+        workers.push(Bmxsim_Worker_Treatment_NoMetricsNoPrices_riskAverse.new(worker, issue_tracker, skill, "w#{worker_id}"))
+      when 'NoMetricsNoPrices_random'
+        workers.push(Bmxsim_Worker_Treatment_NoMetricsNoPrices_random.new(worker, issue_tracker, skill, "w#{worker_id}"))
+      when 'NoMetricsWithPrices_riskAverse'
+        workers.push(Bmxsim_Worker_Treatment_NoMetricsWithPrices_riskAverse.new(worker, issue_tracker, skill, "w#{worker_id}"))
+      when 'NoMetricsWithPrices_rewardSeeking'
+        workers.push(Bmxsim_Worker_Treatment_NoMetricsWithPrices_rewardSeeking.new(worker, issue_tracker, skill, "w#{worker_id}"))
+      when 'HealthMetricsNoPrices'
+        workers.push(Bmxsim_Worker_Treatment_HealthMetricsNoPrices.new(worker, issue_tracker, skill, "w#{worker_id}"))
+      when 'HealthMetricsWithPrices'
+        workers.push(Bmxsim_Worker_Treatment_HealthMetricsWithPrices.new(worker, issue_tracker, skill, "w#{worker_id}"))
+      # Not working yet:
+      # when 'MarketMetrics'
+      #   workers.push(Bmxsim_Worker_Treatment_MarketMetrics.new(worker, issue_tracker, skill, "w#{worker_id}"))
+      # when 'BothMetrics'
+      #   workers.push(Bmxsim_Worker_Treatment_BothMetrics.new(worker, issue_tracker, skill, "w#{worker_id}"))
+      # when 'NoPricesNoMetrics_FullTaskInfoNoTimeLimit'
+      #   workers.push(Bmxsim_Worker_Treatment_NoPricesNoMetrics_FullTaskInfoNoTimeLimit.new(worker, issue_tracker, skill, "w#{worker_id}"))
+      # when 'NoPricesNoMetrics_FullTaskInfoWithTimeLimit'
+      #   workers.push(Bmxsim_Worker_Treatment_NoPricesNoMetrics_FullTaskInfoWithTimeLimit.new(worker, issue_tracker, skill, "w#{worker_id}"))
+      else
+        puts 'ERROR: unknown worker'
+        raise "ERROR: unknown worker"
+      end
+    end
   end
   puts "" if BMXSIM_OUTPUT > 0
 
