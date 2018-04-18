@@ -98,17 +98,16 @@ time = Benchmark.measure do
   # Save the parameters
   out_file.puts("GIT SHA1 = #{`git rev-parse HEAD`}")
   out_file.puts("Time.now = #{Time.now}")
-  out_file.puts("NUMBER_OF_WORKERS = #{NUMBER_OF_WORKERS}")
+  out_file.puts("RUN_SIMULATION_DAYS = #{RUN_SIMULATION_DAYS}")
   out_file.puts("WORKERS = #{WORKERS}")
-  out_file.puts("FUNDERS = #{FUNDERS}")
-  out_file.puts("NUMBER_OF_ISSUES_DAILY_PER_FUNDER = #{NUMBER_OF_ISSUES_DAILY_PER_FUNDER}")
-  out_file.puts("MATURATION_DAYS_IN_FUTURE = #{MATURATION_DAYS_IN_FUTURE}")
-  out_file.puts("FUNDER_STARTING_BALANCE = #{FUNDER_STARTING_BALANCE}")
   out_file.puts("WORKER_STARTING_BALANCE = #{WORKER_STARTING_BALANCE}")
   out_file.puts("WORKER_SKILLS = #{WORKER_SKILLS}")
-  out_file.puts("RUN_SIMULATION_DAYS = #{RUN_SIMULATION_DAYS}")
+  out_file.puts("FUNDERS = #{FUNDERS}")
+  out_file.puts("FUNDER_STARTING_BALANCE = #{FUNDER_STARTING_BALANCE}")
+  out_file.puts("NUMBER_OF_ISSUES_DAILY_PER_FUNDER = #{NUMBER_OF_ISSUES_DAILY_PER_FUNDER}")
   out_file.puts("PRICES = #{PRICES}")
   out_file.puts("DIFFICULTIES = #{DIFFICULTIES}")
+  out_file.puts("MATURATION_DAYS_IN_FUTURE = #{MATURATION_DAYS_IN_FUTURE}")
   out_file.puts("")  # empty line before health metrics are output
   out_file.close
   health_a = ["day"]
