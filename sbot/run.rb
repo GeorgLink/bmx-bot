@@ -25,7 +25,7 @@ time = Benchmark.measure do
   end
 
   # SIMULATION PARAMETERS
-  RUN_SIMULATION_DAYS = 10
+  RUN_SIMULATION_DAYS = 1780
 
   # ==== workers ====
   # worker options (provide number of each in hash)
@@ -66,9 +66,9 @@ time = Benchmark.measure do
   # - correlatedpay
   FUNDERS = [
     'randomPay',
-    # 'fixedPay',
-    # 'inversePay',
-    # 'correlatedpay',
+    'fixedPay',
+    'inversePay',
+    'correlatedpay',
   ]  # each funder represents a single project
   FUNDER_STARTING_BALANCE = 100000000
 
@@ -178,7 +178,7 @@ time = Benchmark.measure do
   (FUNDERS).to_a.each do |funder_type|
     project += 1
     STDOUT.write "\rcreate funders: #{project} / #{FUNDERS.length}"  if BMXSIM_OUTPUT > 0
-    funder = FB.create(:user, email: "funder#{funder_type}_#{funder_type}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
+    funder = FB.create(:user, email: "funder#{project}_#{funder_type}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
     case funder_type
     when 'fixedPay'
       funders.push(Bmxsim_Funder_FixedPay.new(funder, issue_tracker, project))
@@ -235,7 +235,7 @@ time = Benchmark.measure do
     end
   end
   puts "" if BMXSIM_OUTPUT > 0
-
+binding.pry
   # loop for each day
   (1..RUN_SIMULATION_DAYS).to_a.each do |day|
     puts "Day #{day}: #{BugmTime.now}"  if BMXSIM_OUTPUT > 0
