@@ -191,8 +191,6 @@ class Bmxsim_IssueTracker
       end
     end
 
-
-    binding.pry
     # get rank for open_issues and add to project health
     sort_open_issues = projects.sort_by {|key, value| value[:norm_open_issues].to_f}
     rank = 0
@@ -243,13 +241,13 @@ class Bmxsim_IssueTracker
       projects[proj[0]][:rank_closed_issue_resolution_duration] = rank
     end
 
-
     # include extreme values in output
     projects[:max_open_issues] = max_open_issues
     projects[:max_closed_issues] = max_closed_issues
     projects[:min_resolution_efficiency] = min_resolution_efficiency
     projects[:max_open_issue_age] = max_open_issue_age
     projects[:max_closed_issue_resolution_duration] = max_closed_issue_resolution_duration
+    binding.pry
     projects
   end
   def open_issue(project=1, difficulty=0)
