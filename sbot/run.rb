@@ -25,7 +25,7 @@ time = Benchmark.measure do
   end
 
   # SIMULATION PARAMETERS
-  RUN_SIMULATION_DAYS = 1780
+  RUN_SIMULATION_DAYS = 10
 
   # ==== workers ====
   # worker options (provide number of each in hash)
@@ -293,6 +293,14 @@ binding.pry
     puts " DAY COMPLETE"  if BMXSIM_OUTPUT > 0
     STDOUT.flush
     # continue_story  # wait for key press
+  end
+
+  # output user balances
+  CSV.open(CSV_FILE, "ab") do |csv|
+    User.all.each do |u|
+      user = [u[:email], u[:balance]]
+      csv << user
+    end
   end
 
 
