@@ -7,6 +7,7 @@
 
 require 'benchmark'
 require 'csv'
+
 time = Benchmark.measure do
   PROCNAME = "cscw_bot"
   Process.setproctitle(PROCNAME)
@@ -25,7 +26,7 @@ time = Benchmark.measure do
   end
 
   # SIMULATION PARAMETERS
-  RUN_SIMULATION_DAYS = 10
+  RUN_SIMULATION_DAYS = 2
 
   # ==== workers ====
   # worker options (provide number of each in hash)
@@ -42,11 +43,11 @@ time = Benchmark.measure do
   # - NoPricesNoMetrics_FullTaskInfoNoTimeLimit
   # - NoPricesNoMetrics_FullTaskInfoWithTimeLimit
   WORKERS = {
-    'Random' => 1,
-    'NoMetricsNoPrices_riskAverse' => 1,
-    'NoMetricsNoPrices_random' => 1,
-    'NoMetricsWithPrices_riskAverse' => 1,
-    'NoMetricsWithPrices_rewardSeeking' => 1,
+    # 'Random' => 10,
+    'NoMetricsNoPrices_riskAverse' => 170,
+    'NoMetricsNoPrices_random' => 0,
+    'NoMetricsWithPrices_riskAverse' => 0,
+    'NoMetricsWithPrices_rewardSeeking' => 0,
     # 'HealthMetricsNoPrices' => 0,
     # 'HealthMetricsWithPrices' => 0,
     # not yet functional:
@@ -74,7 +75,7 @@ time = Benchmark.measure do
 
   # ==== issues and contracts ====
   # #issue=#offer created
-  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 1  # value is 0..maximum
+  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 15  # value is 0..maximum
   # PRICES and DIFFICULTIES need to have the same number of elements
   # PRICES are float values. The first value is fixed price bot's value
   PRICES = [0.95, 0.90, 0.85, 0.80]
@@ -108,7 +109,10 @@ time = Benchmark.measure do
   out_file.puts("PRICES = #{PRICES}")
   out_file.puts("DIFFICULTIES = #{DIFFICULTIES}")
   out_file.puts("MATURATION_DAYS_IN_FUTURE = #{MATURATION_DAYS_IN_FUTURE}")
-  out_file.puts("")  # empty line before health metrics are output
+  out_file.puts("")
+  out_file.puts("====== REMINDER: user balances are at end of file =======")  # empty line before health metrics are output
+  out_file.puts("")  # empty lines before health metrics are output
+  out_file.puts("")  # empty lines before health metrics are output
   out_file.close
   health_a = ["day"]
   FUNDERS.each do |val|
@@ -235,7 +239,7 @@ time = Benchmark.measure do
     end
   end
   puts "" if BMXSIM_OUTPUT > 0
-binding.pry
+
   # loop for each day
   (1..RUN_SIMULATION_DAYS).to_a.each do |day|
     puts "Day #{day}: #{BugmTime.now}"  if BMXSIM_OUTPUT > 0
@@ -302,6 +306,23 @@ binding.pry
       csv << user
     end
   end
+
+# inform me that simulation is finished
+require 'net/smtp'
+
+message = <<MESSAGE_END
+From: Georg Link <georg@georglink.de>
+To: Georg Link <linkgeorg@gmail.com>
+Subject: Python Simulation done
+
+This is a test e-mail message.
+MESSAGE_END
+
+Net::SMTP.start('localhost') do |smtp|
+  smtp.send_message message, 'georg@georglink.de', 'linkgeorg@gmail.com'
+end
+
+
 
 
   # Calling binding.pry to allow investigating the state of the simulation
