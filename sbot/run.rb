@@ -43,12 +43,12 @@ time = Benchmark.measure do
   # - NoPricesNoMetrics_FullTaskInfoWithTimeLimit
   WORKERS = {
     'Random' => 1,
-    'NoMetricsNoPrices_riskAverse' => 1,
-    'NoMetricsNoPrices_random' => 1,
-    'NoMetricsWithPrices_riskAverse' => 1,
-    'NoMetricsWithPrices_rewardSeeking' => 1,
-    'HealthMetricsNoPrices' => 0,
-    'HealthMetricsWithPrices' => 0,
+    # 'NoMetricsNoPrices_riskAverse' => 1,
+    # 'NoMetricsNoPrices_random' => 1,
+    # 'NoMetricsWithPrices_riskAverse' => 1,
+    # 'NoMetricsWithPrices_rewardSeeking' => 1,
+    # 'HealthMetricsNoPrices' => 0,
+    # 'HealthMetricsWithPrices' => 0,
     # not yet functional:
     # 'MarketMetrics' => 0,
     # 'BothMetrics' => 0,
