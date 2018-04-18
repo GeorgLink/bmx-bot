@@ -302,7 +302,7 @@ class Bmxsim_Worker_Treatment_NoMetricsNoPrices_random < Bmxsim_Worker
     # then filter by cost<balance to be able to counter the offer
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
     # randomly select an offer UUI
-    offer = offers.order('RANDOM()').select('uuid').first['uuid']
+    offer = offers.order('RANDOM()').first
 
     if !offer.nil? && offer.valid?
       projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
