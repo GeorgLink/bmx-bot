@@ -66,9 +66,9 @@ time = Benchmark.measure do
   # - correlatedpay
   FUNDERS = [
     'randomPay',
-    'fixedPay',
-    'inversePay',
-    'correlatedpay',
+    # 'fixedPay',
+    # 'inversePay',
+    # 'correlatedpay',
   ]  # each funder represents a single project
   FUNDER_STARTING_BALANCE = 100000000
 
