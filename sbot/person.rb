@@ -233,7 +233,7 @@ class Bmxsim_Worker_Treatment_Random < Bmxsim_Worker
       if counter.valid?
         ContractCmd::Cross.new(counter, :expand).project
         # binding.pry
-        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).pluck('exid')[0]
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first.pluck('exid')[0]
         @issue_workingon = @tracker.get_issue(issue_id.to_i)
       end
     end
@@ -276,7 +276,7 @@ class Bmxsim_Worker_Treatment_NoMetricsNoPrices_riskAverse < Bmxsim_Worker
     offers = Offer.unassigned
     # then filter by cost<balance to be able to counter the offer
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
-    # randomly select an offer UUI
+    # select offer with latest maturation date
     offer = offers.order('maturation_range desc').first
 
     if !offer.nil? && offer.valid?
@@ -285,7 +285,7 @@ class Bmxsim_Worker_Treatment_NoMetricsNoPrices_riskAverse < Bmxsim_Worker
       if counter.valid?
         ContractCmd::Cross.new(counter, :expand).project
         # binding.pry
-        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).pluck('exid')[0]
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first.pluck('exid')[0]
         @issue_workingon = @tracker.get_issue(issue_id.to_i)
       end
     end
@@ -301,7 +301,7 @@ class Bmxsim_Worker_Treatment_NoMetricsNoPrices_random < Bmxsim_Worker
     offers = Offer.unassigned
     # then filter by cost<balance to be able to counter the offer
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
-    # randomly select an offer UUI
+    # randomly select an offer
     offer = offers.order('RANDOM()').first
 
     if !offer.nil? && offer.valid?
@@ -310,7 +310,7 @@ class Bmxsim_Worker_Treatment_NoMetricsNoPrices_random < Bmxsim_Worker
       if counter.valid?
         ContractCmd::Cross.new(counter, :expand).project
         # binding.pry
-        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).pluck('exid')[0]
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first.pluck('exid')[0]
         @issue_workingon = @tracker.get_issue(issue_id.to_i)
       end
     end
@@ -350,7 +350,7 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices_riskAverse < Bmxsim_Worker
       if counter.valid?
         ContractCmd::Cross.new(counter, :expand).project
         # binding.pry
-        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).pluck('exid')[0]
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first.pluck('exid')[0]
         @issue_workingon = @tracker.get_issue(issue_id.to_i)
       end
     end
@@ -381,7 +381,7 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices_rewardSeeking < Bmxsim_Worker
       if counter.valid?
         ContractCmd::Cross.new(counter, :expand).project
         # binding.pry
-        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).pluck('exid')[0]
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first.pluck('exid')[0]
         @issue_workingon = @tracker.get_issue(issue_id.to_i)
       end
     end
