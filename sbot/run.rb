@@ -47,8 +47,8 @@ time = Benchmark.measure do
     # simulation: 75 workers for scarce workers scenario
     # 'Random' => 10,
     'NoMetricsNoPrices_riskAverse' => 0,
-    'NoMetricsNoPrices_random' => 170,
-    'NoMetricsWithPrices_riskAverse' => 0,
+    'NoMetricsNoPrices_random' => 0,
+    'NoMetricsWithPrices_riskAverse' => 170,
     'NoMetricsWithPrices_rewardSeeking' => 0,
     # 'HealthMetricsNoPrices' => 0,
     # 'HealthMetricsWithPrices' => 0,
