@@ -26,7 +26,7 @@ time = Benchmark.measure do
   end
 
   # SIMULATION PARAMETERS
-  RUN_SIMULATION_DAYS = 2
+  RUN_SIMULATION_DAYS = 1780  # simulation: 1780 days for 5 years
 
   # ==== workers ====
   # worker options (provide number of each in hash)
@@ -43,6 +43,8 @@ time = Benchmark.measure do
   # - NoPricesNoMetrics_FullTaskInfoNoTimeLimit
   # - NoPricesNoMetrics_FullTaskInfoWithTimeLimit
   WORKERS = {
+    # simulation: 170 workers for abundend workers scenario
+    # simulation: 75 workers for scarce workers scenario
     # 'Random' => 10,
     'NoMetricsNoPrices_riskAverse' => 170,
     'NoMetricsNoPrices_random' => 0,
@@ -56,8 +58,9 @@ time = Benchmark.measure do
     # 'NoPricesNoMetrics_FullTaskInfoNoTimeLimit' => 0,
     # 'NoPricesNoMetrics_FullTaskInfoWithTimeLimit' => 0,
   }
-  WORKER_STARTING_BALANCE = 1000
-  WORKER_SKILLS = [1]  # option to randomly assign different skills to  workers
+  WORKER_STARTING_BALANCE = 1000  # simulation: 1000 enough to get started
+  # option to randomly assign different skills to  workers
+  WORKER_SKILLS = [1]  # simulation: [1]
 
   # ==== funders ====
   # funder options:
@@ -65,7 +68,9 @@ time = Benchmark.measure do
   # - randomPay
   # - inversePay
   # - correlatedpay
+  # IDEA: projects may differ by difficulty probabilities
   FUNDERS = [
+    # simulation: always all four funders
     'randomPay',
     'fixedPay',
     'inversePay',
@@ -75,15 +80,18 @@ time = Benchmark.measure do
 
   # ==== issues and contracts ====
   # #issue=#offer created
-  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 15  # value is 0..maximum
+  # value is 0..maximum
+  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 15  # simulation: 15
   # PRICES and DIFFICULTIES need to have the same number of elements
   # PRICES are float values. The first value is fixed price bot's value
-  PRICES = [0.95, 0.90, 0.85, 0.80]
+  PRICES = [0.95, 0.90, 0.85, 0.80]  # simulation: [0.95, 0.90, 0.85, 0.80]
   # the keys for DIFFICULTIES need to be integers
   DIFFICULTIES = { 1 => 30, 2 => 30, 3 => 30, 4 => 10}
+  # simulation: { 1 => 30, 2 => 30, 3 => 30, 4 => 10}
   # 10% chance that issue can never be finished by skill-1 worker
   # equal chance for other three difficulties
-  MATURATION_DAYS_IN_FUTURE = 2 # end of:  0 = today, 1 = tomorrow
+  MATURATION_DAYS_IN_FUTURE = 2  # simulation: 2 (3 days of work)
+  # end of:  0 = today, 1 = tomorrow
 
 
   # output
@@ -242,7 +250,7 @@ time = Benchmark.measure do
 
   # loop for each day
   (1..RUN_SIMULATION_DAYS).to_a.each do |day|
-    puts "Day #{day}: #{BugmTime.now}"  if BMXSIM_OUTPUT > 0
+    puts "Day #{day} / #{RUN_SIMULATION_DAYS} : #{BugmTime.now}"  if BMXSIM_OUTPUT > 0
     $sim_day = day
     # call funders in a random order
     funders.shuffle.each do |funder|
@@ -307,23 +315,7 @@ time = Benchmark.measure do
     end
   end
 
-# inform me that simulation is finished
-require 'net/smtp'
-
-message = <<MESSAGE_END
-From: Georg Link <georg@georglink.de>
-To: Georg Link <linkgeorg@gmail.com>
-Subject: Python Simulation done
-
-This is a test e-mail message.
-MESSAGE_END
-
-Net::SMTP.start('localhost') do |smtp|
-  smtp.send_message message, 'georg@georglink.de', 'linkgeorg@gmail.com'
-end
-
-
-
+  # IDEA: inform me that simulation is finished via email or other notification
 
   # Calling binding.pry to allow investigating the state of the simulation
   # Type "c" to continue and end the program
