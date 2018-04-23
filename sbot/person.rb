@@ -436,6 +436,12 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
 # --> this makes sure we always have a project at 1
 # --> if projects are close together in one metric, then it will be weighted less compared to another metric
 
+    available_offers = []
+
+    health_h = issue_tracker.get_project_health_all_projects
+
+
+
 #  alternatively: rank separtely
 #  -->
 

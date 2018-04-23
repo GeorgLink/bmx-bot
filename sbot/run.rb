@@ -164,7 +164,7 @@ time = Benchmark.measure do
   STDOUT.flush
 
   require File.expand_path("~/src/bugmark/config/environment")
-  # binding.pry
+  binding.pry
 
   # delete all host data and create admin user
   BugmHost.reset
@@ -278,7 +278,7 @@ time = Benchmark.measure do
     end
 
     # Write project health data to a
-    health_h = issue_tracker.get_project_health_all_projects.to_a
+    health_h = issue_tracker.get_project_health_all_projects
     health_a = [$sim_day]
     health_h.to_a.each do |val|
       if val[1].is_a?(Hash) then  # this is a project

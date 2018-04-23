@@ -167,28 +167,34 @@ class Bmxsim_IssueTracker
 
     # Normalize health metrics for each Project
     get_projects.to_a.each do |proj_number,repo_uuid|
-      # repo_uuid = get_project_repo_uuid(proj_number)
+      projects[repo_uuid][:sum_norm] = 0.0
+      projects[repo_uuid][:sum_rank] = 0
       unless max_open_issues == 0.0 then
         projects[repo_uuid][:norm_open_issues] = projects[repo_uuid][:open_issues].to_f / max_open_issues
       else
         projects[repo_uuid][:norm_open_issues] = 0.0
       end
+      projects[repo_uuid][:sum_norm] += projects[repo_uuid][:norm_open_issues]
       unless max_closed_issues == 0.0 then
         projects[repo_uuid][:norm_closed_issues] = projects[repo_uuid][:closed_issues].to_f / max_closed_issues
       else
         projects[repo_uuid][:norm_closed_issues] = 0.0
       end
+      projects[repo_uuid][:sum_norm] += projects[repo_uuid][:norm_closed_issues]
       projects[repo_uuid][:norm_resolution_efficiency] = 1 - projects[repo_uuid][:resolution_efficiency].to_f # reverse already normalized
+      projects[repo_uuid][:sum_norm] += projects[repo_uuid][:norm_resolution_efficiency]
       unless max_open_issue_age == 0.0 then
         projects[repo_uuid][:norm_open_issue_age] = projects[repo_uuid][:open_issue_age].to_f / max_open_issue_age
       else
         projects[repo_uuid][:norm_open_issue_age] = 0.0
       end
+      projects[repo_uuid][:sum_norm] += projects[repo_uuid][:norm_open_issue_age]
       unless max_closed_issue_resolution_duration == 0.0 then
         projects[repo_uuid][:norm_closed_issue_resolution_duration] = projects[repo_uuid][:closed_issue_resolution_duration].to_f / max_closed_issue_resolution_duration
       else
         projects[repo_uuid][:norm_closed_issue_resolution_duration] = 0.0
       end
+      projects[repo_uuid][:sum_norm] += projects[repo_uuid][:norm_closed_issue_resolution_duration]
     end
 
     # get rank for open_issues and add to project health
@@ -199,6 +205,7 @@ class Bmxsim_IssueTracker
       rank += 1 unless prev_val.eql? proj[1][:norm_open_issues]
       prev_val = proj[1][:norm_open_issues]
       projects[proj[0]][:rank_open_issues] = rank
+      projects[proj[0]][:sum_rank] += rank
     end
 
     # get rank for closed_issues and add to project health
@@ -209,6 +216,7 @@ class Bmxsim_IssueTracker
       rank += 1 unless prev_val.eql? proj[1][:norm_closed_issues]
       prev_val = proj[1][:norm_closed_issues]
       projects[proj[0]][:rank_closed_issues] = rank
+      projects[proj[0]][:sum_rank] += rank
     end
 
     # get rank for resolution_efficiency and add to project health
@@ -219,6 +227,7 @@ class Bmxsim_IssueTracker
       rank += 1 unless prev_val.eql? proj[1][:norm_resolution_efficiency]
       prev_val = proj[1][:norm_resolution_efficiency]
       projects[proj[0]][:rank_resolution_efficiency] = rank
+      projects[proj[0]][:sum_rank] += rank
     end
 
     # get rank for open_issue_age and add to project health
@@ -229,6 +238,7 @@ class Bmxsim_IssueTracker
       rank += 1 unless prev_val.eql? proj[1][:norm_open_issue_age]
       prev_val = proj[1][:norm_open_issue_age]
       projects[proj[0]][:rank_open_issue_age] = rank
+      projects[proj[0]][:sum_rank] += rank
     end
 
     # get rank for closed_issue_resolution_duration and add to project health
@@ -239,6 +249,7 @@ class Bmxsim_IssueTracker
       rank += 1 unless prev_val.eql? proj[1][:norm_closed_issue_resolution_duration]
       prev_val = proj[1][:norm_closed_issue_resolution_duration]
       projects[proj[0]][:rank_closed_issue_resolution_duration] = rank
+      projects[proj[0]][:sum_rank] += rank
     end
 
     # include extreme values in output
@@ -247,7 +258,14 @@ class Bmxsim_IssueTracker
     projects[:min_resolution_efficiency] = min_resolution_efficiency
     projects[:max_open_issue_age] = max_open_issue_age
     projects[:max_closed_issue_resolution_duration] = max_closed_issue_resolution_duration
-    projects
+
+    # calculate ovarall ranking of projects
+    projects.to_a.each do |repo_uuid, proj_val|
+      projects[repo_uuid][:sum_norm]
+      projects[repo_uuid][:sum_rank]
+    end
+
+    return projects
   end
   def open_issue(project=1, difficulty=0)
     # puts "new issue #{(@issues.count+1)}"
