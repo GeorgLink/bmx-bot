@@ -265,12 +265,6 @@ class Bmxsim_IssueTracker
     projects[:max_sum_norm] = max_sum_norm
     projects[:max_sum_rank] = max_sum_rank
 
-    # calculate ovarall ranking of projects
-    projects.to_a.each do |repo_uuid, proj_val|
-      projects[repo_uuid][:sum_norm]
-      projects[repo_uuid][:sum_rank]
-    end
-
     return projects
   end
   def open_issue(project=1, difficulty=0)
