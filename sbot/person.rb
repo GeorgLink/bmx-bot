@@ -366,11 +366,13 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices_rewardSeeking < Bmxsim_Worker
     # find soon outpaying offer
 
     # select first by maturation range, at least 2 days in the future
-    matures_after_days = 2
+    # matures_after_days = 2
     #   the 90 day end is chosen arbitrarily
-    offers = Offer.by_maturation_range(BugmTime.end_of_day(matures_after_days)..BugmTime.end_of_day(90))
+    # offers = Offer.by_maturation_range(BugmTime.end_of_day(matures_after_days)..BugmTime.end_of_day(90))
+
+
     # then filter by unassigned, since we want offers that are still up for the taking
-    offers = offers.unassigned
+    offers = Offer.unassigned
     # then filter by max_cost to counter the offer
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
     # then get the most paying
@@ -436,11 +438,20 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
 # --> this makes sure we always have a project at 1
 # --> if projects are close together in one metric, then it will be weighted less compared to another metric
 
+    # store hashes of offers to select from
     available_offers = []
 
+    # get health information for projects
     health_h = issue_tracker.get_project_health_all_projects
 
-
+    offers = Offer.unassigned
+    # then filter by max_cost to counter the offer
+    offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
+    offers.each do |offer|
+      offer_h = {}
+      offer_h[:uuid] = offer[:uuid]
+      offer_h[:value] = offer[:value]
+      offer_h[:weighted_value] = offer[:value] * health_h
 
 #  alternatively: rank separtely
 #  -->

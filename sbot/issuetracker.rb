@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 
-require File.expand_path("~/src/bugmark/config/environment")
+# require File.expand_path("~/src/exchange/config/environment")
 
 class Bmxsim_Issue
   def initialize(id, repo_uuid, project=1, difficulty=1)
@@ -151,6 +151,8 @@ class Bmxsim_IssueTracker
     min_resolution_efficiency = 1.0
     max_open_issue_age = 0.0
     max_closed_issue_resolution_duration = 0.0
+    max_sum_norm = 0.0
+    max_sum_rank = 0
 
     # get project health
     projects = {}
@@ -195,6 +197,7 @@ class Bmxsim_IssueTracker
         projects[repo_uuid][:norm_closed_issue_resolution_duration] = 0.0
       end
       projects[repo_uuid][:sum_norm] += projects[repo_uuid][:norm_closed_issue_resolution_duration]
+      max_sum_norm = projects[repo_uuid][:sum_norm] if max_sum_norm < projects[repo_uuid][:sum_norm]
     end
 
     # get rank for open_issues and add to project health
@@ -250,6 +253,7 @@ class Bmxsim_IssueTracker
       prev_val = proj[1][:norm_closed_issue_resolution_duration]
       projects[proj[0]][:rank_closed_issue_resolution_duration] = rank
       projects[proj[0]][:sum_rank] += rank
+      max_sum_rank = projects[proj[0]][:sum_rank] if max_sum_rank < projects[proj[0]][:sum_rank]
     end
 
     # include extreme values in output
@@ -258,6 +262,8 @@ class Bmxsim_IssueTracker
     projects[:min_resolution_efficiency] = min_resolution_efficiency
     projects[:max_open_issue_age] = max_open_issue_age
     projects[:max_closed_issue_resolution_duration] = max_closed_issue_resolution_duration
+    projects[:max_sum_norm] = max_sum_norm
+    projects[:max_sum_rank] = max_sum_rank
 
     # calculate ovarall ranking of projects
     projects.to_a.each do |repo_uuid, proj_val|

@@ -163,7 +163,7 @@ time = Benchmark.measure do
   puts "Loading Environment..." if BMXSIM_OUTPUT > 0
   STDOUT.flush
 
-  require File.expand_path("~/src/bugmark/config/environment")
+  require File.expand_path("~/src/exchange/config/environment")
   binding.pry
 
   # delete all host data and create admin user
