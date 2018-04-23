@@ -33,7 +33,7 @@ puts "Process Name: #{PROCNAME}"
 puts "Loading Environment..."
 STDOUT.flush
 
-require File.expand_path("~/src/bugmark/config/environment")
+require File.expand_path("~/src/exchange/config/environment")
 
 # delete all host data and create admin user
 BugmHost.reset
@@ -55,10 +55,10 @@ end
     print "."
     issue = FB.create(:issue, stm_repo_uuid: repo.uuid, stm_status: "open").issue
     args  = {
-      user_uuid: funder.uuid, 
-      price: 1, 
-      volume: 100, 
-      stm_issue_uuid: issue.uuid, 
+      user_uuid: funder.uuid,
+      price: 1,
+      volume: 100,
+      stm_issue_uuid: issue.uuid,
       maturation: BugmTime.end_of_day
     }
     offer = FB.create(:offer_bu, args).offer
