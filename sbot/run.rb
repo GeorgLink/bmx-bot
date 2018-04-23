@@ -164,7 +164,7 @@ time = Benchmark.measure do
   STDOUT.flush
 
   require File.expand_path("~/src/exchange/config/environment")
-  binding.pry
+  # binding.pry
 
   # delete all host data and create admin user
   BugmHost.reset
