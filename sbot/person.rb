@@ -452,6 +452,7 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
       offer_h[:uuid] = offer[:uuid]
       offer_h[:value] = offer[:value]
       offer_h[:weighted_value] = offer[:value] * health_h
+    end
 
 #  alternatively: rank separtely
 #  -->
