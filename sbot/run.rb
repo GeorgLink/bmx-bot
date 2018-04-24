@@ -25,6 +25,11 @@ time = Benchmark.measure do
     exit 130
   end
 
+  # read settings file, if provided
+  # IF ARGV[0] is a file, then
+  # read YAML file
+  # populate the simulation parameters from file or use defaults.
+
   # SIMULATION PARAMETERS
   RUN_SIMULATION_DAYS = 15  # simulation: 1780 days for 5 years
 
@@ -48,7 +53,7 @@ time = Benchmark.measure do
     # 'Random' => 10,
     'NoMetricsNoPrices_riskAverse' => 0,
     'NoMetricsNoPrices_random' => 0,
-    'NoMetricsWithPrices_riskAverse' => 170,
+    'NoMetricsWithPrices_riskAverse' => 15,
     'NoMetricsWithPrices_rewardSeeking' => 0,
     # 'HealthMetricsNoPrices' => 0,
     # 'HealthMetricsWithPrices' => 0,
@@ -81,7 +86,7 @@ time = Benchmark.measure do
   # ==== issues and contracts ====
   # #issue=#offer created
   # value is 0..maximum
-  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 15  # simulation: 15
+  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 2  # simulation: 15
   # PRICES and DIFFICULTIES need to have the same number of elements
   # PRICES are float values. The first value is fixed price bot's value
   PRICES = [0.95, 0.90, 0.85, 0.80]  # simulation: [0.95, 0.90, 0.85, 0.80]
