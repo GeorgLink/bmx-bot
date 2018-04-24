@@ -26,7 +26,7 @@ time = Benchmark.measure do
   end
 
   # SIMULATION PARAMETERS
-  RUN_SIMULATION_DAYS = 1780  # simulation: 1780 days for 5 years
+  RUN_SIMULATION_DAYS = 15  # simulation: 1780 days for 5 years
 
   # ==== workers ====
   # worker options (provide number of each in hash)
@@ -164,10 +164,11 @@ time = Benchmark.measure do
   STDOUT.flush
 
   require File.expand_path("~/src/exchange/config/environment")
+  # binding.pry
 
   # delete all host data and create admin user
-  # BugmHost.reset
-  # BugmTime.set_day_offset(-1 * RUN_SIMULATION_DAYS)
+  BugmHost.reset
+  BugmTime.set_day_offset(-1 * RUN_SIMULATION_DAYS)
 
   puts "Simulate #{RUN_SIMULATION_DAYS}, starting on #{BugmTime.now}"
 
@@ -177,7 +178,6 @@ time = Benchmark.measure do
 
   # create Issue Tracker
   issue_tracker = Bmxsim_IssueTracker.new
-  binding.pry
 
   # create funders and workers
   funders = []
@@ -319,7 +319,7 @@ time = Benchmark.measure do
 
   # Calling binding.pry to allow investigating the state of the simulation
   # Type "c" to continue and end the program
-  # binding.pry
+  binding.pry
   puts "--------------------------- simulation finished ---------------------------"
 end
 puts time
