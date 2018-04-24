@@ -443,6 +443,9 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
 
     # get health information for projects
     health_h = issue_tracker.get_project_health_all_projects
+    project_h = health_h.select {|key,value| value.is_a?(Hash)}
+
+
 
     # 50% 1st proj
     # 20% second project
