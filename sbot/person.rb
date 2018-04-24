@@ -444,15 +444,13 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
     # get health information for projects
     health_h = issue_tracker.get_project_health_all_projects
 
-    offers = Offer.unassigned
-    # then filter by max_cost to counter the offer
-    offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
-    offers.each do |offer|
-      offer_h = {}
-      offer_h[:uuid] = offer[:uuid]
-      offer_h[:value] = offer[:value]
-      offer_h[:weighted_value] = offer[:value] * health_h
-    end
+    # 50% 1st proj
+    # 20% second project
+    # 10% third
+    #
+    # random offer on that project.
+
+
 
 #  alternatively: rank separtely
 #  -->
@@ -497,6 +495,30 @@ class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
 
+
+    # store hashes of offers to select from
+    available_offers = []
+
+    # get health information for projects
+    health_h = issue_tracker.get_project_health_all_projects
+
+    # -> 50%  good project
+    # -> 50% equally between other projects
+    #
+    #
+    # offer score = 50% health score; 50% price score
+    # health score (healthscore-minhealchscore/(max-health-score - min health-score))
+    # price score (price - min-price / (max-price - min-price))
+
+
+    offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
+    offers.each do |offer|
+      offer_h = {}
+      offer_h[:uuid] = offer[:uuid]
+      offer_h[:value] = offer[:value]
+      offer_h[:weighted_value] = offer[:value] * health_h  # which repo does this belong to.
+      available_offers.add(offer_h)
+    end
 
   # same as without price and then choose most valuable (highest reward, not yet discounted of reward)
 
