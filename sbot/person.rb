@@ -438,13 +438,20 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
 # --> this makes sure we always have a project at 1
 # --> if projects are close together in one metric, then it will be weighted less compared to another metric
 
-    # store hashes of offers to select from
-    available_offers = []
-
     # get health information for projects
     health_h = issue_tracker.get_project_health_all_projects
     project_h = health_h.select {|key,value| value.is_a?(Hash)}
+    project_ranked = project_h.to_a.sort {|key, value| value[:norm_rank]}
 
+    # select random project, with probability based on health
+    # 50% for first, best project
+    # 25% for second best project
+    # Each project has half the chance of the previous project
+    rand_project_choice = [1, Math.log2(project_ranked.length.to_f + (0..99).to_a.sample.to_f/100.0 ).to_f.ceil].max
+
+    # get project repo uuid
+    proj_uuid = project_ranked.fetch(rand_project_choice);
+    
 
 
     # 50% 1st proj
