@@ -542,6 +542,7 @@ class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
     min_sum_norm = project_ranked[0][1][:sum_norm]
     max_sum_norm = health_h[:max_sum_norm]
     span_sum_norm = max_sum_norm - min_sum_norm
+    span_sum_norm = 1.0 if span_sum_norm == 0
     project_h.each do |key, value|
       value[:health_score] = (value[:sum_norm]-min_sum_norm)/span_sum_norm
     end
@@ -557,6 +558,7 @@ class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
     min_price = 1-Offer.unassigned.order("price DESC").first[:price]
     max_price = 1-Offer.unassigned.order("price ASC").first[:price]
     span_price = max_price - min_price
+    span_price = 1.0 if span_price == 0
     offer_score_sql = "CASE "
     project_h.each do |key,value|
       offer_score_sql += "WHEN repos.uuid='#{key}' THEN #{value[:health_score].round(2)} + (((1 - offers.price) - #{min_price.round(2)})/#{span_price.round(2)}) "
