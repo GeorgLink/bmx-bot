@@ -220,6 +220,9 @@ class Bmxsim_Worker_Treatment_Random < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
 
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
     # Filter by unassigned, since we want offers that are still up for the taking
     offers = Offer.unassigned
     # then filter by cost<balance to be able to counter the offer
@@ -272,6 +275,9 @@ class Bmxsim_Worker_Treatment_NoMetricsNoPrices_riskAverse < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
 
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
     # then filter by unassigned, since we want offers that are still up for the taking
     offers = Offer.unassigned
     # then filter by cost<balance to be able to counter the offer
@@ -296,6 +302,9 @@ end
 class Bmxsim_Worker_Treatment_NoMetricsNoPrices_random < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
+
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
 
     # Filter by unassigned, since we want offers that are still up for the taking
     offers = Offer.unassigned
@@ -336,6 +345,9 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices_riskAverse < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
 
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
     # find most profitable offer with latest possible maturation
 
     # then filter by unassigned, since we want offers that are still up for the taking
@@ -362,6 +374,9 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices_rewardSeeking < Bmxsim_Worker
   #version 1
   def do_trade
     # find an open offer to match and associated issue
+
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
 
     # find soon outpaying offer
 
@@ -430,6 +445,9 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
 
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
     # difficulty level = probabilistic (start with resolution efficiency)
 
     # health metrics are used to rank projects on each metric
@@ -443,15 +461,18 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
     project_h = health_h.select {|key,value| value.is_a?(Hash)}
     project_ranked = project_h.sort_by {|key, value| value[:sum_norm]}
 
-    # workers are fallable and cannot for sure determine project health.
+    # [option 1] workers are fallable and cannot for sure determine project health
     # select random project, with probability based on health
     # 50% for first, best project
     # 25% for second best project
     # Each project has half the chance of the previous project
-    rand_project_choice = [1, project_ranked.length.to_f + Math.log2( (1..100).to_a.sample.to_f/100.0 ).to_f.ceil].max.to_i
+#     rand_project_choice = [1, project_ranked.length.to_f + Math.log2( (1..100).to_a.sample.to_f/100.0 ).to_f.ceil].max.to_i
 
     # get project repo uuid
-    proj_uuid = project_ranked[rand_project_choice-1][0]
+#     proj_uuid = project_ranked[rand_project_choice-1][0]
+
+    # [option 2] deterministic: always choose most healthy project
+    proj_uuid = project_ranked[0][0]
 
     # Filter for offers from a specific repository
     offers = Offer.joins(issue: :repo).where(repos: {uuid: proj_uuid})
@@ -510,14 +531,20 @@ class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
 
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
     # get health information for projects
     health_h = @tracker.get_project_health_all_projects
     project_h = health_h.select {|key,value| value.is_a?(Hash)}
     project_ranked = project_h.sort_by {|key, value| value[:sum_norm]}
 
-    min_sum_norm =
+    min_sum_norm = project_ranked[0][1][:sum_norm]
     max_sum_norm = health_h[:max_sum_norm]
-    health_score =
+    span_sum_norm = max_sum_norm - min_sum_norm
+    project_h.each do |key, value|
+      value[:health_score] = (value[:sum_norm]-min_sum_norm)/span_sum_norm
+    end
 
     # -> 50%  good project
     # -> 50% equally between other projects
@@ -526,6 +553,17 @@ class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
     # offer score = 50% health score; 50% price score
     # health score (healthscore-minhealchscore/(max-health-score - min health-score))
     # price score (price - min-price / (max-price - min-price))
+
+    min_price = 1-Offer.unassigned.order("price DESC").first[:price]
+    max_price = 1-Offer.unassigned.order("price ASC").first[:price]
+    span_price = max_price - min_price
+    offer_score_sql = "CASE "
+    project_h.each do |key,value|
+      offer_score += "WHEN repos.uuid='#{key}' THEN #{value[:health_score]} + ((offers.price - #{min_price})/#{span_price}) "
+    end
+    offer_score += "END as score, offers.uuid as offer_uuid"
+    binding.pry
+    offer_uuid = Offer.joins(issue: :repo).select(offer_score).order("score DESC").first[:offer_uuid]
 
     # Filter for offers from a specific repository
     offers = Offer.joins(issue: :repo).where(repos: {uuid: proj_uuid})
@@ -571,6 +609,10 @@ end
 class Bmxsim_Worker_Treatment_MarketMetrics < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
+
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
   end
 end
 
@@ -578,6 +620,10 @@ end
 class Bmxsim_Worker_Treatment_BothMetrics < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
+
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
   end
 end
 
@@ -590,6 +636,10 @@ end
 class Bmxsim_Worker_Treatment_NoPricesNoMetrics_FullTaskInfoNoTimeLimit < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
+
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
   end
 end
 
@@ -601,5 +651,9 @@ end
 class Bmxsim_Worker_Treatment_NoPricesNoMetrics_FullTaskInfoWithTimeLimit < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
+
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
   end
 end
