@@ -14,8 +14,7 @@ class Bmxsim_Issue
     @project = project  # in the simulation we have different projects
     @difficulty = difficulty  # difficulty level of issue
     @id = id  # id of this issue
-    @bmx_issue = FB.create(:issue, stm_repo_uuid: repo_uuid, exid: id, stm_status: "open").issue
-    @uuid = @bmx_issue.uuid
+    @uuid = FB.create(:issue, stm_repo_uuid: repo_uuid, exid: id, stm_status: "open").issue.uuid
     @create_day = $sim_day
     @close_day = nil
   end

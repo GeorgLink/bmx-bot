@@ -439,26 +439,37 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
 # --> if projects are close together in one metric, then it will be weighted less compared to another metric
 
     # get health information for projects
-    health_h = issue_tracker.get_project_health_all_projects
+    health_h = @tracker.get_project_health_all_projects
     project_h = health_h.select {|key,value| value.is_a?(Hash)}
-    project_ranked = project_h.to_a.sort {|key, value| value[:norm_rank]}
+    project_ranked = project_h.sort {|key, value| value[:sum_norm]}
 
     # select random project, with probability based on health
     # 50% for first, best project
     # 25% for second best project
     # Each project has half the chance of the previous project
-    rand_project_choice = [1, Math.log2(project_ranked.length.to_f + (0..99).to_a.sample.to_f/100.0 ).to_f.ceil].max
+    rand_project_choice = [1, project_ranked.length.to_f + Math.log2( (0..99).to_a.sample.to_f/100.0 ).to_f.ceil].max.to_i
 
     # get project repo uuid
-    proj_uuid = project_ranked.fetch(rand_project_choice);
-    
+    proj_uuid = project_ranked[rand_project_choice-1][0]
 
-
-    # 50% 1st proj
-    # 20% second project
-    # 10% third
-    #
-    # random offer on that project.
+    # Filter for offers from a specific repository
+    offers = Offer.joins(issue: :repo).where(repos: {uuid: proj_uuid})
+    # filter by unassigned, since we want offers that are still up for the taking
+    offers = offers.where("offers.uuid NOT IN (SELECT offer_uuid FROM positions)")
+    # filter by max_cost to counter the offer
+    offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
+    # get the most paying
+    offer = offers.order('RANDOM()').first
+    if !offer.nil? && offer.valid?
+      projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
+      counter = projection.offer
+      if counter.valid?
+        ContractCmd::Cross.new(counter, :expand).project
+        # binding.pry
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first[:exid]
+        @issue_workingon = @tracker.get_issue(issue_id.to_i)
+      end
+    end
 
 
 

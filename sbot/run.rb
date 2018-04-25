@@ -51,11 +51,11 @@ time = Benchmark.measure do
     # simulation: 170 workers for abundend workers scenario
     # simulation: 75 workers for scarce workers scenario
     # 'Random' => 10,
-    'NoMetricsNoPrices_riskAverse' => 0,
-    'NoMetricsNoPrices_random' => 0,
-    'NoMetricsWithPrices_riskAverse' => 15,
-    'NoMetricsWithPrices_rewardSeeking' => 0,
-    # 'HealthMetricsNoPrices' => 0,
+    'NoMetricsNoPrices_riskAverse' => 2,
+    'NoMetricsNoPrices_random' => 2,
+    'NoMetricsWithPrices_riskAverse' => 2,
+    'NoMetricsWithPrices_rewardSeeking' => 2,
+    'HealthMetricsNoPrices' => 2,
     # 'HealthMetricsWithPrices' => 0,
     # not yet functional:
     # 'MarketMetrics' => 0,
@@ -237,8 +237,8 @@ time = Benchmark.measure do
       when 'HealthMetricsWithPrices'
         workers.push(Bmxsim_Worker_Treatment_HealthMetricsWithPrices.new(worker, issue_tracker, skill, "w#{worker_id}"))
       # Not working yet:
-      # when 'MarketMetrics'
-      #   workers.push(Bmxsim_Worker_Treatment_MarketMetrics.new(worker, issue_tracker, skill, "w#{worker_id}"))
+      when 'MarketMetrics'
+        workers.push(Bmxsim_Worker_Treatment_MarketMetrics.new(worker, issue_tracker, skill, "w#{worker_id}"))
       # when 'BothMetrics'
       #   workers.push(Bmxsim_Worker_Treatment_BothMetrics.new(worker, issue_tracker, skill, "w#{worker_id}"))
       # when 'NoPricesNoMetrics_FullTaskInfoNoTimeLimit'
