@@ -441,7 +441,7 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
     # get health information for projects
     health_h = @tracker.get_project_health_all_projects
     project_h = health_h.select {|key,value| value.is_a?(Hash)}
-    project_ranked = project_h.sort {|key, value| value[:sum_norm]}
+    project_ranked = project_h.sort_by {|key, value| value[:sum_norm]}
 
     # select random project, with probability based on health
     # 50% for first, best project
