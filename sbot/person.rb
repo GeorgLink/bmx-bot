@@ -579,24 +579,6 @@ class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
         @issue_workingon = @tracker.get_issue(issue_id.to_i)
       end
     end
-
-
-
-    offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
-    offers.each do |offer|
-      offer_h = {}
-      offer_h[:uuid] = offer[:uuid]
-      offer_h[:value] = offer[:value]
-      offer_h[:weighted_value] = offer[:value] * health_h  # which repo does this belong to.
-      available_offers.add(offer_h)
-    end
-
-  # same as without price and then choose most valuable (highest reward, not yet discounted of reward)
-
-    projects_health = @tracker.get_project_health_all_projects
-    projects_health.each do |proj_h|
-      puts proj_h[:resolution_efficiency]
-    end
   end
 end
 
