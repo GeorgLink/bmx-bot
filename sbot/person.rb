@@ -564,7 +564,7 @@ class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
       offer_score_sql += "WHEN repos.uuid='#{key}' THEN #{value[:health_score].round(2)} + (((1 - offers.price) - #{min_price.round(2)})/#{span_price.round(2)}) "
     end
     offer_score_sql += "END as score, offers.uuid as offer_uuid"
-    binding.pry
+    # binding.pry
     offers = Offer.joins(issue: :repo)
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
     offers = offers.where("offers.uuid NOT IN (SELECT offer_uuid FROM positions)")
