@@ -443,11 +443,12 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
     project_h = health_h.select {|key,value| value.is_a?(Hash)}
     project_ranked = project_h.sort_by {|key, value| value[:sum_norm]}
 
+    # workers are fallable and cannot for sure determine project health.
     # select random project, with probability based on health
     # 50% for first, best project
     # 25% for second best project
     # Each project has half the chance of the previous project
-    rand_project_choice = [1, project_ranked.length.to_f + Math.log2( (0..99).to_a.sample.to_f/100.0 ).to_f.ceil].max.to_i
+    rand_project_choice = [1, project_ranked.length.to_f + Math.log2( (1..100).to_a.sample.to_f/100.0 ).to_f.ceil].max.to_i
 
     # get project repo uuid
     proj_uuid = project_ranked[rand_project_choice-1][0]
@@ -499,13 +500,6 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
     # option 2: latest maturation date
     # option 3: soonest maturation date
 
-
-    # select first by maturation range, at least 2 days in the future
-    matures_after_days = 2
-    #   the 90 day end is chosen arbitrarily
-    offers = Offer.by_maturation_range(BugmTime.end_of_day(matures_after_days)..BugmTime.end_of_day(90))
-
-
   end
 end
 
@@ -516,12 +510,14 @@ class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
 
-
-    # store hashes of offers to select from
-    available_offers = []
-
     # get health information for projects
-    health_h = issue_tracker.get_project_health_all_projects
+    health_h = @tracker.get_project_health_all_projects
+    project_h = health_h.select {|key,value| value.is_a?(Hash)}
+    project_ranked = project_h.sort_by {|key, value| value[:sum_norm]}
+
+    min_sum_norm =
+    max_sum_norm = health_h[:max_sum_norm]
+    health_score =
 
     # -> 50%  good project
     # -> 50% equally between other projects
@@ -530,6 +526,26 @@ class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
     # offer score = 50% health score; 50% price score
     # health score (healthscore-minhealchscore/(max-health-score - min health-score))
     # price score (price - min-price / (max-price - min-price))
+
+    # Filter for offers from a specific repository
+    offers = Offer.joins(issue: :repo).where(repos: {uuid: proj_uuid})
+    # filter by unassigned, since we want offers that are still up for the taking
+    offers = offers.where("offers.uuid NOT IN (SELECT offer_uuid FROM positions)")
+    # filter by max_cost to counter the offer
+    offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
+    # get the most paying
+    offer = offers.order('RANDOM()').first
+    if !offer.nil? && offer.valid?
+      projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
+      counter = projection.offer
+      if counter.valid?
+        ContractCmd::Cross.new(counter, :expand).project
+        # binding.pry
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first[:exid]
+        @issue_workingon = @tracker.get_issue(issue_id.to_i)
+      end
+    end
+
 
 
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
