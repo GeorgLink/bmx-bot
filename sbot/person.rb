@@ -559,11 +559,11 @@ class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
     span_price = max_price - min_price
     offer_score_sql = "CASE "
     project_h.each do |key,value|
-      offer_score += "WHEN repos.uuid='#{key}' THEN #{value[:health_score]} + ((offers.price - #{min_price})/#{span_price}) "
+      offer_score_sql += "WHEN repos.uuid='#{key}' THEN #{value[:health_score]} + ((offers.price - #{min_price})/#{span_price}) "
     end
-    offer_score += "END as score, offers.uuid as offer_uuid"
+    offer_score_sql += "END as score, offers.uuid as offer_uuid"
     binding.pry
-    offer_uuid = Offer.joins(issue: :repo).select(offer_score).order("score DESC").first[:offer_uuid]
+    offer_uuid = Offer.joins(issue: :repo).select(offer_score_sql).order("score DESC").first[:offer_uuid]
 
     # Filter for offers from a specific repository
     offers = Offer.joins(issue: :repo).where(repos: {uuid: proj_uuid})
