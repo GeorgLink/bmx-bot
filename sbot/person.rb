@@ -559,7 +559,7 @@ class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
     span_price = max_price - min_price
     offer_score_sql = "CASE "
     project_h.each do |key,value|
-      offer_score_sql += "WHEN repos.uuid='#{key}' THEN #{value[:health_score].round(2)} + ((offers.price - #{min_price.round(2)})/#{span_price.round(2)}) "
+      offer_score_sql += "WHEN repos.uuid='#{key}' THEN #{value[:health_score].round(2)} + (((1 - offers.price) - #{min_price.round(2)})/#{span_price.round(2)}) "
     end
     offer_score_sql += "END as score, offers.uuid as offer_uuid"
     binding.pry
