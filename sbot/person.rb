@@ -559,20 +559,16 @@ class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
     span_price = max_price - min_price
     offer_score_sql = "CASE "
     project_h.each do |key,value|
-      offer_score_sql += "WHEN repos.uuid='#{key}' THEN #{value[:health_score]} + ((offers.price - #{min_price})/#{span_price}) "
+      offer_score_sql += "WHEN repos.uuid='#{key}' THEN #{value[:health_score].round(2)} + ((offers.price - #{min_price.round(2)})/#{span_price.round(2)}) "
     end
     offer_score_sql += "END as score, offers.uuid as offer_uuid"
     binding.pry
-    offer_uuid = Offer.joins(issue: :repo).select(offer_score_sql).order("score DESC").first[:offer_uuid]
-
-    # Filter for offers from a specific repository
-    offers = Offer.joins(issue: :repo).where(repos: {uuid: proj_uuid})
-    # filter by unassigned, since we want offers that are still up for the taking
-    offers = offers.where("offers.uuid NOT IN (SELECT offer_uuid FROM positions)")
-    # filter by max_cost to counter the offer
+    offers = Offer.joins(issue: :repo)
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
-    # get the most paying
-    offer = offers.order('RANDOM()').first
+    offers = offers.where("offers.uuid NOT IN (SELECT offer_uuid FROM positions)")
+    offers = offers.select(offer_score_sql)
+    offer_uuid = offers.order("score DESC").first[:offer_uuid]
+    offer = Offer.where(uuid: offer_uuid).first
     if !offer.nil? && offer.valid?
       projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
       counter = projection.offer
