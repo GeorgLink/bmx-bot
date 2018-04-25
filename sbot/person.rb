@@ -5,6 +5,17 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 
+# Utility function
+def difficulty_picker(options)
+  # from https://stackoverflow.com/questions/19261061/picking-a-random-option-where-each-option-has-a-different-probability-of-being
+  current, max = 0, options.values.inject(:+)
+  random_value = rand(max) + 1
+  options.each do |key,val|
+     current += val
+     return key if random_value <= current
+  end
+end
+
 # ##################################################
 # #  FUNDERS
 # ##################################################
@@ -32,26 +43,19 @@ class Bmxsim_Funder_FixedPay < Bmxsim_Funder
     # function being called by simulation for funder to do something
 
     # Create n issues and one offer each
-    n = NUMBER_OF_ISSUES_DAILY_PER_FUNDER
-    (1..n).to_a.each do
-      difficulty = 1
-      difficulty_c = (1..100).to_a.sample
-      case difficulty_c
-      when (1..30)
-        difficulty = 1
-      when (31..60)
-        difficulty = 2
-      when (61..90)
-        difficulty = 3
-      else
-        difficulty = 4
-      end
+    (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.to_i.times do
+
+      # create issue
+      difficulty = difficulty_picker(DIFFICULTIES)
       issue = @tracker.open_issue(@project, difficulty)
+
+      # determine price
+      price = PRICES[0]
 
       # args is a hash
       args  = {
         user_uuid: @uuid,
-        price: 1.00,  # always fixed price 1
+        price: price,  # always fixed price 1
         volume: 100,
         stm_issue_uuid: issue.uuid,
         expiration: BugmTime.end_of_day(MATURATION_DAYS_IN_FUTURE),
@@ -59,8 +63,6 @@ class Bmxsim_Funder_FixedPay < Bmxsim_Funder
       }
       offer = FB.create(:offer_bu, args).offer
       ContractCmd::Cross.new(offer, :expand).project
-      # args[:offer] = offer
-      # issue.add_offer_bu(args)
     end
   end
 end
@@ -72,23 +74,25 @@ class Bmxsim_Funder_InversePay < Bmxsim_Funder
     # function being called by simulation for funder to do something
 
     # Create n issues and one offer each
-    n = NUMBER_OF_ISSUES_DAILY_PER_FUNDER
-    (1..n).to_a.each do
-      issue = @tracker.open_issue(@project)
+    (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.to_i.times do
+
+      # create issue
+      difficulty = difficulty_picker(DIFFICULTIES)
+      issue = @tracker.open_issue(@project, difficulty)
+
+      # determine price
+      price = PRICES[difficulty-1]
 
       # args is a hash
       args  = {
         user_uuid: @uuid,
-        price: (1.0/(issue.get_difficulty+1)).round(2),
+        price: (price).round(2),
         volume: 100,
         stm_issue_uuid: issue.uuid,
         maturation: BugmTime.end_of_day(MATURATION_DAYS_IN_FUTURE)
       }
       offer = FB.create(:offer_bu, args).offer
       ContractCmd::Cross.new(offer, :expand).project
-      args[:offer] = offer
-      issue.add_offer_bu(args)
-      # binding.pry
     end
   end
 end
@@ -100,23 +104,25 @@ class Bmxsim_Funder_CorrelatedPay < Bmxsim_Funder
     # function being called by simulation for funder to do something
 
     # Create n issues and one offer each
-    n = NUMBER_OF_ISSUES_DAILY_PER_FUNDER
-    (1..n).to_a.each do
-      issue = @tracker.open_issue(@project)
+    (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.to_i.times do
+
+      # create issue
+      difficulty = difficulty_picker(DIFFICULTIES)
+      issue = @tracker.open_issue(@project, difficulty)
+
+      # determine price
+      price = PRICES[PRICES.length-difficulty]
 
       # args is a hash
       args  = {
         user_uuid: @uuid,
-        price: (1.0*(issue.get_difficulty+1)/4).round(2),
+        price: (price).round(2),
         volume: 100,
         stm_issue_uuid: issue.uuid,
         maturation: BugmTime.end_of_day(MATURATION_DAYS_IN_FUTURE)
       }
       offer = FB.create(:offer_bu, args).offer
       ContractCmd::Cross.new(offer, :expand).project
-      args[:offer] = offer
-      issue.add_offer_bu(args)
-      # binding.pry
     end
   end
 end
@@ -127,25 +133,24 @@ class Bmxsim_Funder_RandomPay < Bmxsim_Funder
   def do_work
     # function being called by simulation for funder to do something
 
-    prices = [1.00, 0.75, 0.50, 0.25]  # available prices
 
     # Create n issues and one offer each
-    n = NUMBER_OF_ISSUES_DAILY_PER_FUNDER
-    (1..n).to_a.each do
-      issue = @tracker.open_issue(@project)
+    (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.to_i.times do
+      difficulty = difficulty_picker(DIFFICULTIES)
+      issue = @tracker.open_issue(@project, difficulty)
+
+      price = PRICES.sample
 
       # args is a hash
       args  = {
         user_uuid: @uuid,
-        price: prices.sample,  # randomly choose one of the prices
+        price: price,  # randomly choose one of the prices
         volume: 100,
         stm_issue_uuid: issue.uuid,
         maturation: BugmTime.end_of_day(MATURATION_DAYS_IN_FUTURE)
       }
       offer = FB.create(:offer_bu, args).offer
       ContractCmd::Cross.new(offer, :expand).project
-      # args[:offer] = offer
-      # issue.add_offer_bu(args)
     end
 
   end
@@ -215,6 +220,9 @@ class Bmxsim_Worker_Treatment_Random < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
 
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
     # Filter by unassigned, since we want offers that are still up for the taking
     offers = Offer.unassigned
     # then filter by cost<balance to be able to counter the offer
@@ -228,7 +236,7 @@ class Bmxsim_Worker_Treatment_Random < Bmxsim_Worker
       if counter.valid?
         ContractCmd::Cross.new(counter, :expand).project
         # binding.pry
-        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).pluck('exid')[0]
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first[:exid]
         @issue_workingon = @tracker.get_issue(issue_id.to_i)
       end
     end
@@ -267,11 +275,14 @@ class Bmxsim_Worker_Treatment_NoMetricsNoPrices_riskAverse < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
 
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
     # then filter by unassigned, since we want offers that are still up for the taking
     offers = Offer.unassigned
     # then filter by cost<balance to be able to counter the offer
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
-    # randomly select an offer UUI
+    # select offer with latest maturation date
     offer = offers.order('maturation_range desc').first
 
     if !offer.nil? && offer.valid?
@@ -280,7 +291,7 @@ class Bmxsim_Worker_Treatment_NoMetricsNoPrices_riskAverse < Bmxsim_Worker
       if counter.valid?
         ContractCmd::Cross.new(counter, :expand).project
         # binding.pry
-        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).pluck('exid')[0]
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first[:exid]
         @issue_workingon = @tracker.get_issue(issue_id.to_i)
       end
     end
@@ -292,12 +303,15 @@ class Bmxsim_Worker_Treatment_NoMetricsNoPrices_random < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
 
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
     # Filter by unassigned, since we want offers that are still up for the taking
     offers = Offer.unassigned
     # then filter by cost<balance to be able to counter the offer
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
-    # randomly select an offer UUI
-    offer = offers.order('RANDOM()').select('uuid').first['uuid']
+    # randomly select an offer
+    offer = offers.order('RANDOM()').first
 
     if !offer.nil? && offer.valid?
       projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
@@ -305,7 +319,7 @@ class Bmxsim_Worker_Treatment_NoMetricsNoPrices_random < Bmxsim_Worker
       if counter.valid?
         ContractCmd::Cross.new(counter, :expand).project
         # binding.pry
-        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).pluck('exid')[0]
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first[:exid]
         @issue_workingon = @tracker.get_issue(issue_id.to_i)
       end
     end
@@ -331,6 +345,9 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices_riskAverse < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
 
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
     # find most profitable offer with latest possible maturation
 
     # then filter by unassigned, since we want offers that are still up for the taking
@@ -345,7 +362,7 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices_riskAverse < Bmxsim_Worker
       if counter.valid?
         ContractCmd::Cross.new(counter, :expand).project
         # binding.pry
-        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).pluck('exid')[0]
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first[:exid]
         @issue_workingon = @tracker.get_issue(issue_id.to_i)
       end
     end
@@ -358,14 +375,19 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices_rewardSeeking < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
 
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
     # find soon outpaying offer
 
     # select first by maturation range, at least 2 days in the future
-    matures_after_days = 2
+    # matures_after_days = 2
     #   the 90 day end is chosen arbitrarily
-    offers = Offer.by_maturation_range(BugmTime.end_of_day(matures_after_days)..BugmTime.end_of_day(90))
+    # offers = Offer.by_maturation_range(BugmTime.end_of_day(matures_after_days)..BugmTime.end_of_day(90))
+
+
     # then filter by unassigned, since we want offers that are still up for the taking
-    offers = offers.unassigned
+    offers = Offer.unassigned
     # then filter by max_cost to counter the offer
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
     # then get the most paying
@@ -376,7 +398,7 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices_rewardSeeking < Bmxsim_Worker
       if counter.valid?
         ContractCmd::Cross.new(counter, :expand).project
         # binding.pry
-        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).pluck('exid')[0]
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first[:exid]
         @issue_workingon = @tracker.get_issue(issue_id.to_i)
       end
     end
@@ -423,6 +445,9 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
 
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
     # difficulty level = probabilistic (start with resolution efficiency)
 
     # health metrics are used to rank projects on each metric
@@ -430,6 +455,45 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
 # --> 1 best, 0 worst
 # --> this makes sure we always have a project at 1
 # --> if projects are close together in one metric, then it will be weighted less compared to another metric
+
+    # get health information for projects
+    health_h = @tracker.get_project_health_all_projects
+    project_h = health_h.select {|key,value| value.is_a?(Hash)}
+    project_ranked = project_h.sort_by {|key, value| value[:sum_norm]}
+
+    # [option 1] workers are fallable and cannot for sure determine project health
+    # select random project, with probability based on health
+    # 50% for first, best project
+    # 25% for second best project
+    # Each project has half the chance of the previous project
+#     rand_project_choice = [1, project_ranked.length.to_f + Math.log2( (1..100).to_a.sample.to_f/100.0 ).to_f.ceil].max.to_i
+
+    # get project repo uuid
+#     proj_uuid = project_ranked[rand_project_choice-1][0]
+
+    # [option 2] deterministic: always choose most healthy project
+    proj_uuid = project_ranked[0][0]
+
+    # Filter for offers from a specific repository
+    offers = Offer.joins(issue: :repo).where(repos: {uuid: proj_uuid})
+    # filter by unassigned, since we want offers that are still up for the taking
+    offers = offers.where("offers.uuid NOT IN (SELECT offer_uuid FROM positions)")
+    # filter by max_cost to counter the offer
+    offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
+    # get the most paying
+    offer = offers.order('RANDOM()').first
+    if !offer.nil? && offer.valid?
+      projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
+      counter = projection.offer
+      if counter.valid?
+        ContractCmd::Cross.new(counter, :expand).project
+        # binding.pry
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first[:exid]
+        @issue_workingon = @tracker.get_issue(issue_id.to_i)
+      end
+    end
+
+
 
 #  alternatively: rank separtely
 #  -->
@@ -457,13 +521,6 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
     # option 2: latest maturation date
     # option 3: soonest maturation date
 
-
-    # select first by maturation range, at least 2 days in the future
-    matures_after_days = 2
-    #   the 90 day end is chosen arbitrarily
-    offers = Offer.by_maturation_range(BugmTime.end_of_day(matures_after_days)..BugmTime.end_of_day(90))
-
-
   end
 end
 
@@ -474,12 +531,55 @@ class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
 
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
 
-  # same as without price and then choose most valuable (highest reward, not yet discounted of reward)
+    # get health information for projects
+    health_h = @tracker.get_project_health_all_projects
+    project_h = health_h.select {|key,value| value.is_a?(Hash)}
+    project_ranked = project_h.sort_by {|key, value| value[:sum_norm]}
 
-    projects_health = @tracker.get_project_health_all_projects
-    projects_health.each do |proj_h|
-      puts proj_h[:resolution_efficiency]
+    min_sum_norm = project_ranked[0][1][:sum_norm]
+    max_sum_norm = health_h[:max_sum_norm]
+    span_sum_norm = max_sum_norm - min_sum_norm
+    span_sum_norm = 1.0 if span_sum_norm == 0
+    project_h.each do |key, value|
+      value[:health_score] = (value[:sum_norm]-min_sum_norm)/span_sum_norm
+    end
+
+    # -> 50%  good project
+    # -> 50% equally between other projects
+    #
+    #
+    # offer score = 50% health score; 50% price score
+    # health score (healthscore-minhealchscore/(max-health-score - min health-score))
+    # price score (price - min-price / (max-price - min-price))
+
+    min_price = 1-Offer.unassigned.order("price DESC").first[:price]
+    max_price = 1-Offer.unassigned.order("price ASC").first[:price]
+    span_price = max_price - min_price
+    span_price = 1.0 if span_price == 0
+    offer_score_sql = "CASE "
+    project_h.each do |key,value|
+      offer_score_sql += "WHEN repos.uuid='#{key}' THEN #{value[:health_score].round(2)} + (((1 - offers.price) - #{min_price.round(2)})/#{span_price.round(2)}) "
+    end
+    offer_score_sql += "END as score, offers.uuid as offer_uuid"
+    # binding.pry
+    offers = Offer.joins(issue: :repo)
+    offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
+    offers = offers.where("offers.uuid NOT IN (SELECT offer_uuid FROM positions)")
+    offers = offers.select(offer_score_sql)
+    offer_uuid = offers.order("score DESC").first[:offer_uuid]
+    offer = Offer.where(uuid: offer_uuid).first
+    if !offer.nil? && offer.valid?
+      projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
+      counter = projection.offer
+      if counter.valid?
+        ContractCmd::Cross.new(counter, :expand).project
+        # binding.pry
+        issue_id = Issue.where(uuid: offer[:stm_issue_uuid]).first[:exid]
+        @issue_workingon = @tracker.get_issue(issue_id.to_i)
+      end
     end
   end
 end
@@ -489,6 +589,10 @@ end
 class Bmxsim_Worker_Treatment_MarketMetrics < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
+
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
   end
 end
 
@@ -496,6 +600,10 @@ end
 class Bmxsim_Worker_Treatment_BothMetrics < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
+
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
   end
 end
 
@@ -508,6 +616,10 @@ end
 class Bmxsim_Worker_Treatment_NoPricesNoMetrics_FullTaskInfoNoTimeLimit < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
+
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
   end
 end
 
@@ -519,5 +631,9 @@ end
 class Bmxsim_Worker_Treatment_NoPricesNoMetrics_FullTaskInfoWithTimeLimit < Bmxsim_Worker
   def do_trade
     # find an open offer to match and associated issue
+
+    # no open offers, decide not to work
+    return nil if Offer.unassigned.count == 0
+
   end
 end
