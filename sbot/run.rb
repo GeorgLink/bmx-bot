@@ -56,7 +56,7 @@ time = Benchmark.measure do
     'NoMetricsWithPrices_riskAverse' => 2,
     'NoMetricsWithPrices_rewardSeeking' => 2,
     'HealthMetricsNoPrices' => 2,
-    # 'HealthMetricsWithPrices' => 0,
+    'HealthMetricsWithPrices' => 2,
     # not yet functional:
     # 'MarketMetrics' => 0,
     # 'BothMetrics' => 0,
@@ -237,8 +237,8 @@ time = Benchmark.measure do
       when 'HealthMetricsWithPrices'
         workers.push(Bmxsim_Worker_Treatment_HealthMetricsWithPrices.new(worker, issue_tracker, skill, "w#{worker_id}"))
       # Not working yet:
-      when 'MarketMetrics'
-        workers.push(Bmxsim_Worker_Treatment_MarketMetrics.new(worker, issue_tracker, skill, "w#{worker_id}"))
+      # when 'MarketMetrics'
+      #   workers.push(Bmxsim_Worker_Treatment_MarketMetrics.new(worker, issue_tracker, skill, "w#{worker_id}"))
       # when 'BothMetrics'
       #   workers.push(Bmxsim_Worker_Treatment_BothMetrics.new(worker, issue_tracker, skill, "w#{worker_id}"))
       # when 'NoPricesNoMetrics_FullTaskInfoNoTimeLimit'
