@@ -370,6 +370,10 @@ time = Benchmark.measure do
       user = [u[:email], u[:balance]]
       csv << user
     end
+      (0..2).to_a.each do
+        csv << []
+      end
+    csv << time
   end
 
   # IDEA: inform me that simulation is finished via email or other notification
