@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+for file in ./settings/*
+do
+  echo "# ruby run.rb \"$file\" \"doNotWait\""
+  ruby run.rb "$file" "doNotWait"
+done

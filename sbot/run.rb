@@ -7,6 +7,7 @@
 
 require 'benchmark'
 require 'csv'
+require 'yaml'
 
 time = Benchmark.measure do
   PROCNAME = "cscw_bot"
@@ -28,10 +29,12 @@ time = Benchmark.measure do
   # read settings file, if provided
   # IF ARGV[0] is a file, then
   # read YAML file
+  setting = {}
+  setting = YAML.load_file(ARGV[0]) unless ARGV.empty?
   # populate the simulation parameters from file or use defaults.
 
   # SIMULATION PARAMETERS
-  RUN_SIMULATION_DAYS = 15  # simulation: 1780 days for 5 years
+  RUN_SIMULATION_DAYS = setting["run_simulation_days"] || 15  # simulation: 1780 days for 5 years
 
   # ==== workers ====
   # worker options (provide number of each in hash)
@@ -47,7 +50,7 @@ time = Benchmark.measure do
   # - BothMetrics
   # - NoPricesNoMetrics_FullTaskInfoNoTimeLimit
   # - NoPricesNoMetrics_FullTaskInfoWithTimeLimit
-  WORKERS = {
+  WORKERS = setting["workers"] || {
     # simulation: 170 workers for abundend workers scenario
     # simulation: 75 workers for scarce workers scenario
     # 'Random' => 10,
@@ -63,9 +66,9 @@ time = Benchmark.measure do
     # 'NoPricesNoMetrics_FullTaskInfoNoTimeLimit' => 0,
     # 'NoPricesNoMetrics_FullTaskInfoWithTimeLimit' => 0,
   }
-  WORKER_STARTING_BALANCE = 1000  # simulation: 1000 enough to get started
+  WORKER_STARTING_BALANCE = setting["worker_starting_balance"] || 1000  # simulation: 1000 enough to get started
   # option to randomly assign different skills to  workers
-  WORKER_SKILLS = [1]  # simulation: [1]
+  WORKER_SKILLS = setting["worker_skills"] || [1]  # simulation: [1]
 
   # ==== funders ====
   # funder options:
@@ -74,37 +77,37 @@ time = Benchmark.measure do
   # - inversePay
   # - correlatedpay
   # IDEA: projects may differ by difficulty probabilities
-  FUNDERS = [
+  FUNDERS = setting["funders"] || [
     # simulation: always all four funders
     'randomPay',
     'fixedPay',
     'inversePay',
     'correlatedpay',
   ]  # each funder represents a single project
-  FUNDER_STARTING_BALANCE = 100000000
+  FUNDER_STARTING_BALANCE = setting["funder_starting_balance"] || 100000000
 
   # ==== issues and contracts ====
   # #issue=#offer created
   # value is 0..maximum
-  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = 2  # simulation: 15
+  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = setting["number_of_issues_daily_per_funder"] || 2  # simulation: 15
   # PRICES and DIFFICULTIES need to have the same number of elements
   # PRICES are float values. The first value is fixed price bot's value
-  PRICES = [0.95, 0.90, 0.85, 0.80]  # simulation: [0.95, 0.90, 0.85, 0.80]
+  PRICES = setting["prices"] || [0.95, 0.90, 0.85, 0.80]  # simulation: [0.95, 0.90, 0.85, 0.80]
   # the keys for DIFFICULTIES need to be integers
-  DIFFICULTIES = { 1 => 30, 2 => 30, 3 => 30, 4 => 10}
+  DIFFICULTIES = setting["difficulties"] || { 1 => 30, 2 => 30, 3 => 30, 4 => 10}
   # simulation: { 1 => 30, 2 => 30, 3 => 30, 4 => 10}
   # 10% chance that issue can never be finished by skill-1 worker
   # equal chance for other three difficulties
-  MATURATION_DAYS_IN_FUTURE = 2  # simulation: 2 (3 days of work)
+  MATURATION_DAYS_IN_FUTURE = setting["maturation_days_in_future"] || 2  # simulation: 2 (3 days of work)
   # end of:  0 = today, 1 = tomorrow
 
 
   # output
-  BMXSIM_OUTPUT = 1  # 0 no output, 1 slim output, 9 detailed output
+  BMXSIM_OUTPUT = setting["bmxsim_output"] || 1  # 0 no output, 1 slim output, 9 detailed output
 
   # run in turbo mode
-  BMX_SAVE_EVENTS  = "FALSE"
-  BMX_SAVE_METRICS = "FALSE"
+  BMX_SAVE_EVENTS  = setting["bmx_save_events"] || "FALSE"
+  BMX_SAVE_METRICS = setting["bmx_save_metrics"] || "FALSE"
 
   # CSV output file
   CSV_FILE = 'simout/sim_' + Time.now.to_s[0..18].gsub(/\s/,'_').gsub(/:/,'-') + '.csv'
@@ -314,6 +317,9 @@ time = Benchmark.measure do
 
   # output user balances
   CSV.open(CSV_FILE, "ab") do |csv|
+    (0..2).to_a.each do
+      csv << []
+    end
     User.all.each do |u|
       user = [u[:email], u[:balance]]
       csv << user
@@ -324,7 +330,7 @@ time = Benchmark.measure do
 
   # Calling binding.pry to allow investigating the state of the simulation
   # Type "c" to continue and end the program
-  binding.pry
+  binding.pry unless ARGV[1]=="doNotWait"
   puts "--------------------------- simulation finished ---------------------------"
 end
 puts time
