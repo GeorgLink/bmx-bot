@@ -40,7 +40,7 @@ BugmHost.reset
 BugmTime.set_day_offset(-1 * SIMULATION_DAYS)
 
 # create repository
-repo = FB.create(:repo).repo
+tracker = FB.create(:tracker).tracker
 
 # create a funder and workers
 funder  = FB.create(:user, email: "funder@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
@@ -53,7 +53,7 @@ end
   print "#{day}: "
   workers.each do |worker|
     print "."
-    issue = FB.create(:issue, stm_repo_uuid: repo.uuid, stm_status: "open").issue
+    issue = FB.create(:issue, stm_tracker_uuid: tracker.uuid, stm_status: "open").issue
     args  = {
       user_uuid: funder.uuid,
       price: 1,

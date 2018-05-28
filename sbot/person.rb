@@ -27,7 +27,7 @@ class Bmxsim_Funder
     @uuid = bmx_user.uuid
     @tracker = issue_tracker
     @project = proj_number
-    @proj_repo_uuid = @tracker.add_project(proj_number)
+    @proj_tracker_uuid = @tracker.add_project(proj_number)
   end
   def uuid
     @uuid
@@ -468,14 +468,14 @@ class Bmxsim_Worker_Treatment_HealthMetricsNoPrices < Bmxsim_Worker
     # Each project has half the chance of the previous project
 #     rand_project_choice = [1, project_ranked.length.to_f + Math.log2( (1..100).to_a.sample.to_f/100.0 ).to_f.ceil].max.to_i
 
-    # get project repo uuid
+    # get project tracker uuid
 #     proj_uuid = project_ranked[rand_project_choice-1][0]
 
     # [option 2] deterministic: always choose most healthy project
     proj_uuid = project_ranked[0][0]
 
-    # Filter for offers from a specific repository
-    offers = Offer.joins(issue: :repo).where(repos: {uuid: proj_uuid})
+    # Filter for offers from a specific repository tracker
+    offers = Offer.joins(issue: :tracker).where(trackers: {uuid: proj_uuid})
     # filter by unassigned, since we want offers that are still up for the taking
     offers = offers.where("offers.uuid NOT IN (SELECT offer_uuid FROM positions)")
     # filter by max_cost to counter the offer
@@ -561,11 +561,11 @@ class Bmxsim_Worker_Treatment_HealthMetricsWithPrices < Bmxsim_Worker
     span_price = 1.0 if span_price == 0
     offer_score_sql = "CASE "
     project_h.each do |key,value|
-      offer_score_sql += "WHEN repos.uuid='#{key}' THEN #{value[:health_score].round(2)} + (((1 - offers.price) - #{min_price.round(2)})/#{span_price.round(2)}) "
+      offer_score_sql += "WHEN trackers.uuid='#{key}' THEN #{value[:health_score].round(2)} + (((1 - offers.price) - #{min_price.round(2)})/#{span_price.round(2)}) "
     end
     offer_score_sql += "END as score, offers.uuid as offer_uuid"
     # binding.pry
-    offers = Offer.joins(issue: :repo)
+    offers = Offer.joins(issue: :tracker)
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
     offers = offers.where("offers.uuid NOT IN (SELECT offer_uuid FROM positions)")
     offers = offers.select(offer_score_sql)
