@@ -8,13 +8,13 @@
 # require File.expand_path("~/src/exchange/config/environment")
 
 class Bmxsim_Issue
-  def initialize(id, repo_uuid, project=1, difficulty=1)
+  def initialize(id, tracker_uuid, project=1, difficulty=1)
     @status = 'open'  # closed or open
     @progress = 0  # percentage of completion
     @project = project  # in the simulation we have different projects
     @difficulty = difficulty  # difficulty level of issue
     @id = id  # id of this issue
-    @uuid = FB.create(:issue, stm_repo_uuid: repo_uuid, exid: id, stm_status: "open").issue.uuid
+    @uuid = FB.create(:issue, stm_tracker_uuid: tracker_uuid, exid: id, stm_status: "open").issue.uuid
     @create_day = $sim_day
     @close_day = nil
   end
@@ -60,8 +60,8 @@ end
 class Bmxsim_IssueTracker
   def initialize()
     @issues = []
-    # @project_bmx_repo = []
-    @project_bmx_repo_uuid = {}
+    # @project_bmx_tracker = []
+    @project_bmx_tracker_uuid = {}
     # puts "New Issue tracker, with uuid: #{@uuid}"
   end
   def uuid
@@ -69,20 +69,20 @@ class Bmxsim_IssueTracker
   end
   def add_project(proj_number)
 
-    bmx_repo = RepoCmd::Create.new({name: 'TestRepo'+proj_number.to_s, type: 'Repo::Test'}).project.repo
-    # bmx_repo = FB.create(:repo).repo
-    # @project_bmx_repo.insert(proj_number, bmx_repo)
-    @project_bmx_repo_uuid[proj_number] = bmx_repo.uuid
-    return bmx_repo.uuid
+    bmx_tracker = TrackerCmd::Create.new({name: 'TestTracker'+proj_number.to_s, type: 'Tracker::Test'}).project.tracker
+    # bmx_tracker = FB.create(:tracker).tracker
+    # @project_bmx_tracker.insert(proj_number, bmx_tracker)
+    @project_bmx_tracker_uuid[proj_number] = bmx_tracker.uuid
+    return bmx_tracker.uuid
   end
   def get_projects
-    @project_bmx_repo_uuid
+    @project_bmx_tracker_uuid
   end
-  def get_project_repo_uuid(proj_number)
-    @project_bmx_repo_uuid[proj_number]
+  def get_project_tracker_uuid(proj_number)
+    @project_bmx_tracker_uuid[proj_number]
   end
   def get_project_health(proj_number)
-    repo_uuid = get_project_repo_uuid(proj_number)
+    tracker_uuid = get_project_tracker_uuid(proj_number)
     proj_health = {
       open_issues: nil,  # What is the number of open issues?
       closed_issues: nil,  # What is the number of closed issues?
@@ -92,11 +92,11 @@ class Bmxsim_IssueTracker
     }
 
     # Open Issues --> What is the number of open issues?
-    proj_health[:open_issues] = Issue.where(stm_repo_uuid: "#{repo_uuid}").open.count.to_f
+    proj_health[:open_issues] = Issue.where(stm_tracker_uuid: "#{tracker_uuid}").open.count.to_f
     proj_health[:open_issues] = 1.0 if proj_health[:open_issues].nan?
 
     # Closed Issues --> What is the number of closed issues?
-    proj_health[:closed_issues] = Issue.where(stm_repo_uuid: "#{repo_uuid}").closed.count.to_f
+    proj_health[:closed_issues] = Issue.where(stm_tracker_uuid: "#{tracker_uuid}").closed.count.to_f
     proj_health[:closed_issues] = 1.0 if proj_health[:closed_issues].nan?
 
     # Issue Resolution Efficiency --> What is the number of closed issues/number of abandoned issues?
@@ -155,48 +155,48 @@ class Bmxsim_IssueTracker
 
     # get project health
     projects = {}
-    get_projects.to_a.each do |proj_number,repo_uuid|
-      # repo_uuid = get_project_repo_uuid(proj_number)
-      projects[repo_uuid] = get_project_health(proj_number)
+    get_projects.to_a.each do |proj_number,tracker_uuid|
+      # tracker_uuid = get_project_tracker_uuid(proj_number)
+      projects[tracker_uuid] = get_project_health(proj_number)
       # Update extreme values
-      max_open_issues = projects[repo_uuid][:open_issues].to_f if max_open_issues < projects[repo_uuid][:open_issues].to_f
-      max_closed_issues = projects[repo_uuid][:closed_issues].to_f if max_closed_issues < projects[repo_uuid][:closed_issues].to_f
-      min_resolution_efficiency = projects[repo_uuid][:resolution_efficiency].to_f if min_resolution_efficiency > projects[repo_uuid][:resolution_efficiency].to_f
-      max_open_issue_age = projects[repo_uuid][:open_issue_age].to_f if max_open_issue_age < projects[repo_uuid][:open_issue_age].to_f
-      max_closed_issue_resolution_duration = projects[repo_uuid][:closed_issue_resolution_duration].to_f if max_closed_issue_resolution_duration < projects[repo_uuid][:closed_issue_resolution_duration].to_f
+      max_open_issues = projects[tracker_uuid][:open_issues].to_f if max_open_issues < projects[tracker_uuid][:open_issues].to_f
+      max_closed_issues = projects[tracker_uuid][:closed_issues].to_f if max_closed_issues < projects[tracker_uuid][:closed_issues].to_f
+      min_resolution_efficiency = projects[tracker_uuid][:resolution_efficiency].to_f if min_resolution_efficiency > projects[tracker_uuid][:resolution_efficiency].to_f
+      max_open_issue_age = projects[tracker_uuid][:open_issue_age].to_f if max_open_issue_age < projects[tracker_uuid][:open_issue_age].to_f
+      max_closed_issue_resolution_duration = projects[tracker_uuid][:closed_issue_resolution_duration].to_f if max_closed_issue_resolution_duration < projects[tracker_uuid][:closed_issue_resolution_duration].to_f
     end
 
     # Normalize health metrics for each Project
-    get_projects.to_a.each do |proj_number,repo_uuid|
-      projects[repo_uuid][:sum_norm] = 0.0
-      projects[repo_uuid][:sum_rank] = 0
+    get_projects.to_a.each do |proj_number,tracker_uuid|
+      projects[tracker_uuid][:sum_norm] = 0.0
+      projects[tracker_uuid][:sum_rank] = 0
       unless max_open_issues == 0.0 then
-        projects[repo_uuid][:norm_open_issues] = projects[repo_uuid][:open_issues].to_f / max_open_issues
+        projects[tracker_uuid][:norm_open_issues] = projects[tracker_uuid][:open_issues].to_f / max_open_issues
       else
-        projects[repo_uuid][:norm_open_issues] = 0.0
+        projects[tracker_uuid][:norm_open_issues] = 0.0
       end
-      projects[repo_uuid][:sum_norm] += projects[repo_uuid][:norm_open_issues]
+      projects[tracker_uuid][:sum_norm] += projects[tracker_uuid][:norm_open_issues]
       unless max_closed_issues == 0.0 then
-        projects[repo_uuid][:norm_closed_issues] = projects[repo_uuid][:closed_issues].to_f / max_closed_issues
+        projects[tracker_uuid][:norm_closed_issues] = projects[tracker_uuid][:closed_issues].to_f / max_closed_issues
       else
-        projects[repo_uuid][:norm_closed_issues] = 0.0
+        projects[tracker_uuid][:norm_closed_issues] = 0.0
       end
-      projects[repo_uuid][:sum_norm] += projects[repo_uuid][:norm_closed_issues]
-      projects[repo_uuid][:norm_resolution_efficiency] = 1 - projects[repo_uuid][:resolution_efficiency].to_f # reverse already normalized
-      projects[repo_uuid][:sum_norm] += projects[repo_uuid][:norm_resolution_efficiency]
+      projects[tracker_uuid][:sum_norm] += projects[tracker_uuid][:norm_closed_issues]
+      projects[tracker_uuid][:norm_resolution_efficiency] = 1 - projects[tracker_uuid][:resolution_efficiency].to_f # reverse already normalized
+      projects[tracker_uuid][:sum_norm] += projects[tracker_uuid][:norm_resolution_efficiency]
       unless max_open_issue_age == 0.0 then
-        projects[repo_uuid][:norm_open_issue_age] = projects[repo_uuid][:open_issue_age].to_f / max_open_issue_age
+        projects[tracker_uuid][:norm_open_issue_age] = projects[tracker_uuid][:open_issue_age].to_f / max_open_issue_age
       else
-        projects[repo_uuid][:norm_open_issue_age] = 0.0
+        projects[tracker_uuid][:norm_open_issue_age] = 0.0
       end
-      projects[repo_uuid][:sum_norm] += projects[repo_uuid][:norm_open_issue_age]
+      projects[tracker_uuid][:sum_norm] += projects[tracker_uuid][:norm_open_issue_age]
       unless max_closed_issue_resolution_duration == 0.0 then
-        projects[repo_uuid][:norm_closed_issue_resolution_duration] = projects[repo_uuid][:closed_issue_resolution_duration].to_f / max_closed_issue_resolution_duration
+        projects[tracker_uuid][:norm_closed_issue_resolution_duration] = projects[tracker_uuid][:closed_issue_resolution_duration].to_f / max_closed_issue_resolution_duration
       else
-        projects[repo_uuid][:norm_closed_issue_resolution_duration] = 0.0
+        projects[tracker_uuid][:norm_closed_issue_resolution_duration] = 0.0
       end
-      projects[repo_uuid][:sum_norm] += projects[repo_uuid][:norm_closed_issue_resolution_duration]
-      max_sum_norm = projects[repo_uuid][:sum_norm] if max_sum_norm < projects[repo_uuid][:sum_norm]
+      projects[tracker_uuid][:sum_norm] += projects[tracker_uuid][:norm_closed_issue_resolution_duration]
+      max_sum_norm = projects[tracker_uuid][:sum_norm] if max_sum_norm < projects[tracker_uuid][:sum_norm]
     end
 
     # get rank for open_issues and add to project health
@@ -271,7 +271,7 @@ class Bmxsim_IssueTracker
     if difficulty == 0 then
       difficulty = (1..3).to_a.sample
     end
-    iss = Bmxsim_Issue.new((@issues.count+1), get_project_repo_uuid(project), project, difficulty)
+    iss = Bmxsim_Issue.new((@issues.count+1), get_project_tracker_uuid(project), project, difficulty)
     @issues.push(iss)
     return @issues.last
   end
