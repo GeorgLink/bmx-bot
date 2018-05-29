@@ -110,8 +110,12 @@ time = Benchmark.measure do
   BMX_SAVE_METRICS = setting["bmx_save_metrics"] || "FALSE"
 
   # CSV output file
-  CSV_FILE = 'simout/sim_' + Time.now.to_s[0..18].gsub(/\s/,'_').gsub(/:/,'-') + '.csv'
-  out_file = File.new(CSV_FILE, "w")
+  if ARGV.empty?
+    CSV_FILE = 'simout/sim_' + Time.now.to_s[0..18].gsub(/\s/,'_').gsub(/:/,'-')
+  else
+    CSV_FILE = 'simout/sim_' + ARGV[0].gsub(/\syml/,'')
+  end
+  out_file = File.new(CSV_FILE+".settings", "w")
   # Save the parameters
   out_file.puts("GIT SHA1 = #{`git rev-parse HEAD`}")
   out_file.puts("Time.now = #{Time.now}")
@@ -132,27 +136,29 @@ time = Benchmark.measure do
   out_file.puts("")  # empty lines before health metrics are output
   out_file.close
   health_a = ["day"]
-  FUNDERS.each do |val|
-    health_a.push("Proj.#{val} uuid")  # uuid of project
-    health_a.push("Proj.#{val} open_issues")
-    health_a.push("Proj.#{val} closed_issues")
-    health_a.push("Proj.#{val} resolution_efficiency")
-    health_a.push("Proj.#{val} open_issue_age")
-    health_a.push("Proj.#{val} closed_issue_resolution_duration")
-    health_a.push("Proj.#{val} norm_open_issues")
-    health_a.push("Proj.#{val} norm_closed_issues")
-    health_a.push("Proj.#{val} norm_resolution_efficiency")
-    health_a.push("Proj.#{val} norm_open_issue_age")
-    health_a.push("Proj.#{val} norm_closed_issue_resolution_duration")
-  end
-  health_a.push("max_open_issues")
-  health_a.push("max_closed_issues")
-  health_a.push("max_resolution_efficiency")
-  health_a.push("max_open_issue_age")
-  health_a.push("max_closed_issue_resolution_duration")
+  health_a.push("funder")  # uuid of project
+  # health_a.push("uuid")  # uuid of project
+  health_a.push("open_issues")
+  health_a.push("closed_issues")
+  health_a.push("resolution_efficiency")
+  health_a.push("open_issue_age")
+  health_a.push("closed_issue_resolution_duration")
+  health_a.push("norm_open_issues")
+  health_a.push("norm_closed_issues")
+  health_a.push("norm_resolution_efficiency")
+  health_a.push("norm_open_issue_age")
+  health_a.push("norm_closed_issue_resolution_duration")
 
-  CSV.open(CSV_FILE, "ab") do |csv|
+  CSV.open(CSV_FILE+'_health.csv', "wb") do |csv|
     csv << health_a
+  end
+
+  # output user balances
+  CSV.open(CSV_FILE+'_balances.csv', "wb") do |csv|
+    User.all.each do |u|
+      user = ['day','email', 'type', 'balance']
+      csv << user
+    end
   end
 
   # global day variable
@@ -190,6 +196,7 @@ time = Benchmark.measure do
 
   # create funders and workers
   funders = []
+  uuid_funders = {}
   # FUNDERS options:
   # - fixedPay
   # - randomPay
@@ -200,6 +207,7 @@ time = Benchmark.measure do
     project += 1
     STDOUT.write "\rcreate funders: #{project} / #{FUNDERS.length}"  if BMXSIM_OUTPUT > 0
     funder = FB.create(:user, email: "funder#{project}_#{funder_type}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
+    uuid_funders.merge!({user.uuid => funder_type})
     case funder_type
     when 'fixedPay'
       funders.push(Bmxsim_Funder_FixedPay.new(funder, issue_tracker, project))
@@ -216,6 +224,7 @@ time = Benchmark.measure do
   end
   puts "" if BMXSIM_OUTPUT > 0
   workers = []
+  email_worker = {}
   number_of_workers = 0
   WORKERS.to_a.each {|v| number_of_workers += v[1]}
   worker_id = 0
@@ -224,6 +233,7 @@ time = Benchmark.measure do
       worker_id += 1
       STDOUT.write "\rcreate workers: #{worker_id} / #{number_of_workers}" if BMXSIM_OUTPUT > 0
       worker = FB.create(:user, email: "worker#{worker_id}_#{worker_type}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
+      email_worker.merge!({worker[:email] => worker_type})
       skill = WORKER_SKILLS.sample
       case worker_type
       when 'Random'
@@ -288,10 +298,11 @@ time = Benchmark.measure do
 
     # Write project health data to a
     health_h = issue_tracker.get_project_health_all_projects
-    health_a = [$sim_day]
     health_h.to_a.each do |val|
       if val[1].is_a?(Hash) then  # this is a project
-        health_a.push(val[0])  # uuid of project
+        health_a = [$sim_day]
+        health_a.push(uuid_funders.key(val[0]))  # funder
+        # health_a.push(val[0])  # uuid of project
         health_a.push(val[1][:open_issues])
         health_a.push(val[1][:closed_issues])
         health_a.push(val[1][:resolution_efficiency])
@@ -302,33 +313,26 @@ time = Benchmark.measure do
         health_a.push(val[1][:norm_resolution_efficiency])
         health_a.push(val[1][:norm_open_issue_age])
         health_a.push(val[1][:norm_closed_issue_resolution_duration])
+        CSV.open(CSV_FILE+'_health.csv', "ab") do |csv|
+          csv << health_a
+        end
       else
-        health_a.push(val[1])
+        # health_a.push(val[1])
       end
     end
-    CSV.open(CSV_FILE, "ab") do |csv|
-      csv << health_a
+
+    # output user balances
+    CSV.open(CSV_FILE+'_balances.csv', "ab") do |csv|
+      User.all.each do |u|
+        user = [$sim_day, u[:email], email_worker[u[:email]], u[:balance]]
+        csv << user
+      end
     end
 
     #signal end of day
     puts " DAY COMPLETE"  if BMXSIM_OUTPUT > 0
     STDOUT.flush
     # continue_story  # wait for key press
-  end
-
-  # output user balances
-  CSV.open(CSV_FILE, "ab") do |csv|
-    (0..2).to_a.each do
-      csv << []
-    end
-    User.all.each do |u|
-      user = [u[:email], u[:balance]]
-      csv << user
-    end
-      (0..2).to_a.each do
-        csv << []
-      end
-    csv << time
   end
 
   # IDEA: inform me that simulation is finished via email or other notification
