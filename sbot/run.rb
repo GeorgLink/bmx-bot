@@ -115,7 +115,7 @@ time = Benchmark.measure do
   # Save the parameters
   out_file.puts("GIT SHA1 = #{`git rev-parse HEAD`}")
   out_file.puts("Time.now = #{Time.now}")
-  out_file.puts("Commandline arguments: #{ARGV}") unless ARGV.empty?
+  out_file.puts("Commandline arguments: #{ARGV}")
   out_file.puts("RUN_SIMULATION_DAYS = #{RUN_SIMULATION_DAYS}")
   out_file.puts("WORKERS = #{WORKERS}")
   out_file.puts("WORKER_STARTING_BALANCE = #{WORKER_STARTING_BALANCE}")
