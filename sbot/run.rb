@@ -155,10 +155,7 @@ time = Benchmark.measure do
 
   # output user balances
   CSV.open(CSV_FILE+'_balances.csv', "wb") do |csv|
-    User.all.each do |u|
-      user = ['day','email', 'type', 'balance']
-      csv << user
-    end
+    csv << ['day','email', 'type', 'balance']
   end
 
   # global day variable
@@ -207,7 +204,7 @@ time = Benchmark.measure do
     project += 1
     STDOUT.write "\rcreate funders: #{project} / #{FUNDERS.length}"  if BMXSIM_OUTPUT > 0
     funder = FB.create(:user, email: "funder#{project}_#{funder_type}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
-    uuid_funders.merge!({user.uuid => funder_type})
+    uuid_funders.merge!({funder.uuid => funder_type})
     case funder_type
     when 'fixedPay'
       funders.push(Bmxsim_Funder_FixedPay.new(funder, issue_tracker, project))
@@ -271,28 +268,52 @@ time = Benchmark.measure do
   (1..RUN_SIMULATION_DAYS).to_a.each do |day|
     puts "Day #{day} / #{RUN_SIMULATION_DAYS} : #{BugmTime.now}"  if BMXSIM_OUTPUT > 0
     $sim_day = day
+
+    # prepare output
+    out_funder = "0 / #{funders.length} funders"
+    out_worker = "0 / #{workers.length} workers"
+    out_contract = "0 / 0 contracts resolved"
+    STDOUT.write "simulating: #{out_funder} | #{out_worker} | #{out_contract}"
+
     # call funders in a random order
+    counter = 0
     funders.shuffle.each do |funder|
-      print "f" if BMXSIM_OUTPUT > 0 && BMXSIM_OUTPUT < 9
+      if BMXSIM_OUTPUT < 9
+        counter += 1
+        out_funder = "#{counter} / #{funders.length} funders"
+        STDOUT.write "\rsimulating: #{out_funder} | #{out_worker} | #{out_contract}"
+        # print "f" if BMXSIM_OUTPUT > 0 && BMXSIM_OUTPUT < 9
+      end
       funder.do_work
       puts "funder[#{funder.get_name}](#{funder.get_balance})"  if BMXSIM_OUTPUT > 8
     end
     # call workers in a random order
+
+    counter = 0
     workers.shuffle.each do |worker|
-      print "w"  if BMXSIM_OUTPUT > 0 && BMXSIM_OUTPUT < 9
+      if BMXSIM_OUTPUT < 9
+        counter += 1
+        out_worker = "#{counter} / #{workers.length} workers"
+        STDOUT.write "\rsimulating: #{out_funder} | #{out_worker} | #{out_contract}"
+        # print "w"  if BMXSIM_OUTPUT > 0 && BMXSIM_OUTPUT < 9
+      end
       worker.do_work
       puts "worker[#{worker.get_name}:#{worker.get_skill}](#{worker.get_balance}): #{worker.issue_status}" if BMXSIM_OUTPUT > 8
     end
     # go to next day
-    puts " next day"  if BMXSIM_OUTPUT > 0
+    # puts " next day"  if BMXSIM_OUTPUT > 0
     BugmTime.go_past_end_of_day
     # resolve contracts
-    STDOUT.write "resolve contracts: 0 / 0" if BMXSIM_OUTPUT > 0
+    # STDOUT.write "resolve contracts: 0 / 0" if BMXSIM_OUTPUT > 0
     counter = 0
     max_counter = Contract.pending_resolution.count
     Contract.pending_resolution.each do |contract|
-      counter += 1
-      STDOUT.write "\rresolve contracts: #{counter} / #{max_counter}" if BMXSIM_OUTPUT > 0
+      if BMXSIM_OUTPUT < 9
+        counter += 1
+        out_contract = "#{counter} / #{max_counter} contracts resolved"
+        STDOUT.write "\rsimulating: #{out_funder} | #{out_worker} | #{out_contract}"
+        # STDOUT.write "\rresolve contracts: #{counter} / #{max_counter}" if BMXSIM_OUTPUT > 0
+      end
       ContractCmd::Resolve.new(contract).project
     end
 
