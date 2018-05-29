@@ -113,7 +113,7 @@ time = Benchmark.measure do
   if ARGV.empty?
     CSV_FILE = 'simout/sim_' + Time.now.to_s[0..18].gsub(/\s/,'_').gsub(/:/,'-')
   else
-    CSV_FILE = 'simout/sim_' + ARGV[0].gsub(/\syml/,'')
+    CSV_FILE = 'simout/sim_' + ARGV[0].split('/').last.gsub(/\.yml/,'')
   end
   out_file = File.new(CSV_FILE+".settings", "w")
   # Save the parameters
