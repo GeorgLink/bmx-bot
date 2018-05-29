@@ -155,51 +155,6 @@ time = Benchmark.measure do
     csv << health_a
   end
 
-  # CSV output file
-  CSV_FILE = 'simout/sim_' + Time.now.to_s[0..18].gsub(/\s/,'_').gsub(/:/,'-') + '.csv'
-  out_file = File.new(CSV_FILE, "w")
-  # Save the parameters
-  out_file.puts("GIT SHA1 = #{`git rev-parse HEAD`}")
-  out_file.puts("Time.now = #{Time.now}")
-  out_file.puts("RUN_SIMULATION_DAYS = #{RUN_SIMULATION_DAYS}")
-  out_file.puts("WORKERS = #{WORKERS}")
-  out_file.puts("WORKER_STARTING_BALANCE = #{WORKER_STARTING_BALANCE}")
-  out_file.puts("WORKER_SKILLS = #{WORKER_SKILLS}")
-  out_file.puts("FUNDERS = #{FUNDERS}")
-  out_file.puts("FUNDER_STARTING_BALANCE = #{FUNDER_STARTING_BALANCE}")
-  out_file.puts("NUMBER_OF_ISSUES_DAILY_PER_FUNDER = #{NUMBER_OF_ISSUES_DAILY_PER_FUNDER}")
-  out_file.puts("PRICES = #{PRICES}")
-  out_file.puts("DIFFICULTIES = #{DIFFICULTIES}")
-  out_file.puts("MATURATION_DAYS_IN_FUTURE = #{MATURATION_DAYS_IN_FUTURE}")
-  out_file.puts("")
-  out_file.puts("====== REMINDER: user balances are at end of file =======")  # empty line before health metrics are output
-  out_file.puts("")  # empty lines before health metrics are output
-  out_file.puts("")  # empty lines before health metrics are output
-  out_file.close
-  health_a = ["day"]
-  FUNDERS.each do |val|
-    health_a.push("Proj.#{val} uuid")  # uuid of project
-    health_a.push("Proj.#{val} open_issues")
-    health_a.push("Proj.#{val} closed_issues")
-    health_a.push("Proj.#{val} resolution_efficiency")
-    health_a.push("Proj.#{val} open_issue_age")
-    health_a.push("Proj.#{val} closed_issue_resolution_duration")
-    health_a.push("Proj.#{val} norm_open_issues")
-    health_a.push("Proj.#{val} norm_closed_issues")
-    health_a.push("Proj.#{val} norm_resolution_efficiency")
-    health_a.push("Proj.#{val} norm_open_issue_age")
-    health_a.push("Proj.#{val} norm_closed_issue_resolution_duration")
-  end
-  health_a.push("max_open_issues")
-  health_a.push("max_closed_issues")
-  health_a.push("max_resolution_efficiency")
-  health_a.push("max_open_issue_age")
-  health_a.push("max_closed_issue_resolution_duration")
-
-  CSV.open(CSV_FILE, "ab") do |csv|
-    csv << health_a
-  end
-
   # global day variable
   $sim_day = 0
 
