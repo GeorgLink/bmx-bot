@@ -172,6 +172,7 @@ time = Benchmark.measure do
   puts "----- BUGMARK BOT -------------------------------------------"
   puts "START #{Time.now} | C-c to exit"
   puts "Process Name: #{PROCNAME}" if BMXSIM_OUTPUT > 0
+  puts "Arguments: #{ARGV}"
   puts "Loading Environment..." if BMXSIM_OUTPUT > 0
   STDOUT.flush
 
@@ -202,7 +203,7 @@ time = Benchmark.measure do
   project = 0
   (FUNDERS).to_a.each do |funder_type|
     project += 1
-    STDOUT.write "\rcreate funders: #{project} / #{FUNDERS.length}"  if BMXSIM_OUTPUT > 0
+    STDOUT.write "\rcreate funders: #{project.to_s.rjust(Math.log10(FUNDERS.length).to_i+1)}/#{FUNDERS.length}"  if BMXSIM_OUTPUT > 0
     funder = FB.create(:user, email: "funder#{project}_#{funder_type}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
     uuid_funders.merge!({funder.uuid => funder_type})
     case funder_type
@@ -228,7 +229,7 @@ time = Benchmark.measure do
   WORKERS.each do |worker_type, worker_number|
     worker_number.times do
       worker_id += 1
-      STDOUT.write "\rcreate workers: #{worker_id} / #{number_of_workers}" if BMXSIM_OUTPUT > 0
+      STDOUT.write "\rcreate workers: #{worker_id.to_s.rjust(Math.log10(number_of_workers).to_i+1)}/#{number_of_workers}" if BMXSIM_OUTPUT > 0
       worker = FB.create(:user, email: "worker#{worker_id}_#{worker_type}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
       email_worker.merge!({worker[:email] => worker_type})
       skill = WORKER_SKILLS.sample
@@ -266,22 +267,23 @@ time = Benchmark.measure do
 
   # loop for each day
   (1..RUN_SIMULATION_DAYS).to_a.each do |day|
-    puts "Day #{day} / #{RUN_SIMULATION_DAYS} : #{BugmTime.now}"  if BMXSIM_OUTPUT > 0
+    puts "Day #{day.to_s.rjust(Math.log10(RUN_SIMULATION_DAYS).to_i+1)}/#{RUN_SIMULATION_DAYS} --- #{BugmTime.now}"  if BMXSIM_OUTPUT > 0
     $sim_day = day
 
+    counter = 0
     # prepare output
-    out_funder = "0 / #{funders.length} funders"
-    out_worker = "0 / #{workers.length} workers"
-    out_contract = "0 / 0 contracts resolved"
-    STDOUT.write "simulating: #{out_funder} | #{out_worker} | #{out_contract}"
+    out_funder = "#{counter.to_s.rjust(Math.log10(funders.length).to_i+1)}/#{funders.length} funders"
+    out_worker = "#{counter.to_s.rjust(Math.log10(workers.length).to_i+1)}/#{workers.length} workers"
+    out_contract = "0/0 contracts resolved"
+    STDOUT.write "simulate: #{out_funder} | #{out_worker} | #{out_contract}"
 
     # call funders in a random order
     counter = 0
     funders.shuffle.each do |funder|
       if BMXSIM_OUTPUT < 9
         counter += 1
-        out_funder = "#{counter} / #{funders.length} funders"
-        STDOUT.write "\rsimulating: #{out_funder} | #{out_worker} | #{out_contract}"
+        out_funder = "#{counter.to_s.rjust(Math.log10(funders.length).to_i+1)}/#{funders.length} funders"
+        STDOUT.write "\rsimulate: #{out_funder} | #{out_worker} | #{out_contract}"
         # print "f" if BMXSIM_OUTPUT > 0 && BMXSIM_OUTPUT < 9
       end
       funder.do_work
@@ -293,8 +295,8 @@ time = Benchmark.measure do
     workers.shuffle.each do |worker|
       if BMXSIM_OUTPUT < 9
         counter += 1
-        out_worker = "#{counter} / #{workers.length} workers"
-        STDOUT.write "\rsimulating: #{out_funder} | #{out_worker} | #{out_contract}"
+        out_worker = "#{counter.to_s.rjust(Math.log10(workers.length).to_i+1)}/#{workers.length} workers"
+        STDOUT.write "\rsimulate: #{out_funder} | #{out_worker} | #{out_contract}"
         # print "w"  if BMXSIM_OUTPUT > 0 && BMXSIM_OUTPUT < 9
       end
       worker.do_work
@@ -310,8 +312,8 @@ time = Benchmark.measure do
     Contract.pending_resolution.each do |contract|
       if BMXSIM_OUTPUT < 9
         counter += 1
-        out_contract = "#{counter} / #{max_counter} contracts resolved"
-        STDOUT.write "\rsimulating: #{out_funder} | #{out_worker} | #{out_contract}"
+        out_contract = "#{counter.to_s.rjust(Math.log10(max_counter).to_i+1)}/#{max_counter} contracts resolved"
+        STDOUT.write "\rsimulate: #{out_funder} | #{out_worker} | #{out_contract}"
         # STDOUT.write "\rresolve contracts: #{counter} / #{max_counter}" if BMXSIM_OUTPUT > 0
       end
       ContractCmd::Resolve.new(contract).project
@@ -322,7 +324,7 @@ time = Benchmark.measure do
     health_h.to_a.each do |val|
       if val[1].is_a?(Hash) then  # this is a project
         health_a = [$sim_day]
-        health_a.push(uuid_funders.key(val[0]))  # funder
+        health_a.push(uuid_funders[val[0]])  # funder
         # health_a.push(val[0])  # uuid of project
         health_a.push(val[1][:open_issues])
         health_a.push(val[1][:closed_issues])
@@ -351,7 +353,7 @@ time = Benchmark.measure do
     end
 
     #signal end of day
-    puts " DAY COMPLETE"  if BMXSIM_OUTPUT > 0
+    puts ""  if BMXSIM_OUTPUT > 0
     STDOUT.flush
     # continue_story  # wait for key press
   end
@@ -360,7 +362,7 @@ time = Benchmark.measure do
 
   # Calling binding.pry to allow investigating the state of the simulation
   # Type "c" to continue and end the program
-  binding.pry unless ARGV[1]=="doNotWait"
+  # binding.pry unless ARGV[1]=="doNotWait"
   puts "--------------------------- simulation finished ---------------------------"
 end
 puts time
