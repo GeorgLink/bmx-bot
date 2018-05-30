@@ -404,8 +404,10 @@ time = Benchmark.measure do
     # continue_story  # wait for key press
   end
 
-  # IDEA: inform me that simulation is finished via email or other notification
-
+  setting['finished'] = "SIMULATION FINISHED WITHOUT ERROR"
+  File.open(SETTINGS_YAML, "w") do |file|
+    file.write setting.to_yaml
+  end
   # Calling binding.pry to allow investigating the state of the simulation
   # Type "c" to continue and end the program
   # binding.pry unless ARGV[1]=="doNotWait"
