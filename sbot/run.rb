@@ -205,7 +205,6 @@ time = Benchmark.measure do
     project += 1
     STDOUT.write "\rcreate funders: #{project.to_s.rjust(Math.log10(FUNDERS.length).to_i+1)}/#{FUNDERS.length}"  if BMXSIM_OUTPUT > 0
     funder = FB.create(:user, email: "funder#{project}_#{funder_type}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
-    uuid_funders.merge!({funder.uuid => funder_type})
     case funder_type
     when 'fixedPay'
       funders.push(Bmxsim_Funder_FixedPay.new(funder, issue_tracker, project))
@@ -219,6 +218,7 @@ time = Benchmark.measure do
       puts 'ERROR: unknown funder'
       raise "ERROR: unknown funder"
     end
+    uuid_funders.merge!({funders.last.project_uuid => funder_type})
   end
   puts "" if BMXSIM_OUTPUT > 0
   workers = []

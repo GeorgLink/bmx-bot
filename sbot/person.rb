@@ -32,6 +32,9 @@ class Bmxsim_Funder
   def uuid
     @uuid
   end
+  def project_uuid
+    @proj_tracker_uuid
+  end
   def do_work
     # function being called by simulation for funder to do something
   end
