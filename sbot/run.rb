@@ -34,7 +34,8 @@ time = Benchmark.measure do
   # populate the simulation parameters from file or use defaults.
 
   # SIMULATION PARAMETERS
-  RUN_SIMULATION_DAYS = setting["run_simulation_days"] || 15  # simulation: 1780 days for 5 years
+  setting["run_simulation_days"] = 15 unless setting.key?("run_simulation_days")
+  RUN_SIMULATION_DAYS = setting["run_simulation_days"]  # simulation: 1780 days for 5 years
 
   # ==== workers ====
   # worker options (provide number of each in hash)
@@ -50,7 +51,7 @@ time = Benchmark.measure do
   # - BothMetrics
   # - NoPricesNoMetrics_FullTaskInfoNoTimeLimit
   # - NoPricesNoMetrics_FullTaskInfoWithTimeLimit
-  WORKERS = setting["workers"] || {
+  setting["workers"] = {
     # simulation: 170 workers for abundend workers scenario
     # simulation: 75 workers for scarce workers scenario
     # 'Random' => 10,
@@ -65,10 +66,13 @@ time = Benchmark.measure do
     # 'BothMetrics' => 0,
     # 'NoPricesNoMetrics_FullTaskInfoNoTimeLimit' => 0,
     # 'NoPricesNoMetrics_FullTaskInfoWithTimeLimit' => 0,
-  }
-  WORKER_STARTING_BALANCE = setting["worker_starting_balance"] || 1000  # simulation: 1000 enough to get started
+  } unless setting.key?("workers")
+  WORKERS = setting["workers"]
+  setting["worker_starting_balance"] = 1000 unless setting.key?("worker_starting_balance")
+  WORKER_STARTING_BALANCE = setting["worker_starting_balance"]  # simulation: 1000 enough to get started
   # option to randomly assign different skills to  workers
-  WORKER_SKILLS = setting["worker_skills"] || [1]  # simulation: [1]
+  setting["worker_skills"] = [1] unless setting.key?("worker_skills")
+  WORKER_SKILLS = setting["worker_skills"]   # simulation: [1]
 
   # ==== funders ====
   # funder options:
@@ -77,85 +81,118 @@ time = Benchmark.measure do
   # - inversePay
   # - correlatedpay
   # IDEA: projects may differ by difficulty probabilities
-  FUNDERS = setting["funders"] || [
+  setting["funders"] = [
     # simulation: always all four funders
     'randomPay',
     'fixedPay',
     'inversePay',
     'correlatedpay',
-  ]  # each funder represents a single project
-  FUNDER_STARTING_BALANCE = setting["funder_starting_balance"] || 100000000
+  ] unless setting.key?("funders")
+  FUNDERS = setting["funders"]   # each funder represents a single project
+  setting["funder_starting_balance"] = 100000000 unless setting.key?("funder_starting_balance")
+  FUNDER_STARTING_BALANCE = setting["funder_starting_balance"]
 
   # ==== issues and contracts ====
   # #issue=#offer created
   # value is 0..maximum
-  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = setting["number_of_issues_daily_per_funder"] || 2  # simulation: 15
+  setting["number_of_issues_daily_per_funder"] = 2 unless setting.key?("number_of_issues_daily_per_funder")
+  NUMBER_OF_ISSUES_DAILY_PER_FUNDER = setting["number_of_issues_daily_per_funder"]  # simulation: 15
   # PRICES and DIFFICULTIES need to have the same number of elements
   # PRICES are float values. The first value is fixed price bot's value
-  PRICES = setting["prices"] || [0.95, 0.90, 0.85, 0.80]  # simulation: [0.95, 0.90, 0.85, 0.80]
+  setting["prices"] = [0.95, 0.90, 0.85, 0.80] unless setting.key?("prices")
+  PRICES = setting["prices"]   # simulation: [0.95, 0.90, 0.85, 0.80]
   # the keys for DIFFICULTIES need to be integers
-  DIFFICULTIES = setting["difficulties"] || { 1 => 30, 2 => 30, 3 => 30, 4 => 10}
+  setting["difficulties"] = { 1 => 30, 2 => 30, 3 => 30, 4 => 10} unless setting.key?("difficulties")
+  DIFFICULTIES = setting["difficulties"]
   # simulation: { 1 => 30, 2 => 30, 3 => 30, 4 => 10}
   # 10% chance that issue can never be finished by skill-1 worker
   # equal chance for other three difficulties
-  MATURATION_DAYS_IN_FUTURE = setting["maturation_days_in_future"] || 2  # simulation: 2 (3 days of work)
+  setting["maturation_days_in_future"] = 2 unless setting.key?("maturation_days_in_future")
+  MATURATION_DAYS_IN_FUTURE = setting["maturation_days_in_future"]  # simulation: 2 (3 days of work)
   # end of:  0 = today, 1 = tomorrow
 
 
   # output
+  setting["bmxsim_output"] = 1 unless setting.key?("bmxsim_output")
   BMXSIM_OUTPUT = setting["bmxsim_output"] || 1  # 0 no output, 1 slim output, 9 detailed output
 
   # run in turbo mode
-  BMX_SAVE_EVENTS  = setting["bmx_save_events"] || "FALSE"
-  BMX_SAVE_METRICS = setting["bmx_save_metrics"] || "FALSE"
+  setting["bmx_save_events"] = "FALSE" unless setting.key?("bmx_save_events")
+  BMX_SAVE_EVENTS  = setting["bmx_save_events"]
+  setting["bmx_save_metrics"] = "FALSE" unless setting.key?("bmx_save_metrics")
+  BMX_SAVE_METRICS = setting["bmx_save_metrics"]
 
   # CSV output file
+  OUTPUT_PATH = 'simout/'
+  setting['git_sha'] = `git rev-parse HEAD`.to_s.gsub(/\s/,'')
+  GIT_SHA = setting['git_sha']
+  setting['simulation_date'] = Time.now.to_s[0..18]
+  SIMULATION_DATE = setting['simulation_date']
   if ARGV.empty?
-    CSV_FILE = 'simout/sim_' + Time.now.to_s[0..18].gsub(/\s/,'_').gsub(/:/,'-')
+    SETTINGS_FILE = "none"
+    HEALTH_CSV = "#{OUTPUT_PATH}sim_#{setting['simulation_date'].gsub(/\s/,'_').gsub(/:/,'-')}_health.csv"
+    BALANCE_CSV = "#{OUTPUT_PATH}sim_#{setting['simulation_date'].gsub(/\s/,'_').gsub(/:/,'-')}_balances.csv"
   else
-    CSV_FILE = 'simout/sim_' + ARGV[0].split('/').last.gsub(/\.yml/,'')
+    SETTINGS_FILE = ARGV[0].split('/').last.gsub(/\.yml/,'')
+    HEALTH_CSV = "#{OUTPUT_PATH}health.csv"
+    BALANCE_CSV = "#{OUTPUT_PATH}balances.csv"
   end
-  out_file = File.new(CSV_FILE+".settings", "w")
-  # Save the parameters
-  out_file.puts("GIT SHA1 = #{`git rev-parse HEAD`}")
-  out_file.puts("Time.now = #{Time.now}")
-  out_file.puts("Commandline arguments: #{ARGV}")
-  out_file.puts("RUN_SIMULATION_DAYS = #{RUN_SIMULATION_DAYS}")
-  out_file.puts("WORKERS = #{WORKERS}")
-  out_file.puts("WORKER_STARTING_BALANCE = #{WORKER_STARTING_BALANCE}")
-  out_file.puts("WORKER_SKILLS = #{WORKER_SKILLS}")
-  out_file.puts("FUNDERS = #{FUNDERS}")
-  out_file.puts("FUNDER_STARTING_BALANCE = #{FUNDER_STARTING_BALANCE}")
-  out_file.puts("NUMBER_OF_ISSUES_DAILY_PER_FUNDER = #{NUMBER_OF_ISSUES_DAILY_PER_FUNDER}")
-  out_file.puts("PRICES = #{PRICES}")
-  out_file.puts("DIFFICULTIES = #{DIFFICULTIES}")
-  out_file.puts("MATURATION_DAYS_IN_FUTURE = #{MATURATION_DAYS_IN_FUTURE}")
-  out_file.puts("")
-  out_file.puts("====== REMINDER: user balances are at end of file =======")  # empty line before health metrics are output
-  out_file.puts("")  # empty lines before health metrics are output
-  out_file.puts("")  # empty lines before health metrics are output
-  out_file.close
-  health_a = ["day"]
-  health_a.push("funder")  # uuid of project
-  # health_a.push("uuid")  # uuid of project
-  health_a.push("open_issues")
-  health_a.push("closed_issues")
-  health_a.push("resolution_efficiency")
-  health_a.push("open_issue_age")
-  health_a.push("closed_issue_resolution_duration")
-  health_a.push("norm_open_issues")
-  health_a.push("norm_closed_issues")
-  health_a.push("norm_resolution_efficiency")
-  health_a.push("norm_open_issue_age")
-  health_a.push("norm_closed_issue_resolution_duration")
+  SETTINGS_YAML = "#{OUTPUT_PATH}#{setting['simulation_date'].gsub(/\s/,'_').gsub(/:/,'-')}_#{SETTINGS_FILE}.yml"
 
-  CSV.open(CSV_FILE+'_health.csv', "wb") do |csv|
-    csv << health_a
+# NOT NEEDED because we are saving the GIT_SHA
+  File.open(SETTINGS_YAML, "w") do |file|
+    file.write setting.to_yaml
+  end
+  # Save the parameters
+  # out_file = File.new(CSV_FILE+".settings", "w")
+  # out_file.puts("GIT SHA1 = #{GIT_SHA}")
+  # out_file.puts("Time.now = #{Time.now}")
+  # out_file.puts("Commandline arguments: #{ARGV}")
+  # out_file.puts("RUN_SIMULATION_DAYS = #{RUN_SIMULATION_DAYS}")
+  # out_file.puts("WORKERS = #{WORKERS}")
+  # out_file.puts("WORKER_STARTING_BALANCE = #{WORKER_STARTING_BALANCE}")
+  # out_file.puts("WORKER_SKILLS = #{WORKER_SKILLS}")
+  # out_file.puts("FUNDERS = #{FUNDERS}")
+  # out_file.puts("FUNDER_STARTING_BALANCE = #{FUNDER_STARTING_BALANCE}")
+  # out_file.puts("NUMBER_OF_ISSUES_DAILY_PER_FUNDER = #{NUMBER_OF_ISSUES_DAILY_PER_FUNDER}")
+  # out_file.puts("PRICES = #{PRICES}")
+  # out_file.puts("DIFFICULTIES = #{DIFFICULTIES}")
+  # out_file.puts("MATURATION_DAYS_IN_FUTURE = #{MATURATION_DAYS_IN_FUTURE}")
+  # out_file.puts("")
+  # out_file.puts("====== REMINDER: user balances are at end of file =======")  # empty line before health metrics are output
+  # out_file.puts("")  # empty lines before health metrics are output
+  # out_file.puts("")  # empty lines before health metrics are output
+  # out_file.close
+
+  # output health
+  if (!File.exist?(HEALTH_CSV))
+    health_a = []
+    health_a.push("run")  # time and date of run
+    health_a.push("settings")  # settingsfile
+    health_a.push("git_sha")  # git sha allows tracing settings file
+    health_a.push("day")  # day in simulation
+    health_a.push("funder")  # funder type
+    health_a.push("open_issues")
+    health_a.push("closed_issues")
+    health_a.push("resolution_efficiency")
+    health_a.push("open_issue_age")
+    health_a.push("closed_issue_resolution_duration")
+    health_a.push("norm_open_issues")
+    health_a.push("norm_closed_issues")
+    health_a.push("norm_resolution_efficiency")
+    health_a.push("norm_open_issue_age")
+    health_a.push("norm_closed_issue_resolution_duration")
+
+    CSV.open(HEALTH_CSV, "wb") do |csv|
+      csv << health_a
+    end
   end
 
   # output user balances
-  CSV.open(CSV_FILE+'_balances.csv', "wb") do |csv|
-    csv << ['day','email', 'type', 'balance']
+  if (!File.exist?(BALANCE_CSV))
+    CSV.open(BALANCE_CSV, "wb") do |csv|
+      csv << ['run', 'settings', 'git_sha', 'day','email', 'type', 'balance']
+    end
   end
 
   # global day variable
@@ -183,7 +220,7 @@ time = Benchmark.measure do
   BugmHost.reset
   BugmTime.set_day_offset(-1 * RUN_SIMULATION_DAYS)
 
-  puts "Simulate #{RUN_SIMULATION_DAYS}, starting on #{BugmTime.now}"
+  puts "Simulate #{RUN_SIMULATION_DAYS} days, starting on #{BugmTime.now}"
 
   # simulation classes
   require_relative 'issuetracker'
@@ -192,9 +229,12 @@ time = Benchmark.measure do
   # create Issue Tracker
   issue_tracker = Bmxsim_IssueTracker.new
 
-  # create funders and workers
+  # lookup for csv output
+  project_funder = {}
+  email_worker = {}
+
+  # CREATE RUNDERS ------------------------------------------------------------
   funders = []
-  uuid_funders = {}
   # FUNDERS options:
   # - fixedPay
   # - randomPay
@@ -205,6 +245,7 @@ time = Benchmark.measure do
     project += 1
     STDOUT.write "\rcreate funders: #{project.to_s.rjust(Math.log10(FUNDERS.length).to_i+1)}/#{FUNDERS.length}"  if BMXSIM_OUTPUT > 0
     funder = FB.create(:user, email: "funder#{project}_#{funder_type}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
+    email_worker.merge!({funder[:email] => funder_type})
     case funder_type
     when 'fixedPay'
       funders.push(Bmxsim_Funder_FixedPay.new(funder, issue_tracker, project))
@@ -218,11 +259,12 @@ time = Benchmark.measure do
       puts 'ERROR: unknown funder'
       raise "ERROR: unknown funder"
     end
-    uuid_funders.merge!({funders.last.project_uuid => funder_type})
+    project_funder.merge!({funders.last.project_uuid => funder_type})
   end
   puts "" if BMXSIM_OUTPUT > 0
+
+  # CREATE WORKERS ------------------------------------------------------------
   workers = []
-  email_worker = {}
   number_of_workers = 0
   WORKERS.to_a.each {|v| number_of_workers += v[1]}
   worker_id = 0
@@ -265,7 +307,7 @@ time = Benchmark.measure do
   end
   puts "" if BMXSIM_OUTPUT > 0
 
-  # loop for each day
+  # loop for each day ----------------------------------------------------------
   (1..RUN_SIMULATION_DAYS).to_a.each do |day|
     puts "Day #{day.to_s.rjust(Math.log10(RUN_SIMULATION_DAYS).to_i+1)}/#{RUN_SIMULATION_DAYS} --- #{BugmTime.now}"  if BMXSIM_OUTPUT > 0
     $sim_day = day
@@ -319,12 +361,16 @@ time = Benchmark.measure do
       ContractCmd::Resolve.new(contract).project
     end
 
-    # Write project health data to a
+    # Write project health data to a CSV file
     health_h = issue_tracker.get_project_health_all_projects
     health_h.to_a.each do |val|
       if val[1].is_a?(Hash) then  # this is a project
-        health_a = [$sim_day]
-        health_a.push(uuid_funders[val[0]])  # funder
+        health_a = []
+        health_a.push(SIMULATION_DATE)  # run
+        health_a.push(SETTINGS_FILE)  # settings
+        health_a.push(GIT_SHA)  # settings
+        health_a.push($sim_day)  # simulation day
+        health_a.push(project_funder[val[0]])  # funder type
         # health_a.push(val[0])  # uuid of project
         health_a.push(val[1][:open_issues])
         health_a.push(val[1][:closed_issues])
@@ -336,7 +382,7 @@ time = Benchmark.measure do
         health_a.push(val[1][:norm_resolution_efficiency])
         health_a.push(val[1][:norm_open_issue_age])
         health_a.push(val[1][:norm_closed_issue_resolution_duration])
-        CSV.open(CSV_FILE+'_health.csv', "ab") do |csv|
+        CSV.open(HEALTH_CSV, "ab") do |csv|
           csv << health_a
         end
       else
@@ -345,14 +391,14 @@ time = Benchmark.measure do
     end
 
     # output user balances
-    CSV.open(CSV_FILE+'_balances.csv', "ab") do |csv|
+    CSV.open(BALANCE_CSV, "ab") do |csv|
       User.all.each do |u|
-        user = [$sim_day, u[:email], email_worker[u[:email]], u[:balance]]
+        user = [SIMULATION_DATE, SETTINGS_FILE, GIT_SHA, $sim_day, u[:email], email_worker[u[:email]], u[:balance]]
         csv << user
       end
     end
 
-    #signal end of day
+    # signal end of day
     puts ""  if BMXSIM_OUTPUT > 0
     STDOUT.flush
     # continue_story  # wait for key press
