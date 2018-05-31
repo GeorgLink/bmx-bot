@@ -37,6 +37,9 @@ class Bmxsim_Issue
   def get_progress
     @progress
   end
+  def get_project
+    @project
+  end
   def get_id
     @id
   end
@@ -115,7 +118,7 @@ class Bmxsim_IssueTracker
     ages = 0
     issues = 0
     @issues.each do |iss|
-      if iss.get_status == 'open'
+      if iss.get_status == 'open' && iss.get_project == proj_number
         ages += iss.get_age
         issues += 1
       end
@@ -130,7 +133,7 @@ class Bmxsim_IssueTracker
     ages = 0
     issues = 0
     @issues.each do |iss|
-      if iss.get_status == 'closed' then
+      if iss.get_status == 'closed' && iss.get_project == proj_number
         ages += iss.get_resolution_days
         issues += 1
       end
