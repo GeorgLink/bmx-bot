@@ -431,10 +431,10 @@ time = Benchmark.measure do
         earning = earnings.select { |i| i['user_uuid'] == u[:uuid] }
         earning = [{'earned' => 0.0}] unless earning.length>0
         earning = earning.first['earned'].to_f
-        good_contracts = contract_payout_array.select { |i| i['user_uuid'] == u[1] }
+        good_contracts = contract_payout_array.select { |i| i['user_uuid'] == u[:uuid] }
         good_contracts = [{'contrs' => 0.0}] unless good_contracts.length>0
         good_contracts = good_contracts.first['contrs'].to_f
-        all_contracts = contract_all_array.select { |i| i['user_uuid'] == u[1] }
+        all_contracts = contract_all_array.select { |i| i['user_uuid'] == u[:uuid] }
         all_contracts = [{'contrs' => 0.0}] unless all_contracts.length>0
         all_contracts = all_contracts.first['contrs'].to_f
         contract_payout_frequency = "#{good_contracts} / #{all_contracts}"
