@@ -183,6 +183,8 @@ time = Benchmark.measure do
     health_a.push("norm_resolution_efficiency")
     health_a.push("norm_open_issue_age")
     health_a.push("norm_closed_issue_resolution_duration")
+    health_a.push("contracts")
+    health_a.push("contract_fix_rate")
 
     CSV.open(HEALTH_CSV, "wb") do |csv|
       csv << health_a
@@ -364,8 +366,31 @@ time = Benchmark.measure do
 
     # Write project health data to a CSV file
     health_h = issue_tracker.get_project_health_all_projects
+    # ----  NUMBER OF CONTRACTS ON PROJECT
+    sql = "SELECT issues.stm_tracker_uuid, COUNT(DISTINCT contracts.uuid) as contrs
+    FROM issues
+    JOIN contracts ON contracts.stm_issue_uuid = issues.uuid
+    GROUP BY issues.stm_tracker_uuid
+    "
+    contract_all_tracker = ActiveRecord::Base.connection.execute(sql).to_a
+    # ----  NUMBER OF FIXED CONTRACTS ON PROJECT
+    sql = "SELECT issues.stm_tracker_uuid, COUNT(DISTINCT contracts.uuid) as contrs
+    FROM issues
+    JOIN contracts ON contracts.stm_issue_uuid = issues.uuid
+    WHERE contracts.awarded_to = 'fixed'
+    GROUP BY issues.stm_tracker_uuid
+    "
+    contract_fixed_tracker = ActiveRecord::Base.connection.execute(sql).to_a
     health_h.to_a.each do |val|
       if val[1].is_a?(Hash) then  # this is a project
+        all_contracts = contract_all_tracker.select { |i| i['stm_tracker_uuid'] == val[0] }
+        all_contracts = [{'contrs' => 0.0}] unless all_contracts.length>0
+        all_contracts = all_contracts.first['contrs'].to_f
+        fixed_contracts = contract_fixed_tracker.select { |i| i['stm_tracker_uuid'] == val[0] }
+        fixed_contracts = [{'contrs' => 0.0}] unless fixed_contracts.length>0
+        fixed_contracts = fixed_contracts.first['contrs'].to_f
+        contract_fix_rate = 0.0
+        contract_fix_rate = fixed_contracts / all_contracts unless all_contracts == 0.0
         health_a = []
         health_a.push(SIMULATION_DATE)  # run
         health_a.push(SETTINGS_FILE)  # settings
@@ -384,6 +409,8 @@ time = Benchmark.measure do
         health_a.push(val[1][:norm_resolution_efficiency])
         health_a.push(val[1][:norm_open_issue_age])
         health_a.push(val[1][:norm_closed_issue_resolution_duration])
+        health_a.push(all_contracts)
+        health_a.push(contract_fix_rate)
         CSV.open(HEALTH_CSV, "ab") do |csv|
           csv << health_a
         end
