@@ -321,6 +321,7 @@ time = Benchmark.measure do
     out_worker = "#{counter.to_s.rjust(Math.log10(workers.length).to_i+1)}/#{workers.length} workers"
     out_contract = "0/0 contracts resolved"
     STDOUT.write "simulate: #{out_funder} | #{out_worker} | #{out_contract}"
+    STDOUT.flush
 
     # call funders in a random order
     counter = 0
@@ -329,7 +330,7 @@ time = Benchmark.measure do
         counter += 1
         out_funder = "#{counter.to_s.rjust(Math.log10(funders.length).to_i+1)}/#{funders.length} funders"
         STDOUT.write "\rsimulate: #{out_funder} | #{out_worker} | #{out_contract}"
-        # print "f" if BMXSIM_OUTPUT > 0 && BMXSIM_OUTPUT < 9
+        STDOUT.flush
       end
       funder.do_work
       puts "funder[#{funder.get_name}](#{funder.get_balance})"  if BMXSIM_OUTPUT > 8
@@ -359,7 +360,7 @@ time = Benchmark.measure do
         counter += 1
         out_contract = "#{counter.to_s.rjust(Math.log10(max_counter).to_i+1)}/#{max_counter} contracts resolved"
         STDOUT.write "\rsimulate: #{out_funder} | #{out_worker} | #{out_contract}"
-        # STDOUT.write "\rresolve contracts: #{counter} / #{max_counter}" if BMXSIM_OUTPUT > 0
+        STDOUT.flush
       end
       ContractCmd::Resolve.new(contract).project
     end
