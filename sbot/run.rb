@@ -433,7 +433,7 @@ time = Benchmark.measure do
         earning = earning.first['earned'].to_f
         good_contracts = contract_payout_array.select { |i| i['user_uuid'] == u[1] }
         good_contracts = [{'contrs' => 0.0}] unless good_contracts.length>0
-        good_contracts = good_contracts.fist['contrs'].to_f
+        good_contracts = good_contracts.first['contrs'].to_f
         all_contracts = records_array.select { |i| i['user_uuid'] == u[1] }
         all_contracts = [{'contrs' => 0.0}] unless all_contracts.length>0
         all_contracts = all_contracts.first['contrs'].to_f
