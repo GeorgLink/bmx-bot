@@ -247,6 +247,7 @@ time = Benchmark.measure do
   (FUNDERS).to_a.each do |funder_type|
     project += 1
     STDOUT.write "\rcreate funders: #{project.to_s.rjust(Math.log10(FUNDERS.length).to_i+1)}/#{FUNDERS.length}"  if BMXSIM_OUTPUT > 0
+    STDOUT.flush
     funder = FB.create(:user, email: "funder#{project}_#{funder_type}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
     email_worker.merge!({funder[:email] => funder_type})
     case funder_type
@@ -275,6 +276,7 @@ time = Benchmark.measure do
     worker_number.times do
       worker_id += 1
       STDOUT.write "\rcreate workers: #{worker_id.to_s.rjust(Math.log10(number_of_workers).to_i+1)}/#{number_of_workers}" if BMXSIM_OUTPUT > 0
+      STDOUT.flush
       worker = FB.create(:user, email: "worker#{worker_id}_#{worker_type}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
       email_worker.merge!({worker[:email] => worker_type})
       skill = WORKER_SKILLS.sample
