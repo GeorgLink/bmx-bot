@@ -430,13 +430,13 @@ time = Benchmark.measure do
       User.all.each do |u|
         earning = earnings.select { |i| i['user_uuid'] == u[:uuid] }
         earning = [{'earned' => 0.0}] unless earning.length>0
-        earning = earning['earned'].to_f
+        earning = earning.first['earned'].to_f
         good_contracts = contract_payout_array.select { |i| i['user_uuid'] == u[1] }
         good_contracts = [{'contrs' => 0.0}] unless good_contracts.length>0
-        good_contracts = good_contracts['contrs'].to_f
+        good_contracts = good_contracts.fist['contrs'].to_f
         all_contracts = records_array.select { |i| i['user_uuid'] == u[1] }
         all_contracts = [{'contrs' => 0.0}] unless all_contracts.length>0
-        all_contracts = all_contracts['contrs'].to_f
+        all_contracts = all_contracts.first['contrs'].to_f
         contract_payout_frequency = good_contracts / all_contracts
         user = [SIMULATION_DATE, SETTINGS_FILE, GIT_SHA, $sim_day, u[:email], email_worker[u[:email]], u[:balance], earning, contract_payout_frequency]
         csv << user
