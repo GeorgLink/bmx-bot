@@ -114,34 +114,44 @@ class Bmxsim_IssueTracker
     proj_health[:resolution_efficiency] = (proj_health[:closed_issues] / (proj_health[:closed_issues] + abandoned_issue_count)).to_f
     proj_health[:resolution_efficiency] = 0.0 if proj_health[:resolution_efficiency].nan?
 
-    # Open Issue Age --> What is the the age of open issues?
-    ages = 0
-    issues = 0
+    open_ages = 0
+    open_issues = 0
+    closed_ages = 0
+    closed_issues = 0
+    difficult_issues = 0
+    difficult_closed_issues = 0
     @issues.each do |iss|
       if iss.get_status == 'open' && iss.get_project == proj_number
-        ages += iss.get_age
-        issues += 1
+        open_ages += iss.get_age
+        open_issues += 1
+      end
+      if iss.get_status == 'closed' && iss.get_project == proj_number
+        closed_ages += iss.get_resolution_days
+        closed_issues += 1
+      end
+      if iss.get_difficulty == 4 && iss.get_project == proj_number
+        difficult_issues += 1
+        if iss.get_status == 'closed'
+          difficult_closed_issues += 1
+        end
       end
     end
-    if issues.to_f == 0 then
-      proj_health[:open_issue_age] = 0.0
-    else
-      proj_health[:open_issue_age] = ages.to_f/issues.to_f
+    # Open Issue Age --> What is the the age of open issues?
+    proj_health[:open_issue_age] = 0.0
+    if open_issues > 0 then
+      proj_health[:open_issue_age] = open_ages.to_f/open_issues.to_f
     end
 
     # Closed Issue Resolution Duration --> What is the duration of time for issues to be resolved?
-    ages = 0
-    issues = 0
-    @issues.each do |iss|
-      if iss.get_status == 'closed' && iss.get_project == proj_number
-        ages += iss.get_resolution_days
-        issues += 1
-      end
+    proj_health[:closed_issue_resolution_duration] = 0
+    if closed_issues > 0 then
+      proj_health[:closed_issue_resolution_duration] = closed_ages.to_f/closed_issues.to_f
     end
-    if issues.to_f == 0 then
-      proj_health[:closed_issue_resolution_duration] = 0
-    else
-      proj_health[:closed_issue_resolution_duration] = ages.to_f/issues.to_f
+
+    # Closed Difficult Issue Rate --> how many of the difficult issues are being closed
+    proj_health[:difficult_closed_issue_rate] = 0.0
+    if difficult_closed_issues > 0 then
+      proj_health[:difficult_closed_issue_rate] = difficult_closed_issues.to_f / difficult_issues.to_f
     end
 
     return proj_health
@@ -155,6 +165,7 @@ class Bmxsim_IssueTracker
     max_closed_issue_resolution_duration = 0.0
     max_sum_norm = 0.0
     max_sum_rank = 0
+    max_difficult_closed_issue_rate = 0.0
 
     # get project health
     projects = {}
