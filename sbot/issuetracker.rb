@@ -115,19 +115,19 @@ class Bmxsim_IssueTracker
     proj_health[:resolution_efficiency] = 0.0 if proj_health[:resolution_efficiency].nan?
 
     open_ages = 0
-    closed_ages = 0
     open_issues = 0
+    closed_ages = 0
     closed_issues = 0
     difficult_issues = 0
     difficult_closed_issues = 0
     @issues.each do |iss|
       if iss.get_status == 'open' && iss.get_project == proj_number
-        ages += iss.get_age
-        issues += 1
+        open_ages += iss.get_age
+        open_issues += 1
       end
       if iss.get_status == 'closed' && iss.get_project == proj_number
-        ages += iss.get_resolution_days
-        issues += 1
+        closed_ages += iss.get_resolution_days
+        closed_issues += 1
       end
       if iss.get_difficulty == 4 && iss.get_project == proj_number
         difficult_issues += 1
