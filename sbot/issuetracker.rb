@@ -137,22 +137,20 @@ class Bmxsim_IssueTracker
       end
     end
     # Open Issue Age --> What is the the age of open issues?
-    if issues.to_f == 0 then
-      proj_health[:open_issue_age] = 0.0
-    else
+    proj_health[:open_issue_age] = 0.0
+    if open_issues > 0 then
       proj_health[:open_issue_age] = open_ages.to_f/open_issues.to_f
     end
 
     # Closed Issue Resolution Duration --> What is the duration of time for issues to be resolved?
-    if issues.to_f == 0 then
-      proj_health[:closed_issue_resolution_duration] = 0
-    else
+    proj_health[:closed_issue_resolution_duration] = 0
+    if closed_issues > 0 then
       proj_health[:closed_issue_resolution_duration] = closed_ages.to_f/closed_issues.to_f
     end
 
     # Closed Difficult Issue Rate --> how many of the difficult issues are being closed
     proj_health[:difficult_closed_issue_rate] = 0.0
-    if difficult_closed_issues > 0
+    if difficult_closed_issues > 0 then
       proj_health[:difficult_closed_issue_rate] = difficult_closed_issues.to_f / difficult_issues.to_f
     end
 
