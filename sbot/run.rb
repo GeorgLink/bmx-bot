@@ -394,6 +394,7 @@ time = Benchmark.measure do
 
     # output user balances
     CSV.open(BALANCE_CSV, "ab") do |csv|
+      # ---- EARNINGS FROM CONTRACTS
       sql = "SELECT positions.user_uuid, SUM(positions.volume - positions.value) as earned
       FROM positions
       JOIN amendments ON amendments.uuid = positions.amendment_uuid
@@ -404,11 +405,40 @@ time = Benchmark.measure do
       "
       earnings = ActiveRecord::Base.connection.execute(sql).to_a
 
+      # ----  CONTRACTS WITH EARNINGS
+      sql = "SELECT positions.user_uuid, COUNT(DISTINCT contracts.uuid) as contrs
+      FROM positions
+      JOIN amendments ON amendments.uuid = positions.amendment_uuid
+      JOIN contracts ON contracts.uuid = amendments.contract_uuid
+      WHERE contracts.status = 'resolved'
+        AND contracts.awarded_to = positions.side
+      GROUP BY positions.user_uuid
+      "
+      contract_payout_array = ActiveRecord::Base.connection.execute(sql).to_a
+
+
+      # ----  NUMBER OF CONTRACTS
+      sql = "SELECT positions.user_uuid, COUNT(DISTINCT contracts.uuid) as contrs
+      FROM positions
+      JOIN amendments ON amendments.uuid = positions.amendment_uuid
+      JOIN contracts ON contracts.uuid = amendments.contract_uuid
+      WHERE contracts.status = 'resolved'
+      GROUP BY positions.user_uuid
+      "
+      contract_all_array = ActiveRecord::Base.connection.execute(sql).to_a
 
       User.all.each do |u|
         earning = earnings.select { |i| i['user_uuid'] == u[:uuid] }
         earning = [{'earned' => 0.0}] unless earning.length>0
-        user = [SIMULATION_DATE, SETTINGS_FILE, GIT_SHA, $sim_day, u[:email], email_worker[u[:email]], u[:balance], earning.first['earned'], 'contract_payout_frequency']
+        earning = earning['earned'].to_f
+        good_contracts = contract_payout_array.select { |i| i['user_uuid'] == u[1] }
+        good_contracts = [{'contrs' => 0.0}] unless good_contracts.length>0
+        good_contracts = good_contracts['contrs'].to_f
+        all_contracts = records_array.select { |i| i['user_uuid'] == u[1] }
+        all_contracts = [{'contrs' => 0.0}] unless all_contracts.length>0
+        all_contracts = all_contracts['contrs'].to_f
+        contract_payout_frequency = good_contracts / all_contracts
+        user = [SIMULATION_DATE, SETTINGS_FILE, GIT_SHA, $sim_day, u[:email], email_worker[u[:email]], u[:balance], earning, contract_payout_frequency]
         csv << user
       end
     end
