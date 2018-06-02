@@ -79,14 +79,14 @@ time = Benchmark.measure do
   # - fixedPay
   # - randomPay
   # - inversePay
-  # - correlatedpay
+  # - correlatedPay
   # IDEA: projects may differ by difficulty probabilities
   setting["funders"] = [
     # simulation: always all four funders
     'randomPay',
     'fixedPay',
     'inversePay',
-    'correlatedpay',
+    'correlatedPay',
   ] unless setting.key?("funders")
   FUNDERS = setting["funders"]   # each funder represents a single project
   setting["funder_starting_balance"] = 100000000 unless setting.key?("funder_starting_balance")
@@ -242,7 +242,7 @@ time = Benchmark.measure do
   # - fixedPay
   # - randomPay
   # - inversePay
-  # - correlatedpay
+  # - correlatedPay
   project = 0
   (FUNDERS).to_a.each do |funder_type|
     project += 1
@@ -256,7 +256,7 @@ time = Benchmark.measure do
       funders.push(Bmxsim_Funder_RandomPay.new(funder, issue_tracker, project))
     when 'inversePay'
       funders.push(Bmxsim_Funder_InversePay.new(funder, issue_tracker, project))
-    when 'correlatedpay'
+    when 'correlatedPay'
       funders.push(Bmxsim_Funder_CorrelatedPay.new(funder, issue_tracker, project))
     else
       puts 'ERROR: unknown funder'

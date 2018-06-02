@@ -14,7 +14,7 @@ funders:
   - 'randomPay'
   - 'fixedPay'
   - 'inversePay'
-  - 'correlatedpay'
+  - 'correlatedPay'
 funder_starting_balance: 100000000
 number_of_issues_daily_per_funder: 10
 prices:
