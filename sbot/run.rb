@@ -177,6 +177,7 @@ time = Benchmark.measure do
     health_a.push("resolution_efficiency")
     health_a.push("open_issue_age")
     health_a.push("closed_issue_resolution_duration")
+    health_a.push("difficult_closed_issue_rate")
     health_a.push("norm_open_issues")
     health_a.push("norm_closed_issues")
     health_a.push("norm_resolution_efficiency")
@@ -191,7 +192,7 @@ time = Benchmark.measure do
   # output user balances
   if (!File.exist?(BALANCE_CSV))
     CSV.open(BALANCE_CSV, "wb") do |csv|
-      csv << ['run', 'settings', 'git_sha', 'day','email', 'type', 'balance']
+      csv << ['run', 'settings', 'git_sha', 'day','email', 'type', 'balance', 'contract_earnings', 'contract_payout_frequency']
     end
   end
 
@@ -377,6 +378,7 @@ time = Benchmark.measure do
         health_a.push(val[1][:resolution_efficiency])
         health_a.push(val[1][:open_issue_age])
         health_a.push(val[1][:closed_issue_resolution_duration])
+        health_a.push(val[1][:difficult_closed_issue_rate])
         health_a.push(val[1][:norm_open_issues])
         health_a.push(val[1][:norm_closed_issues])
         health_a.push(val[1][:norm_resolution_efficiency])
@@ -392,8 +394,21 @@ time = Benchmark.measure do
 
     # output user balances
     CSV.open(BALANCE_CSV, "ab") do |csv|
+      sql = "SELECT positions.user_uuid, SUM(positions.volume - positions.value) as earned
+      FROM positions
+      JOIN amendments ON amendments.uuid = positions.amendment_uuid
+      JOIN contracts ON contracts.uuid = amendments.contract_uuid
+      WHERE contracts.status = 'resolved'
+        AND contracts.awarded_to = positions.side
+      GROUP BY positions.user_uuid
+      "
+      earnings = ActiveRecord::Base.connection.execute(sql).to_a
+
+
       User.all.each do |u|
-        user = [SIMULATION_DATE, SETTINGS_FILE, GIT_SHA, $sim_day, u[:email], email_worker[u[:email]], u[:balance]]
+        earning = earnings.select { |i| i['user_uuid'] == u[:uuid] }
+        earning = [{'earned' => 0.0}] unless earning.length>0
+        user = [SIMULATION_DATE, SETTINGS_FILE, GIT_SHA, $sim_day, u[:email], email_worker[u[:email]], u[:balance], earning.first['earned'], 'contract_payout_frequency']
         csv << user
       end
     end
