@@ -19,7 +19,7 @@ funder_starting_balance: 100000000
 number_of_issues_daily_per_funder: 12
 prices:
   - 0.9
-  - 0.8
+  - 0.8  # fixedPay
   - 0.7
   # - 0.80
 difficulties:  # measured in days to complete

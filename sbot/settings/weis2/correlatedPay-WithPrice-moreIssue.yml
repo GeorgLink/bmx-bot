@@ -16,18 +16,18 @@ funders:
   # - 'inversePay'
   - 'correlatedPay'
 funder_starting_balance: 100000000
-number_of_issues_daily_per_funder:
+number_of_issues_daily_per_funder: 12
 prices:
-  - 0.90
-  - 0.80
-  - 0.70
+  - 0.9
+  - 0.8  # fixedPay
+  - 0.7
   # - 0.80
 difficulties:  # measured in days to complete
   1: 33  # still obtainable until last day
   2: 33  # still obtainable on second day
   3: 33  # only obtainable on day of creation
   # 4: 25  # always unobtainable
-maturation_days_in_future: 12 # three days to work on issue after creation
+maturation_days_in_future: 2 # three days to work on issue after creation
 bmxsim_output: 1
 # run in turbo mode
 bmx_save_events: "FALSE"
