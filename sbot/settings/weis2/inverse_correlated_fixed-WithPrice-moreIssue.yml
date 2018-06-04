@@ -16,7 +16,7 @@ funders:
   - 'inversePay'
   - 'correlatedPay'
 funder_starting_balance: 100000000
-number_of_issues_daily_per_funder: 4
+number_of_issues_daily_per_funder: 7
 prices:
   - 0.9
   - 0.8  # fixedPay
