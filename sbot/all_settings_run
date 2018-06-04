@@ -5,6 +5,6 @@ do
   for file in ./settings/weis2/*
   do
     echo "# ruby run.rb \"$file\""
-    ruby run.rb "$file"
+    ruby run.rb "$file" | tee ./simout/output
   done
 done
