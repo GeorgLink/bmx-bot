@@ -13,8 +13,8 @@ worker_skills:
 funders:
   # - 'randomPay'
   # - 'fixedPay'
-  # - 'inversePay'
-  - 'correlatedPay'
+  - 'inversePay'
+  # - 'correlatedPay'
 funder_starting_balance: 100000000
 number_of_issues_daily_per_funder: 20
 prices:
