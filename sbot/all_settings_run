@@ -2,7 +2,7 @@
 
 for i in `seq 1 5`
 do
-  for file in ./settings/weis2/*
+  for file in ./settings/weis3/*
   do
     echo "# ruby run.rb \"$file\""
     ruby run.rb "$file" | tee ./simout/output
