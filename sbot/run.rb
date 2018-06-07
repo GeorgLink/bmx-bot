@@ -107,6 +107,8 @@ time = Benchmark.measure do
   # simulation: { 1 => 30, 2 => 30, 3 => 30, 4 => 10}
   # 10% chance that issue can never be finished by skill-1 worker
   # equal chance for other three difficulties
+  setting["difficulty_error_rate"] = 0 unless setting.key?("difficulty_error_rate")
+  DIFFICULTY_ERROR_RATE = setting["difficulty_error_rate"] || 0  # percentage that difficulty is one more than priced
   setting["maturation_days_in_future"] = 2 unless setting.key?("maturation_days_in_future")
   MATURATION_DAYS_IN_FUTURE = setting["maturation_days_in_future"]  # simulation: 2 (3 days of work)
   # end of:  0 = today, 1 = tomorrow
@@ -185,6 +187,7 @@ time = Benchmark.measure do
     health_a.push("norm_closed_issue_resolution_duration")
     health_a.push("contracts")
     health_a.push("contract_fix_rate")
+    health_a.push("workdays")
 
     CSV.open(HEALTH_CSV, "wb") do |csv|
       csv << health_a
@@ -414,6 +417,7 @@ time = Benchmark.measure do
         health_a.push(val[1][:norm_closed_issue_resolution_duration])
         health_a.push(all_contracts)
         health_a.push(contract_fix_rate)
+        health_a.push(val[1][:workdays])
         CSV.open(HEALTH_CSV, "ab") do |csv|
           csv << health_a
         end

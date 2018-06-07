@@ -1,0 +1,34 @@
+---
+run_simulation_days: 180
+workers:
+  NoMetricsNoPrices_riskAverse:       20
+  NoMetricsNoPrices_random:           0
+  NoMetricsWithPrices_riskAverse:     0
+  NoMetricsWithPrices_rewardSeeking:  0
+  HealthMetricsNoPrices:              0
+  HealthMetricsWithPrices:            0
+worker_starting_balance: 1000
+worker_skills:
+  - 1
+funders:
+  # - 'randomPay'
+  - 'fixedPay'
+  - 'inversePay'
+  - 'correlatedPay'
+funder_starting_balance: 100000000
+number_of_issues_daily_per_funder: 7
+prices:
+  - 0.9
+  - 0.8  # fixedPay
+  - 0.7
+  # - 0.80
+difficulties:  # measured in days to complete
+  1: 33  # still obtainable until last day
+  2: 33  # still obtainable on second day
+  3: 33  # only obtainable on day of creation
+  # 4: 25  # always unobtainable
+maturation_days_in_future: 2 # three days to work on issue after creation
+bmxsim_output: 1
+# run in turbo mode
+bmx_save_events: "FALSE"
+bmx_save_metrics: "FALSE"

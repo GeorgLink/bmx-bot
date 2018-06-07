@@ -91,7 +91,8 @@ class Bmxsim_IssueTracker
       closed_issues: nil,  # What is the number of closed issues?
       resolution_efficiency: nil, # What is the number of closed issues/number of abandoned issues?
       open_issue_age: nil,  # What is the the age of open issues?
-      closed_issue_resolution_duration: nil  # What is the duration of time for issues to be resolved?
+      closed_issue_resolution_duration: nil,  # What is the duration of time for issues to be resolved?
+      workdays: nil  # how many work days were spent on this project
     }
 
     # Open Issues --> What is the number of open issues?
@@ -120,6 +121,7 @@ class Bmxsim_IssueTracker
     closed_issues = 0
     difficult_issues = 0
     difficult_closed_issues = 0
+    workdays = 0
     @issues.each do |iss|
       if iss.get_status == 'open' && iss.get_project == proj_number
         open_ages += iss.get_age
@@ -128,6 +130,7 @@ class Bmxsim_IssueTracker
       if iss.get_status == 'closed' && iss.get_project == proj_number
         closed_ages += iss.get_resolution_days
         closed_issues += 1
+        workdays += iss.get_difficulty
       end
       if iss.get_difficulty == 4 && iss.get_project == proj_number
         difficult_issues += 1
@@ -136,6 +139,7 @@ class Bmxsim_IssueTracker
         end
       end
     end
+
     # Open Issue Age --> What is the the age of open issues?
     proj_health[:open_issue_age] = 0.0
     if open_issues > 0 then
@@ -153,6 +157,9 @@ class Bmxsim_IssueTracker
     if difficult_closed_issues > 0 then
       proj_health[:difficult_closed_issue_rate] = difficult_closed_issues.to_f / difficult_issues.to_f
     end
+
+    # Open Issue Age --> What is the the age of open issues?
+    proj_health[:workdays] = workdays.to_f
 
     return proj_health
   end
