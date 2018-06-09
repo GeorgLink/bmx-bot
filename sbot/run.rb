@@ -79,14 +79,14 @@ time = Benchmark.measure do
   # - fixedPay
   # - randomPay
   # - inversePay
-  # - correlatedPay
+  # - correlatedpay
   # IDEA: projects may differ by difficulty probabilities
   setting["funders"] = [
     # simulation: always all four funders
     'randomPay',
     'fixedPay',
     'inversePay',
-    'correlatedPay',
+    'correlatedpay',
   ] unless setting.key?("funders")
   FUNDERS = setting["funders"]   # each funder represents a single project
   setting["funder_starting_balance"] = 100000000 unless setting.key?("funder_starting_balance")
@@ -107,8 +107,6 @@ time = Benchmark.measure do
   # simulation: { 1 => 30, 2 => 30, 3 => 30, 4 => 10}
   # 10% chance that issue can never be finished by skill-1 worker
   # equal chance for other three difficulties
-  setting["difficulty_error_rate"] = 0 unless setting.key?("difficulty_error_rate")
-  DIFFICULTY_ERROR_RATE = setting["difficulty_error_rate"] || 0  # percentage that difficulty is one more than priced
   setting["maturation_days_in_future"] = 2 unless setting.key?("maturation_days_in_future")
   MATURATION_DAYS_IN_FUTURE = setting["maturation_days_in_future"]  # simulation: 2 (3 days of work)
   # end of:  0 = today, 1 = tomorrow
@@ -176,18 +174,16 @@ time = Benchmark.measure do
     health_a.push("funder")  # funder type
     health_a.push("open_issues")
     health_a.push("closed_issues")
+    health_a.push("issues_opened")
+    health_a.push("issues_closed")
     health_a.push("resolution_efficiency")
     health_a.push("open_issue_age")
     health_a.push("closed_issue_resolution_duration")
-    health_a.push("difficult_closed_issue_rate")
     health_a.push("norm_open_issues")
     health_a.push("norm_closed_issues")
     health_a.push("norm_resolution_efficiency")
     health_a.push("norm_open_issue_age")
     health_a.push("norm_closed_issue_resolution_duration")
-    health_a.push("contracts")
-    health_a.push("contract_fix_rate")
-    health_a.push("workdays")
 
     CSV.open(HEALTH_CSV, "wb") do |csv|
       csv << health_a
@@ -197,7 +193,7 @@ time = Benchmark.measure do
   # output user balances
   if (!File.exist?(BALANCE_CSV))
     CSV.open(BALANCE_CSV, "wb") do |csv|
-      csv << ['run', 'settings', 'git_sha', 'day','email', 'type', 'balance', 'contract_earnings', 'contract_payout_frequency']
+      csv << ['run', 'settings', 'git_sha', 'day','email', 'type', 'balance']
     end
   end
 
@@ -245,12 +241,11 @@ time = Benchmark.measure do
   # - fixedPay
   # - randomPay
   # - inversePay
-  # - correlatedPay
+  # - correlatedpay
   project = 0
   (FUNDERS).to_a.each do |funder_type|
     project += 1
     STDOUT.write "\rcreate funders: #{project.to_s.rjust(Math.log10(FUNDERS.length).to_i+1)}/#{FUNDERS.length}"  if BMXSIM_OUTPUT > 0
-    STDOUT.flush
     funder = FB.create(:user, email: "funder#{project}_#{funder_type}@bugmark.net", balance: FUNDER_STARTING_BALANCE).user
     email_worker.merge!({funder[:email] => funder_type})
     case funder_type
@@ -260,7 +255,7 @@ time = Benchmark.measure do
       funders.push(Bmxsim_Funder_RandomPay.new(funder, issue_tracker, project))
     when 'inversePay'
       funders.push(Bmxsim_Funder_InversePay.new(funder, issue_tracker, project))
-    when 'correlatedPay'
+    when 'correlatedpay'
       funders.push(Bmxsim_Funder_CorrelatedPay.new(funder, issue_tracker, project))
     else
       puts 'ERROR: unknown funder'
@@ -279,7 +274,6 @@ time = Benchmark.measure do
     worker_number.times do
       worker_id += 1
       STDOUT.write "\rcreate workers: #{worker_id.to_s.rjust(Math.log10(number_of_workers).to_i+1)}/#{number_of_workers}" if BMXSIM_OUTPUT > 0
-      STDOUT.flush
       worker = FB.create(:user, email: "worker#{worker_id}_#{worker_type}@bugmark.net", balance: WORKER_STARTING_BALANCE).user
       email_worker.merge!({worker[:email] => worker_type})
       skill = WORKER_SKILLS.sample
@@ -326,7 +320,6 @@ time = Benchmark.measure do
     out_worker = "#{counter.to_s.rjust(Math.log10(workers.length).to_i+1)}/#{workers.length} workers"
     out_contract = "0/0 contracts resolved"
     STDOUT.write "simulate: #{out_funder} | #{out_worker} | #{out_contract}"
-    STDOUT.flush
 
     # call funders in a random order
     counter = 0
@@ -335,7 +328,7 @@ time = Benchmark.measure do
         counter += 1
         out_funder = "#{counter.to_s.rjust(Math.log10(funders.length).to_i+1)}/#{funders.length} funders"
         STDOUT.write "\rsimulate: #{out_funder} | #{out_worker} | #{out_contract}"
-        STDOUT.flush
+        # print "f" if BMXSIM_OUTPUT > 0 && BMXSIM_OUTPUT < 9
       end
       funder.do_work
       puts "funder[#{funder.get_name}](#{funder.get_balance})"  if BMXSIM_OUTPUT > 8
@@ -365,38 +358,15 @@ time = Benchmark.measure do
         counter += 1
         out_contract = "#{counter.to_s.rjust(Math.log10(max_counter).to_i+1)}/#{max_counter} contracts resolved"
         STDOUT.write "\rsimulate: #{out_funder} | #{out_worker} | #{out_contract}"
-        STDOUT.flush
+        # STDOUT.write "\rresolve contracts: #{counter} / #{max_counter}" if BMXSIM_OUTPUT > 0
       end
       ContractCmd::Resolve.new(contract).project
     end
 
     # Write project health data to a CSV file
     health_h = issue_tracker.get_project_health_all_projects
-    # ----  NUMBER OF CONTRACTS ON PROJECT
-    sql = "SELECT issues.stm_tracker_uuid, COUNT(DISTINCT contracts.uuid) as contrs
-    FROM issues
-    JOIN contracts ON contracts.stm_issue_uuid = issues.uuid
-    GROUP BY issues.stm_tracker_uuid
-    "
-    contract_all_tracker = ActiveRecord::Base.connection.execute(sql).to_a
-    # ----  NUMBER OF FIXED CONTRACTS ON PROJECT
-    sql = "SELECT issues.stm_tracker_uuid, COUNT(DISTINCT contracts.uuid) as contrs
-    FROM issues
-    JOIN contracts ON contracts.stm_issue_uuid = issues.uuid
-    WHERE contracts.awarded_to = 'fixed'
-    GROUP BY issues.stm_tracker_uuid
-    "
-    contract_fixed_tracker = ActiveRecord::Base.connection.execute(sql).to_a
     health_h.to_a.each do |val|
       if val[1].is_a?(Hash) then  # this is a project
-        all_contracts = contract_all_tracker.select { |i| i['stm_tracker_uuid'] == val[0] }
-        all_contracts = [{'contrs' => 0.0}] unless all_contracts.length>0
-        all_contracts = all_contracts.first['contrs'].to_f
-        fixed_contracts = contract_fixed_tracker.select { |i| i['stm_tracker_uuid'] == val[0] }
-        fixed_contracts = [{'contrs' => 0.0}] unless fixed_contracts.length>0
-        fixed_contracts = fixed_contracts.first['contrs'].to_f
-        contract_fix_rate = 0.0
-        contract_fix_rate = fixed_contracts / all_contracts unless all_contracts == 0.0
         health_a = []
         health_a.push(SIMULATION_DATE)  # run
         health_a.push(SETTINGS_FILE)  # settings
@@ -406,18 +376,16 @@ time = Benchmark.measure do
         # health_a.push(val[0])  # uuid of project
         health_a.push(val[1][:open_issues])
         health_a.push(val[1][:closed_issues])
+        health_a.push(val[1][:issues_opened])
+        health_a.push(val[1][:issues_closed])
         health_a.push(val[1][:resolution_efficiency])
         health_a.push(val[1][:open_issue_age])
         health_a.push(val[1][:closed_issue_resolution_duration])
-        health_a.push(val[1][:difficult_closed_issue_rate])
         health_a.push(val[1][:norm_open_issues])
         health_a.push(val[1][:norm_closed_issues])
         health_a.push(val[1][:norm_resolution_efficiency])
         health_a.push(val[1][:norm_open_issue_age])
         health_a.push(val[1][:norm_closed_issue_resolution_duration])
-        health_a.push(all_contracts)
-        health_a.push(contract_fix_rate)
-        health_a.push(val[1][:workdays])
         CSV.open(HEALTH_CSV, "ab") do |csv|
           csv << health_a
         end
@@ -428,52 +396,8 @@ time = Benchmark.measure do
 
     # output user balances
     CSV.open(BALANCE_CSV, "ab") do |csv|
-      # ---- EARNINGS FROM CONTRACTS
-      sql = "SELECT positions.user_uuid, SUM(positions.volume - positions.value) as earned
-      FROM positions
-      JOIN amendments ON amendments.uuid = positions.amendment_uuid
-      JOIN contracts ON contracts.uuid = amendments.contract_uuid
-      WHERE contracts.status = 'resolved'
-        AND contracts.awarded_to = positions.side
-      GROUP BY positions.user_uuid
-      "
-      earnings = ActiveRecord::Base.connection.execute(sql).to_a
-
-      # ----  CONTRACTS WITH EARNINGS
-      sql = "SELECT positions.user_uuid, COUNT(DISTINCT contracts.uuid) as contrs
-      FROM positions
-      JOIN amendments ON amendments.uuid = positions.amendment_uuid
-      JOIN contracts ON contracts.uuid = amendments.contract_uuid
-      WHERE contracts.status = 'resolved'
-        AND contracts.awarded_to = positions.side
-      GROUP BY positions.user_uuid
-      "
-      contract_payout_array = ActiveRecord::Base.connection.execute(sql).to_a
-
-
-      # ----  NUMBER OF CONTRACTS
-      sql = "SELECT positions.user_uuid, COUNT(DISTINCT contracts.uuid) as contrs
-      FROM positions
-      JOIN amendments ON amendments.uuid = positions.amendment_uuid
-      JOIN contracts ON contracts.uuid = amendments.contract_uuid
-      WHERE contracts.status = 'resolved'
-      GROUP BY positions.user_uuid
-      "
-      contract_all_array = ActiveRecord::Base.connection.execute(sql).to_a
-
       User.all.each do |u|
-        earning = earnings.select { |i| i['user_uuid'] == u[:uuid] }
-        earning = [{'earned' => 0.0}] unless earning.length>0
-        earning = earning.first['earned'].to_f
-        good_contracts = contract_payout_array.select { |i| i['user_uuid'] == u[:uuid] }
-        good_contracts = [{'contrs' => 0.0}] unless good_contracts.length>0
-        good_contracts = good_contracts.first['contrs'].to_f
-        all_contracts = contract_all_array.select { |i| i['user_uuid'] == u[:uuid] }
-        all_contracts = [{'contrs' => 0.0}] unless all_contracts.length>0
-        all_contracts = all_contracts.first['contrs'].to_f
-        contract_payout_frequency = 0.0
-        contract_payout_frequency = good_contracts / all_contracts unless all_contracts == 0.0
-        user = [SIMULATION_DATE, SETTINGS_FILE, GIT_SHA, $sim_day, u[:email], email_worker[u[:email]], u[:balance], earning, contract_payout_frequency]
+        user = [SIMULATION_DATE, SETTINGS_FILE, GIT_SHA, $sim_day, u[:email], email_worker[u[:email]], u[:balance]]
         csv << user
       end
     end
