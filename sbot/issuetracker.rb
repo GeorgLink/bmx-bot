@@ -37,6 +37,9 @@ class Bmxsim_Issue
   def get_progress
     @progress
   end
+  def get_project
+    @project
+  end
   def get_id
     @id
   end
@@ -89,61 +92,76 @@ class Bmxsim_IssueTracker
       resolution_efficiency: nil, # What is the number of closed issues/number of abandoned issues?
       open_issue_age: nil,  # What is the the age of open issues?
       closed_issue_resolution_duration: nil,  # What is the duration of time for issues to be resolved?
+      workdays: nil,  # how many work days were spent on this project
       issues_opened: nil, # What is the number of issues opened on sim_day?
       issues_closed: nil # What is the number of issues closed on sim_day?
     }
 
     # Open Issues --> What is the number of open issues?
     proj_health[:open_issues] = Issue.where(stm_tracker_uuid: "#{tracker_uuid}").open.count.to_f
-    proj_health[:open_issues] = 1.0 if proj_health[:open_issues].nan?
+    proj_health[:open_issues] = 0.0 if proj_health[:open_issues].nan?
 
     # Closed Issues --> What is the number of closed issues?
     proj_health[:closed_issues] = Issue.where(stm_tracker_uuid: "#{tracker_uuid}").closed.count.to_f
-    proj_health[:closed_issues] = 1.0 if proj_health[:closed_issues].nan?
-
+    proj_health[:closed_issues] = 0.0 if proj_health[:closed_issues].nan?
 
     # Issue Resolution Efficiency --> What is the number of closed issues/number of abandoned issues?
     # abandoned issue = open issue with no no offer and no open contract
 
     # issues with open contracts
     abandoned_issue_count = Issue.open.where.not(uuid: Offer.open.where('expiration > ?', BugmTime.now).select('stm_issue_uuid')).where.not(uuid: Contract.open.select('stm_issue_uuid')).count.to_f
-    abandoned_issue_count = 1.0 if abandoned_issue_count.nan?
+    abandoned_issue_count = 0.0 if abandoned_issue_count.nan?
     # abandoned_issue_count = Issue.open.where('uuid NOT IN (?)', Offer.open.where('expiration > ?', BugmTime.now).select('stm_issue_uuid')).where('uuid NOT IN (?)', Contract.open.select('stm_issue_uuid')).count
 
 
     proj_health[:resolution_efficiency] = (proj_health[:closed_issues] / (proj_health[:closed_issues] + abandoned_issue_count)).to_f
-    proj_health[:resolution_efficiency] = 1.0 if proj_health[:resolution_efficiency].nan?
+    proj_health[:resolution_efficiency] = 0.0 if proj_health[:resolution_efficiency].nan?
 
-    # Open Issue Age --> What is the the age of open issues?
-    ages = 0
-    issues = 0
+    open_ages = 0
+    open_issues = 0
+    closed_ages = 0
+    closed_issues = 0
+    difficult_issues = 0
+    difficult_closed_issues = 0
+    workdays = 0
     @issues.each do |iss|
-      if iss.get_status == 'open'
-        ages += iss.get_age
-        issues += 1
+      if iss.get_status == 'open' && iss.get_project == proj_number
+        open_ages += iss.get_age
+        open_issues += 1
+      end
+      if iss.get_status == 'closed' && iss.get_project == proj_number
+        closed_ages += iss.get_resolution_days
+        closed_issues += 1
+        workdays += iss.get_difficulty
+      end
+      if iss.get_difficulty == 4 && iss.get_project == proj_number
+        difficult_issues += 1
+        if iss.get_status == 'closed'
+          difficult_closed_issues += 1
+        end
       end
     end
-    if issues.to_f == 0 then
-      proj_health[:open_issue_age] = 0.0
-    else
-      proj_health[:open_issue_age] = ages.to_f/issues.to_f
+
+    # Open Issue Age --> What is the the age of open issues?
+    proj_health[:open_issue_age] = 0.0
+    if open_issues > 0 then
+      proj_health[:open_issue_age] = open_ages.to_f/open_issues.to_f
     end
 
     # Closed Issue Resolution Duration --> What is the duration of time for issues to be resolved?
-    ages = 0
-    issues = 0
-    @issues.each do |iss|
-      if iss.get_status == 'closed' then
-        ages += iss.get_resolution_days
-        issues += 1
-      end
-    end
-    if issues.to_f == 0 then
-      proj_health[:closed_issue_resolution_duration] = 0
-    else
-      proj_health[:closed_issue_resolution_duration] = ages.to_f/issues.to_f
+    proj_health[:closed_issue_resolution_duration] = 0
+    if closed_issues > 0 then
+      proj_health[:closed_issue_resolution_duration] = closed_ages.to_f/closed_issues.to_f
     end
 
+    # Closed Difficult Issue Rate --> how many of the difficult issues are being closed
+    proj_health[:difficult_closed_issue_rate] = 0.0
+    if difficult_closed_issues > 0 then
+      proj_health[:difficult_closed_issue_rate] = difficult_closed_issues.to_f / difficult_issues.to_f
+    end
+
+    # Open Issue Age --> What is the the age of open issues?
+    proj_health[:workdays] = workdays.to_f
     # Issues opened --> What is the number of issues opened on sim_day?
     proj_health[:issues_opened] = 0.0
     @issues.each do |cur_issue|
@@ -162,6 +180,8 @@ class Bmxsim_IssueTracker
 
     return proj_health
   end
+
+
   def get_project_health_all_projects
     # track the extreme values
     max_open_issues = 0.0
@@ -171,6 +191,7 @@ class Bmxsim_IssueTracker
     max_closed_issue_resolution_duration = 0.0
     max_sum_norm = 0.0
     max_sum_rank = 0
+    max_difficult_closed_issue_rate = 0.0
 
     # get project health
     projects = {}
@@ -189,28 +210,53 @@ class Bmxsim_IssueTracker
     get_projects.to_a.each do |proj_number,tracker_uuid|
       projects[tracker_uuid][:sum_norm] = 0.0
       projects[tracker_uuid][:sum_rank] = 0
+
+      # OPEN ISSUES ----------------------------------------------------------
+
       unless max_open_issues == 0.0 then
-        projects[tracker_uuid][:norm_open_issues] = projects[tracker_uuid][:open_issues].to_f / max_open_issues
+        # 1 = no open issues (better)
+        # 0 = most open issues (worse)
+        projects[tracker_uuid][:norm_open_issues] = 1.0 - projects[tracker_uuid][:open_issues].to_f / max_open_issues
       else
         projects[tracker_uuid][:norm_open_issues] = 0.0
       end
       projects[tracker_uuid][:sum_norm] += projects[tracker_uuid][:norm_open_issues]
+
+      # CLOSED ISSUES --------------------------------------------------------
+
       unless max_closed_issues == 0.0 then
+        # 1 = most open issues (better)
+        # 0 = no closed issues (worse)
         projects[tracker_uuid][:norm_closed_issues] = projects[tracker_uuid][:closed_issues].to_f / max_closed_issues
       else
         projects[tracker_uuid][:norm_closed_issues] = 0.0
       end
       projects[tracker_uuid][:sum_norm] += projects[tracker_uuid][:norm_closed_issues]
-      projects[tracker_uuid][:norm_resolution_efficiency] = 1 - projects[tracker_uuid][:resolution_efficiency].to_f # reverse already normalized
+
+      # RESOLUTION EFFICIENCY ------------------------------------------------
+
+      # 1 = all issues closed and none abandoned (better)
+      # 0 = no issues closed and all abandoned (worse)
+      projects[tracker_uuid][:norm_resolution_efficiency] = projects[tracker_uuid][:resolution_efficiency].to_f # already normalized
       projects[tracker_uuid][:sum_norm] += projects[tracker_uuid][:norm_resolution_efficiency]
+
+      # OPEN ISSUE AGE -------------------------------------------------------
+
       unless max_open_issue_age == 0.0 then
-        projects[tracker_uuid][:norm_open_issue_age] = projects[tracker_uuid][:open_issue_age].to_f / max_open_issue_age
+        # 1 = open issues are 0 days old (best)
+        # 0 = open issues are very old (worse)
+        projects[tracker_uuid][:norm_open_issue_age] = 1.0 - projects[tracker_uuid][:open_issue_age].to_f / max_open_issue_age
       else
         projects[tracker_uuid][:norm_open_issue_age] = 0.0
       end
       projects[tracker_uuid][:sum_norm] += projects[tracker_uuid][:norm_open_issue_age]
+
+      # CLOSED ISSUE RESOLUTION DURATION -------------------------------------
+
       unless max_closed_issue_resolution_duration == 0.0 then
-        projects[tracker_uuid][:norm_closed_issue_resolution_duration] = projects[tracker_uuid][:closed_issue_resolution_duration].to_f / max_closed_issue_resolution_duration
+        # 1 = all issues are closed immediately (better)
+        # 0 = max average time to close issues (worse)
+        projects[tracker_uuid][:norm_closed_issue_resolution_duration] = 1.0 - projects[tracker_uuid][:closed_issue_resolution_duration].to_f / max_closed_issue_resolution_duration
       else
         projects[tracker_uuid][:norm_closed_issue_resolution_duration] = 0.0
       end
