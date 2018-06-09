@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
-for file in ./settings/*
+for i in `seq 1 5`
 do
-  echo "# ruby run.rb \"$file\""
-  ruby run.rb "$file"
+  for file in ./settings/weis3/*
+  do
+    echo "# ruby run.rb \"$file\""
+    ruby run.rb "$file" | tee ./simout/output
+  done
 done

@@ -46,14 +46,19 @@ class Bmxsim_Funder_FixedPay < Bmxsim_Funder
     # function being called by simulation for funder to do something
 
     # Create n issues and one offer each
-    (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.to_i.times do
+    # (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.to_i.times do
+    NUMBER_OF_ISSUES_DAILY_PER_FUNDER.times do
+
+      # 20% for a more difficult issue
+      add_diff = 0
+      add_diff = 1 if rand(100) < DIFFICULTY_ERROR_RATE
 
       # create issue
       difficulty = difficulty_picker(DIFFICULTIES)
-      issue = @tracker.open_issue(@project, difficulty)
+      issue = @tracker.open_issue(@project, difficulty + add_diff)
 
       # determine price
-      price = PRICES[0]
+      price = PRICES[1] # second highest price
 
       # args is a hash
       args  = {
@@ -77,14 +82,24 @@ class Bmxsim_Funder_InversePay < Bmxsim_Funder
     # function being called by simulation for funder to do something
 
     # Create n issues and one offer each
-    (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.to_i.times do
+    # (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.to_i.times do
+    NUMBER_OF_ISSUES_DAILY_PER_FUNDER.times do
+
+      # 20% for a more difficult issue
+      add_diff = 0
+      add_diff = 1 if rand(100) < DIFFICULTY_ERROR_RATE
 
       # create issue
       difficulty = difficulty_picker(DIFFICULTIES)
-      issue = @tracker.open_issue(@project, difficulty)
+      issue = @tracker.open_issue(@project, difficulty + add_diff)
 
       # determine price
       price = PRICES[difficulty-1]
+
+      # debug output:  difficulty, difficulty error, and price
+      # CSV.open('add_diff', "ab") do |csv|
+      #   csv << [difficulty, add_diff, price]
+      # end
 
       # args is a hash
       args  = {
@@ -107,11 +122,16 @@ class Bmxsim_Funder_CorrelatedPay < Bmxsim_Funder
     # function being called by simulation for funder to do something
 
     # Create n issues and one offer each
-    (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.to_i.times do
+    # (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.to_i.times do
+    NUMBER_OF_ISSUES_DAILY_PER_FUNDER.times do
+
+      # 20% for a more difficult issue
+      add_diff = 0
+      add_diff = 1 if rand(100) < DIFFICULTY_ERROR_RATE
 
       # create issue
       difficulty = difficulty_picker(DIFFICULTIES)
-      issue = @tracker.open_issue(@project, difficulty)
+      issue = @tracker.open_issue(@project, difficulty + add_diff)
 
       # determine price
       price = PRICES[PRICES.length-difficulty]
@@ -138,9 +158,15 @@ class Bmxsim_Funder_RandomPay < Bmxsim_Funder
 
 
     # Create n issues and one offer each
-    (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.to_i.times do
+    # (0..NUMBER_OF_ISSUES_DAILY_PER_FUNDER).to_a.sample.to_i.times do
+    NUMBER_OF_ISSUES_DAILY_PER_FUNDER.times do
+
+      # 20% for a more difficult issue
+      add_diff = 0
+      add_diff = 1 if rand(100) < DIFFICULTY_ERROR_RATE
+
       difficulty = difficulty_picker(DIFFICULTIES)
-      issue = @tracker.open_issue(@project, difficulty)
+      issue = @tracker.open_issue(@project, difficulty + add_diff)
 
       price = PRICES.sample
 
@@ -358,7 +384,18 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices_riskAverse < Bmxsim_Worker
     # then filter by max_cost to counter the offer
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
     # then get the most paying but furthest in the future maturation date
-    offer = offers.order('value asc, maturation_range desc').first
+    offers = offers.order('value desc, maturation_range desc')
+    offer = offers.first
+
+    # was offer chosen correctly?
+    # CSV.open('worker_choices', "ab") do |csv|
+    #   issue_uuid = offer[:stm_issue_uuid]
+    #   exid = Issue.where(uuid:issue_uuid).first[:exid]
+    #   issue = @tracker.get_issue(exid.to_i)
+    #   # binding.pry
+    #   csv << [offer[:value], issue.get_difficulty, issue.get_age, BugmTime.now, offer[:maturation_range]]
+    # end
+
     if !offer.nil? && offer.valid?
       projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
       counter = projection.offer
@@ -394,7 +431,7 @@ class Bmxsim_Worker_Treatment_NoMetricsWithPrices_rewardSeeking < Bmxsim_Worker
     # then filter by max_cost to counter the offer
     offers = offers.where('((1-price)*volume) <= '+get_balance.to_s)
     # then get the most paying
-    offer = offers.order('value asc').first
+    offer = offers.order('value desc').first
     if !offer.nil? && offer.valid?
       projection = OfferCmd::CreateCounter.new(offer, {user_uuid: @uuid}).project
       counter = projection.offer
