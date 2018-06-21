@@ -92,7 +92,9 @@ class Bmxsim_IssueTracker
       resolution_efficiency: nil, # What is the number of closed issues/number of abandoned issues?
       open_issue_age: nil,  # What is the the age of open issues?
       closed_issue_resolution_duration: nil,  # What is the duration of time for issues to be resolved?
-      workdays: nil  # how many work days were spent on this project
+      workdays: nil,  # how many work days were spent on this project
+      issues_opened: nil, # What is the number of issues opened on sim_day?
+      issues_closed: nil # What is the number of issues closed on sim_day?
     }
 
     # Open Issues --> What is the number of open issues?
@@ -160,9 +162,26 @@ class Bmxsim_IssueTracker
 
     # Open Issue Age --> What is the the age of open issues?
     proj_health[:workdays] = workdays.to_f
+    # Issues opened --> What is the number of issues opened on sim_day?
+    proj_health[:issues_opened] = 0.0
+    @issues.each do |cur_issue|
+        if cur_issue.get_age==0
+              proj_health[:issues_opened] += 1.0
+        end
+    end
+
+    # Issues closed --> What is the number of issues closed on sim_day?
+    proj_health[:issues_closed] = 0.0
+    @issues.each do |cur_issue|
+        if (cur_issue.get_status == 'closed' and cur_issue.get_age==cur_issue.get_resolution_days)
+              proj_health[:issues_closed] += 1.0
+        end
+    end
 
     return proj_health
   end
+
+
   def get_project_health_all_projects
     # track the extreme values
     max_open_issues = 0.0

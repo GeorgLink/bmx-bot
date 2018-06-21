@@ -176,6 +176,8 @@ time = Benchmark.measure do
     health_a.push("funder")  # funder type
     health_a.push("open_issues")
     health_a.push("closed_issues")
+    health_a.push("issues_opened")
+    health_a.push("issues_closed")
     health_a.push("resolution_efficiency")
     health_a.push("open_issue_age")
     health_a.push("closed_issue_resolution_duration")
@@ -406,6 +408,8 @@ time = Benchmark.measure do
         # health_a.push(val[0])  # uuid of project
         health_a.push(val[1][:open_issues])
         health_a.push(val[1][:closed_issues])
+        health_a.push(val[1][:issues_opened])
+        health_a.push(val[1][:issues_closed])
         health_a.push(val[1][:resolution_efficiency])
         health_a.push(val[1][:open_issue_age])
         health_a.push(val[1][:closed_issue_resolution_duration])
